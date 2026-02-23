@@ -1,19 +1,29 @@
 import "simplebar-react/dist/simplebar.min.css";
-import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { RouterPages } from "./pages";
 import ThemeProvider from "./theme";
 
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+            refetchInterval: false,
+            retry: false,
+        },
+    },
+});
+
 function App() {
     return (
-        <HelmetProvider>
+        <QueryClientProvider client={queryClient}>
             <BrowserRouter>
                 <ThemeProvider>
                     <RouterPages />
                 </ThemeProvider>
             </BrowserRouter>
-        </HelmetProvider>
+        </QueryClientProvider>
     );
 }
 

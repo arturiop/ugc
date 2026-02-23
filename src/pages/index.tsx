@@ -5,7 +5,8 @@ import { Outlet } from "react-router-dom";
 import { Loadable } from "@/components/Loadable";
 
 const Page404 = Loadable(lazy(() => import("./Page404")));
-const Hero = Loadable(lazy(() => import('./Hero')))
+const Hero = Loadable(lazy(() => import("./Hero")));
+const ChatPage = Loadable(lazy(() => import("./ChatPage")));
 
 const Container = () => (
     <Box
@@ -30,6 +31,10 @@ const router = [
             {
                 index: true,
                 element: <Hero />,
+            },
+            {
+                path: "chat",
+                element: <ChatPage />,
             },
         ],
     },
