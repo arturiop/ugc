@@ -1,467 +1,112 @@
-import { useEffect, useRef, useState } from "react";
-import {
-    AppBar,
-    Box,
-    Button,
-    CircularProgress,
-    Container,
-    Divider,
-    FormControl,
-    IconButton,
-    InputLabel,
-    List,
-    ListItem,
-    MenuItem,
-    Paper,
-    Select,
-    Stack,
-    TextField,
-    Toolbar,
-    Tooltip,
-    Typography,
-} from "@mui/material";
-import AttachFileIcon from "@mui/icons-material/AttachFile";
-import SendIcon from "@mui/icons-material/Send";
+import { PropsWithChildren, useEffect, useMemo, useRef, useState } from "react";
+import { Box } from "@mui/material";
+import ChatPane from "./chat/ChatPane";
+import WorkspacePane from "./chat/WorkspacePane";
 
-type Provider = "openai" | "google" | "ollama";
+type ResizableSplitProps = PropsWithChildren<{
+    left: React.ReactNode;
+    right: React.ReactNode;
+    initialLeftPct?: number;
+    minLeftPct?: number;
+    maxLeftPct?: number;
+}>;
 
-type ChatMessage = {
-    id: string;
-    role: "user" | "assistant";
-    content: string;
-    imageUrl?: string;
-};
+function ResizableSplit({ left, right, initialLeftPct = 30, minLeftPct = 20, maxLeftPct = 60 }: ResizableSplitProps) {
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const draggingRef = useRef(false);
 
-const PROVIDERS: { value: Provider; label: string }[] = [
-    { value: "openai", label: "OpenAI" },
-    { value: "google", label: "Google" },
-    { value: "ollama", label: "Ollama" },
-];
+    const [leftPct, setLeftPct] = useState(initialLeftPct);
 
-const API_BASE_URL = import.meta.env.VITE_APP_NGROK ?? "http://localhost:5050";
-
-const MessageBubble = ({ message }: { message: ChatMessage }) => {
-    const isUser = message.role === "user";
-
-    return (
-        <ListItem
-            disableGutters
-            sx={{
-                justifyContent: isUser ? "flex-end" : "flex-start",
-                px: 1,
-            }}
-        >
-            <Paper
-                elevation={0}
-                sx={{
-                    px: 2,
-                    py: 1.5,
-                    maxWidth: "75%",
-                    bgcolor: isUser ? "primary.main" : "background.paper",
-                    color: isUser ? "primary.contrastText" : "text.primary",
-                    border: isUser ? "none" : "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 2,
-                }}
-            >
-                <Stack spacing={1}>
-                    {message.imageUrl && (
-                        <Box
-                            component="img"
-                            src={message.imageUrl}
-                            alt="Uploaded"
-                            sx={{
-                                width: "100%",
-                                maxWidth: 280,
-                                borderRadius: 1,
-                                border: "1px solid",
-                                borderColor: "divider",
-                            }}
-                        />
-                    )}
-                    <Typography
-                        variant="body1"
-                        sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
-                    >
-                        {message.content}
-                    </Typography>
-                </Stack>
-            </Paper>
-        </ListItem>
-    );
-};
-
-const ChatMessages = ({ messages }: { messages: ChatMessage[] }) => {
-    const scrollRef = useRef<HTMLDivElement | null>(null);
+    const clamp = (v: number) => Math.max(minLeftPct, Math.min(maxLeftPct, v));
 
     useEffect(() => {
-        if (!scrollRef.current) return;
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }, [messages]);
-
-    if (messages.length === 0) {
-        return (
-            <Box sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Typography variant="body2" color="text.secondary">
-                    Start a conversation to see messages here.
-                </Typography>
-            </Box>
-        );
-    }
-
-    return (
-        <Box ref={scrollRef} sx={{ flex: 1, overflowY: "auto", px: 1 }}>
-            <List sx={{ py: 2 }}>
-                {messages.map((message) => (
-                    <MessageBubble key={message.id} message={message} />
-                ))}
-            </List>
-        </Box>
-    );
-};
-
-const ProviderSelector = ({
-    provider,
-    onChange,
-}: {
-    provider: Provider;
-    onChange: (value: Provider) => void;
-}) => (
-    <FormControl size="small" sx={{ minWidth: 140 }}>
-        <InputLabel id="provider-select-label">Provider</InputLabel>
-        <Select
-            labelId="provider-select-label"
-            value={provider}
-            label="Provider"
-            onChange={(event) => onChange(event.target.value as Provider)}
-        >
-            {PROVIDERS.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                </MenuItem>
-            ))}
-        </Select>
-    </FormControl>
-);
-
-const Composer = ({
-    input,
-    setInput,
-    onSend,
-    imagePreview,
-    onPickImage,
-    isSending,
-}: {
-    input: string;
-    setInput: (value: string) => void;
-    onSend: () => void;
-    imagePreview?: string;
-    onPickImage: (file: File | null) => void;
-    isSending: boolean;
-}) => {
-    const fileInputId = "chat-upload-input";
-
-    return (
-        <Box sx={{ p: 2 }}>
-            <Stack spacing={2}>
-                {imagePreview && (
-                    <Paper variant="outlined" sx={{ p: 1.5 }}>
-                        <Stack direction="row" spacing={2} alignItems="center">
-                            <Box
-                                component="img"
-                                src={imagePreview}
-                                alt="Preview"
-                                sx={{ width: 72, height: 72, borderRadius: 1, objectFit: "cover" }}
-                            />
-                            <Button
-                                size="small"
-                                variant="outlined"
-                                onClick={() => onPickImage(null)}
-                            >
-                                Remove image
-                            </Button>
-                        </Stack>
-                    </Paper>
-                )}
-                <Stack direction="row" spacing={1} alignItems="flex-end">
-                    <Tooltip title="Upload image">
-                        <IconButton component="label" color="primary">
-                            <AttachFileIcon />
-                            <input
-                                id={fileInputId}
-                                hidden
-                                type="file"
-                                accept="image/*"
-                                onChange={(event) => {
-                                    const file = event.target.files?.[0] ?? null;
-                                    onPickImage(file);
-                                }}
-                            />
-                        </IconButton>
-                    </Tooltip>
-                    <TextField
-                        fullWidth
-                        multiline
-                        minRows={2}
-                        maxRows={6}
-                        placeholder="Type your message..."
-                        value={input}
-                        onChange={(event) => setInput(event.target.value)}
-                        onKeyDown={(event) => {
-                            if (event.key === "Enter" && !event.shiftKey) {
-                                event.preventDefault();
-                                onSend();
-                            }
-                        }}
-                    />
-                    <Tooltip title="Send message">
-                        <span>
-                            <IconButton color="primary" onClick={onSend} disabled={isSending}>
-                                {isSending ? <CircularProgress size={20} /> : <SendIcon />}
-                            </IconButton>
-                        </span>
-                    </Tooltip>
-                </Stack>
-            </Stack>
-        </Box>
-    );
-};
-
-const ChatPage = () => {
-    const [provider, setProvider] = useState<Provider>("openai");
-    const [input, setInput] = useState("");
-    const [messages, setMessages] = useState<ChatMessage[]>([
-        {
-            id: "welcome",
-            role: "assistant",
-            content: "Hi! Ask a question or upload an image to start chatting.",
-        },
-    ]);
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
-    const [isSending, setIsSending] = useState(false);
-
-    const handlePickImage = (file: File | null) => {
-        setImageFile(file);
-        if (!file) {
-            setImagePreview(undefined);
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = () => {
-            if (typeof reader.result === "string") {
-                setImagePreview(reader.result);
-            }
-        };
-        reader.readAsDataURL(file);
-    };
-
-    const uploadImage = async (file: File) => {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const response = await fetch(`${API_BASE_URL}/api/upload`, {
-            method: "POST",
-            headers: {
-                "ngrok-skip-browser-warning": "1",
-              },
-            body: formData,
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || "Failed to upload image.");
-        }
-
-        const payload = (await response.json()) as { url: string };
-        return payload.url;
-    };
-
-    const handleSend = async () => {
-        const trimmed = input.trim();
-        if (!trimmed && !imageFile) return;
-
-        setIsSending(true);
-
-        const localImagePreview = imagePreview;
-        let uploadedImageUrl: string | undefined;
-
-        const newMessage: ChatMessage = {
-            id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-            role: "user",
-            content: trimmed || "Shared an image.",
-            imageUrl: localImagePreview,
+        const onMove = (e: MouseEvent) => {
+            if (!draggingRef.current) return;
+            const el = containerRef.current;
+            if (!el) return;
+            const rect = el.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const pct = (x / rect.width) * 100;
+            setLeftPct(clamp(pct));
         };
 
-        const assistantMessageId = `assistant-${Date.now()}-${Math.random()
-            .toString(16)
-            .slice(2)}`;
-        const assistantMessage: ChatMessage = {
-            id: assistantMessageId,
-            role: "assistant",
-            content: "",
+        const onUp = () => {
+            draggingRef.current = false;
+            document.body.style.cursor = "";
+            document.body.style.userSelect = "";
         };
 
-        setMessages((prev) => [...prev, newMessage, assistantMessage]);
-        setInput("");
-        setImageFile(null);
-        setImagePreview(undefined);
+        window.addEventListener("mousemove", onMove);
+        window.addEventListener("mouseup", onUp);
+        return () => {
+            window.removeEventListener("mousemove", onMove);
+            window.removeEventListener("mouseup", onUp);
+        };
+    }, []);
 
-        try {
-            if (imageFile) {
-                uploadedImageUrl = await uploadImage(imageFile);
-            }
-
-            const payloadMessages = [...messages, newMessage].map((message) => ({
-                role: message.role,
-                content: message.content,
-            }));
-
-            const response = await fetch(`${API_BASE_URL}/api/chat/stream`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "ngrok-skip-browser-warning": "1",
-                },
-                body: JSON.stringify({
-                    provider,
-                    messages: payloadMessages,
-                    image: uploadedImageUrl,
-                }),
-            });
-
-            if (!response.ok || !response.body) {
-                const errorText = await response.text();
-                throw new Error(errorText || "Failed to start stream.");
-            }
-
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = "";
-
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-
-                buffer += decoder.decode(value, { stream: true });
-                let boundary = buffer.indexOf("\n\n");
-
-                while (boundary !== -1) {
-                    const eventBlock = buffer.slice(0, boundary);
-                    buffer = buffer.slice(boundary + 2);
-                    boundary = buffer.indexOf("\n\n");
-
-                    const lines = eventBlock.split("\n");
-                    let eventName = "message";
-                    const dataLines: string[] = [];
-
-                    for (const line of lines) {
-                        if (line.startsWith("event:")) {
-                            eventName = line.replace("event:", "").trim();
-                        } else if (line.startsWith("data:")) {
-                            dataLines.push(line.replace("data:", "").trim());
-                        }
-                    }
-
-                    const data = dataLines.join("\n");
-                    if (!data) continue;
-
-                    if (eventName === "delta") {
-                        const parsed = JSON.parse(data) as { delta?: string };
-                        if (parsed.delta) {
-                            setMessages((prev) =>
-                                prev.map((message) =>
-                                    message.id === assistantMessageId
-                                        ? {
-                                              ...message,
-                                              content: message.content + parsed.delta,
-                                          }
-                                        : message
-                                )
-                            );
-                        }
-                    } else if (eventName === "error") {
-                        const parsed = JSON.parse(data) as { error?: string };
-                        const errorMessage = parsed.error ?? "Stream error.";
-                        setMessages((prev) =>
-                            prev.map((message) =>
-                                message.id === assistantMessageId
-                                    ? { ...message, content: errorMessage }
-                                    : message
-                            )
-                        );
-                    }
-                }
-            }
-        } catch (error) {
-            const message =
-                error instanceof Error ? error.message : "Unable to send message.";
-            setMessages((prev) =>
-                prev.map((item) =>
-                    item.id === assistantMessageId ? { ...item, content: message } : item
-                )
-            );
-        } finally {
-            setIsSending(false);
-        }
-    };
+    const leftStyle = useMemo(() => ({ flex: `${leftPct} 1 0px` }), [leftPct]);
+    const rightStyle = useMemo(() => ({ flex: `${100 - leftPct} 1 0px` }), [leftPct]);
 
     return (
-        <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
-            <AppBar position="static" color="transparent" elevation={0}>
-                <Toolbar sx={{ gap: 2 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                        LLM Chat
-                    </Typography>
-                    <Box sx={{ flexGrow: 1 }} />
-                    <ProviderSelector provider={provider} onChange={setProvider} />
-                </Toolbar>
-                <Divider />
-            </AppBar>
-            <Container
-                maxWidth="md"
-                sx={{
-                    py: 3,
-                    height: "calc(100vh - 64px)",
-                    display: "flex",
-                    flexDirection: "column",
+        <Box
+            ref={containerRef}
+            sx={{
+                display: "flex",
+                height: "100dvh",
+                minHeight: 0,
+                width: "100%",
+                overflow: "hidden",
+                bgcolor: "background.default",
+            }}>
+            {/* Left panel */}
+            <Box sx={{ ...leftStyle, minWidth: 320, overflow: "hidden", display: "flex" }}>{left}</Box>
+
+            {/* Resize handle */}
+            <Box
+                role="separator"
+                tabIndex={0}
+                onMouseDown={() => {
+                    draggingRef.current = true;
+                    document.body.style.cursor = "col-resize";
+                    document.body.style.userSelect = "none";
                 }}
-            >
-                <Paper
-                    variant="outlined"
-                    sx={{
-                        flex: 1,
-                        display: "flex",
-                        flexDirection: "column",
-                        overflow: "hidden",
-                    }}
-                >
-                    <Box sx={{ px: 2, py: 1.5, bgcolor: "background.paper" }}>
-                        <Stack direction="row" alignItems="center" spacing={2}>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                                Chat session
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                                Provider: {PROVIDERS.find((item) => item.value === provider)?.label}
-                            </Typography>
-                        </Stack>
-                    </Box>
-                    <Divider />
-                    <ChatMessages messages={messages} />
-                    <Divider />
-                    <Composer
-                        input={input}
-                        setInput={setInput}
-                        onSend={handleSend}
-                        imagePreview={imagePreview}
-                        onPickImage={handlePickImage}
-                        isSending={isSending}
-                    />
-                </Paper>
-            </Container>
+                sx={{
+                    width: 10,
+                    position: "relative",
+                    cursor: "col-resize",
+                    flex: "0 0 auto",
+                    "&::after": {
+                        content: '""',
+                        position: "absolute",
+                        top: 0,
+                        bottom: 0,
+                        left: "50%",
+                        width: 2,
+                        transform: "translateX(-50%)",
+                        bgcolor: "divider",
+                        opacity: 0.6,
+                    },
+                    "&:hover::after": { opacity: 1 },
+                }}
+            />
+
+            {/* Right panel */}
+            <Box sx={{ ...rightStyle, minWidth: 420, overflow: "hidden", display: "flex" }}>{right}</Box>
         </Box>
     );
-};
+}
 
-export default ChatPage;
+function Page() {
+    const [workspaceImageUrl, setWorkspaceImageUrl] = useState<string | undefined>(undefined);
+
+    return (
+        <Box sx={{ height: "100dvh", width: "100%", overflow: "hidden" }}>
+            <ResizableSplit
+                left={<ChatPane onImageUploaded={setWorkspaceImageUrl} />}
+                right={<WorkspacePane imageUrl={workspaceImageUrl} />}
+            />
+        </Box>
+    );
+}
+
+export default Page;
