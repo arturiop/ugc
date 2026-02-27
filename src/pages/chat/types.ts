@@ -4,7 +4,7 @@ export type ChatMessage = {
     id: string;
     role: "user" | "assistant";
     content: string;
-    imageUrl?: string;
+    imageUrls?: string[];
 };
 
 export const PROVIDERS: { value: Provider; label: string }[] = [

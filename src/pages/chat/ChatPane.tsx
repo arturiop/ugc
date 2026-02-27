@@ -32,11 +32,52 @@ const resolveAssetUrl = (url: string) => {
     return url.startsWith("http") ? url : new URL(url, API_BASE_URL).toString();
 };
 
+const MessageImage = ({ url, isUser }: { url: string; isUser: boolean }) => {
+    const resolvedImageUrl = url ? resolveAssetUrl(url) : undefined;
+    const { src, loading } = useNgrokImageSrc(resolvedImageUrl);
+
+    if (!resolvedImageUrl) return null;
+
+    return (
+        <Stack spacing={0.5}>
+            {loading && (
+                <Typography variant="caption" color={isUser ? "inherit" : "text.secondary"}>
+                    Loading image…
+                </Typography>
+            )}
+            <Box
+                component="img"
+                src={src}
+                alt="Uploaded"
+                sx={{
+                    width: "100%",
+                    maxWidth: 280,
+                    borderRadius: 1.5,
+                    border: "1px solid",
+                    borderColor: "divider",
+                }}
+            />
+        </Stack>
+    );
+};
+
+const PreviewImage = ({ url, index, onRemove }: { url: string; index: number; onRemove: (index: number) => void }) => {
+    const resolvedPreview = resolveAssetUrl(url);
+    const { src } = useNgrokImageSrc(resolvedPreview);
+
+    return (
+        <Stack direction="row" spacing={2} alignItems="center">
+            <Box component="img" src={src} alt={`Preview ${index + 1}`} sx={{ width: 72, height: 72, borderRadius: 1, objectFit: "cover" }} />
+            <Button size="small" variant="outlined" onClick={() => onRemove(index)}>
+                Remove image
+            </Button>
+        </Stack>
+    );
+};
+
 const MessageBubble = ({ message }: { message: ChatMessage }) => {
     const isUser = message.role === "user";
-
-    const resolvedImageUrl = message.imageUrl ? resolveAssetUrl(message.imageUrl) : undefined;
-    const { src, loading } = useNgrokImageSrc(resolvedImageUrl);
+    const imageUrls = message.imageUrls ?? [];
 
     return (
         <ListItem
@@ -59,25 +100,11 @@ const MessageBubble = ({ message }: { message: ChatMessage }) => {
                     boxShadow: isUser ? "0px 18px 35px rgba(25, 118, 210, 0.24)" : "0px 12px 30px rgba(15, 23, 42, 0.06)",
                 }}>
                 <Stack spacing={1}>
-                    {resolvedImageUrl && (
-                        <Stack spacing={0.5}>
-                            {loading && (
-                                <Typography variant="caption" color={isUser ? "inherit" : "text.secondary"}>
-                                    Loading image…
-                                </Typography>
-                            )}
-                            <Box
-                                component="img"
-                                src={src}
-                                alt="Uploaded"
-                                sx={{
-                                    width: "100%",
-                                    maxWidth: 280,
-                                    borderRadius: 1.5,
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                }}
-                            />
+                    {imageUrls.length > 0 && (
+                        <Stack spacing={1}>
+                            {imageUrls.map((url, index) => (
+                                <MessageImage key={`${url}-${index}`} url={url} isUser={isUser} />
+                            ))}
                         </Stack>
                     )}
 
@@ -120,25 +147,20 @@ const snapshotToMessages = (snapshot: ChatSnapshot): any[] => {
                 .filter((part) => part.type === "text")
                 .map((part) => (part.type === "text" ? part.text : ""))
                 .join("\n");
-            const imagePart = parts.find((part) => part.type === "image_url");
+            const imageUrls = parts
+                .filter((part) => part.type === "image_url")
+                .map((part) => ("image_url" in part ? part.image_url.url : ""))
+                .filter(Boolean);
 
             return {
                 id: `${snapshot.id}-${index}`,
                 role: msg.role,
                 content: text,
-                imageUrl: imagePart && "image_url" in imagePart ? imagePart.image_url.url : undefined,
+                imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
             };
         });
 
-    return mapped.length > 0
-        ? mapped
-        : [
-              {
-                  id: "welcome",
-                  role: "assistant",
-                  content: "Upload an image to get your storyboard.",
-              },
-          ];
+    return mapped;
 };
 
 const ChatMessages = ({ messages }: { messages: ChatMessage[] }) => {
@@ -153,7 +175,7 @@ const ChatMessages = ({ messages }: { messages: ChatMessage[] }) => {
         return (
             <Box sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Typography variant="body2" color="text.secondary">
-                    Start a conversation to see messages here.
+                    Upload an image or start typing to begin.
                 </Typography>
             </Box>
         );
@@ -194,33 +216,30 @@ const Composer = ({
     input,
     setInput,
     onSend,
-    imagePreview,
-    onPickImage,
+    imagePreviews,
+    onPickImages,
+    onRemoveImage,
     isSending,
 }: {
     input: string;
     setInput: (value: string) => void;
     onSend: () => void;
-    imagePreview?: string;
-    onPickImage: (file: File | null) => void;
+    imagePreviews: string[];
+    onPickImages: (files: FileList | null) => void;
+    onRemoveImage: (index: number) => void;
     isSending: boolean;
 }) => {
     const fileInputId = "chat-upload-input";
 
-    // preview is usually data: URL, but resolve anyway
-    const resolvedPreview = imagePreview ? resolveAssetUrl(imagePreview) : undefined;
-    const { src } = useNgrokImageSrc(resolvedPreview);
-
     return (
         <Box sx={{ p: 2 }}>
             <Stack spacing={2}>
-                {imagePreview && (
+                {imagePreviews.length > 0 && (
                     <Paper variant="outlined" sx={{ p: 1.5 }}>
-                        <Stack direction="row" spacing={2} alignItems="center">
-                            <Box component="img" src={src} alt="Preview" sx={{ width: 72, height: 72, borderRadius: 1, objectFit: "cover" }} />
-                            <Button size="small" variant="outlined" onClick={() => onPickImage(null)}>
-                                Remove image
-                            </Button>
+                        <Stack spacing={1}>
+                            {imagePreviews.map((preview, index) => (
+                                <PreviewImage key={`${preview}-${index}`} url={preview} index={index} onRemove={onRemoveImage} />
+                            ))}
                         </Stack>
                     </Paper>
                 )}
@@ -234,9 +253,10 @@ const Composer = ({
                                 hidden
                                 type="file"
                                 accept="image/*"
+                                multiple
                                 onChange={(event) => {
-                                    const file = event.target.files?.[0] ?? null;
-                                    onPickImage(file);
+                                    onPickImages(event.target.files);
+                                    event.target.value = "";
                                 }}
                             />
                         </IconButton>
@@ -279,16 +299,10 @@ type ChatPaneProps = {
 const ChatPane = ({ chatId, onImageUploaded }: ChatPaneProps) => {
     const [provider, setProvider] = useState<Provider>("google");
     const [input, setInput] = useState("");
-    const [messages, setMessages] = useState<ChatMessage[]>([
-        {
-            id: "welcome",
-            role: "assistant",
-            content: "Upload an image to get your storyboard.",
-        },
-    ]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
 
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [isSending, setIsSending] = useState(false);
 
     useEffect(() => {
@@ -313,21 +327,26 @@ const ChatPane = ({ chatId, onImageUploaded }: ChatPaneProps) => {
         };
     }, [chatId]);
 
-    const handlePickImage = (file: File | null) => {
-        setImageFile(file);
+    const handlePickImages = (files: FileList | null) => {
+        if (!files || files.length === 0) return;
 
-        if (!file) {
-            setImagePreview(undefined);
-            return;
-        }
+        const nextFiles = [...imageFiles, ...Array.from(files)];
+        setImageFiles(nextFiles);
 
-        const reader = new FileReader();
-        reader.onload = () => {
-            if (typeof reader.result === "string") {
-                setImagePreview(reader.result);
-            }
-        };
-        reader.readAsDataURL(file);
+        Array.from(files).forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                if (typeof reader.result === "string") {
+                    setImagePreviews((prev) => [...prev, reader.result as string]);
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const handleRemoveImage = (index: number) => {
+        setImageFiles((prev) => prev.filter((_, idx) => idx !== index));
+        setImagePreviews((prev) => prev.filter((_, idx) => idx !== index));
     };
 
     const uploadImage = async (file: File) => {
@@ -352,19 +371,19 @@ const ChatPane = ({ chatId, onImageUploaded }: ChatPaneProps) => {
 
     const handleSend = async () => {
         const trimmed = input.trim();
-        if (!trimmed && !imageFile) return;
+        if (!trimmed && imageFiles.length === 0) return;
 
         setIsSending(true);
 
-        const fileToUpload = imageFile; // capture BEFORE clearing
-        const localImagePreview = imagePreview;
-        let uploadedImageUrl: string | undefined;
+        const filesToUpload = [...imageFiles]; // capture BEFORE clearing
+        const localImagePreviews = [...imagePreviews];
+        let uploadedImageUrls: string[] = [];
 
         const newMessage: ChatMessage = {
             id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
             role: "user",
             content: trimmed || "Shared an image.",
-            imageUrl: localImagePreview,
+            imageUrls: localImagePreviews,
         };
 
         const assistantMessageId = `assistant-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -378,19 +397,31 @@ const ChatPane = ({ chatId, onImageUploaded }: ChatPaneProps) => {
         setMessages(nextMessages);
 
         setInput("");
-        setImageFile(null);
-        setImagePreview(undefined);
+        setImageFiles([]);
+        setImagePreviews([]);
 
         try {
-            if (fileToUpload) {
-                uploadedImageUrl = await uploadImage(fileToUpload);
-                onImageUploaded?.(uploadedImageUrl);
+            if (filesToUpload.length > 0) {
+                uploadedImageUrls = await Promise.all(filesToUpload.map((file) => uploadImage(file)));
+                if (uploadedImageUrls.length > 0) {
+                    onImageUploaded?.(uploadedImageUrls[uploadedImageUrls.length - 1]);
+                }
+
+                setMessages((prev) =>
+                    prev.map((message) => (message.id === newMessage.id ? { ...message, imageUrls: uploadedImageUrls } : message))
+                );
             }
 
             // Build payload from the exact messages we just displayed (no stale state)
             const payloadMessages = nextMessages
                 .filter((m) => !(m.id === assistantMessageId && m.role === "assistant"))
                 .map((m) => ({ role: m.role, content: m.content }));
+
+            const historyImageUrls = messages
+                .filter((m) => m.role === "user" && Array.isArray(m.imageUrls))
+                .flatMap((m) => m.imageUrls ?? [])
+                .filter((url) => !url.startsWith("data:"));
+            const imagesForPrompt = [...historyImageUrls, ...uploadedImageUrls].slice(-5);
 
             const response = await fetch(`${API_BASE_URL}/api/chat/stream`, {
                 method: "POST",
@@ -399,7 +430,8 @@ const ChatPane = ({ chatId, onImageUploaded }: ChatPaneProps) => {
                     chatId,
                     provider,
                     messages: payloadMessages,
-                    image: uploadedImageUrl,
+                    images: uploadedImageUrls,
+                    promptImages: imagesForPrompt,
                 }),
             });
 
@@ -447,11 +479,19 @@ const ChatPane = ({ chatId, onImageUploaded }: ChatPaneProps) => {
                         const parsed = JSON.parse(data) as { data?: string; mimeType?: string; url?: string };
                         if (parsed.url) {
                             const absoluteUrl = resolveAssetUrl(parsed.url);
-                            setMessages((prev) => prev.map((message) => (message.id === assistantMessageId ? { ...message, imageUrl: absoluteUrl } : message)));
+                            setMessages((prev) =>
+                                prev.map((message) =>
+                                    message.id === assistantMessageId ? { ...message, imageUrls: [...(message.imageUrls ?? []), absoluteUrl] } : message
+                                )
+                            );
                         } else if (parsed.data) {
                             const mimeType = parsed.mimeType ?? "image/png";
                             const imageUrl = `data:${mimeType};base64,${parsed.data}`;
-                            setMessages((prev) => prev.map((message) => (message.id === assistantMessageId ? { ...message, imageUrl } : message)));
+                            setMessages((prev) =>
+                                prev.map((message) =>
+                                    message.id === assistantMessageId ? { ...message, imageUrls: [...(message.imageUrls ?? []), imageUrl] } : message
+                                )
+                            );
                         }
                     } else if (eventName === "error") {
                         const parsed = JSON.parse(data) as { error?: string };
@@ -496,7 +536,15 @@ const ChatPane = ({ chatId, onImageUploaded }: ChatPaneProps) => {
             <Divider />
 
             <Box sx={{ bgcolor: "background.paper" }}>
-                <Composer input={input} setInput={setInput} onSend={handleSend} imagePreview={imagePreview} onPickImage={handlePickImage} isSending={isSending} />
+                <Composer
+                    input={input}
+                    setInput={setInput}
+                    onSend={handleSend}
+                    imagePreviews={imagePreviews}
+                    onPickImages={handlePickImages}
+                    onRemoveImage={handleRemoveImage}
+                    isSending={isSending}
+                />
             </Box>
         </Box>
     );
