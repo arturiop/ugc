@@ -199,7 +199,7 @@ const Composer = ({
                         multiline
                         minRows={2}
                         maxRows={6}
-                        placeholder="Type your message..."
+                        placeholder="Describe the product or upload an image..."
                         value={input}
                         onChange={(event) => setInput(event.target.value)}
                         onKeyDown={(event) => {
@@ -227,13 +227,13 @@ type ChatPaneProps = {
 };
 
 const ChatPane = ({ onImageUploaded }: ChatPaneProps) => {
-    const [provider, setProvider] = useState<Provider>("ollama");
+    const [provider, setProvider] = useState<Provider>("google");
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState<ChatMessage[]>([
         {
             id: "welcome",
             role: "assistant",
-            content: "Hi! Ask a question or upload an image to start chatting.",
+            content: "Upload an image to get your storyboard.",
         },
     ]);
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -383,6 +383,34 @@ const ChatPane = ({ onImageUploaded }: ChatPaneProps) => {
                                               ...message,
                                               content: message.content + parsed.delta,
                                           }
+                                        : message
+                                )
+                            );
+                        }
+                    } else if (eventName === "image") {
+                        const parsed = JSON.parse(data) as {
+                            data?: string;
+                            mimeType?: string;
+                            url?: string;
+                        };
+                        if (parsed.url) {
+                            const absoluteUrl = parsed.url.startsWith("http")
+                                ? parsed.url
+                                : `${API_BASE_URL}${parsed.url}`;
+                            setMessages((prev) =>
+                                prev.map((message) =>
+                                    message.id === assistantMessageId
+                                        ? { ...message, imageUrl: absoluteUrl }
+                                        : message
+                                )
+                            );
+                        } else if (parsed.data) {
+                            const mimeType = parsed.mimeType ?? "image/png";
+                            const imageUrl = `data:${mimeType};base64,${parsed.data}`;
+                            setMessages((prev) =>
+                                prev.map((message) =>
+                                    message.id === assistantMessageId
+                                        ? { ...message, imageUrl }
                                         : message
                                 )
                             );
