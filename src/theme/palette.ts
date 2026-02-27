@@ -126,14 +126,23 @@ export const lightPalette = {
 export const darkPalette = {
     ...COMMON,
     mode: "dark",
+    primary: {
+        ...PRIMARY,
+        lighter: "#F4EFE6",
+        light: "#E6DED3",
+        main: "#D1C4B1",
+        dark: "#B7A791",
+        darker: "#9A8A74",
+        contrastText: "#262522",
+    },
     text: {
-        primary: "#e6e6e6",
-        secondary: GREY[500],
-        disabled: GREY[600],
+        primary: "#F4F2ED",
+        secondary: "#D6D1C9",
+        disabled: "#9A958C",
     },
     background: {
-        paper: GREY[800],
-        default: GREY[900],
+        paper: "#2F2E2B",
+        default: "#262522",
         neutral: alpha(GREY[500], 0.16),
     },
     action: {

@@ -1,27 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import {
-    Box,
-    Button,
-    CircularProgress,
-    Divider,
-    FormControl,
-    IconButton,
-    InputLabel,
-    List,
-    ListItem,
-    MenuItem,
-    Paper,
-    Select,
-    Stack,
-    TextField,
-    Tooltip,
-    Typography,
-} from "@mui/material";
+import { Box, Button, CircularProgress, Divider, IconButton, List, ListItem, Paper, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import SendIcon from "@mui/icons-material/Send";
 
-import { PROVIDERS, type ChatMessage, type Provider } from "@/pages/chat/types";
+import { type ChatMessage } from "@/pages/chat/types";
 import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
+import { getSessionId } from "@/utils/session";
 
 const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
 
@@ -124,7 +108,6 @@ type SnapshotMessage = {
 
 type ChatSnapshot = {
     id: string;
-    provider?: string;
     createdAt: string;
     updatedAt: string;
     messages: SnapshotMessage[];
@@ -198,19 +181,6 @@ const ChatMessages = ({ messages }: { messages: ChatMessage[] }) => {
         </Box>
     );
 };
-
-const ProviderSelector = ({ provider, onChange }: { provider: Provider; onChange: (value: Provider) => void }) => (
-    <FormControl size="small" sx={{ minWidth: 140 }}>
-        <InputLabel id="provider-select-label">Provider</InputLabel>
-        <Select labelId="provider-select-label" value={provider} label="Provider" onChange={(event) => onChange(event.target.value as Provider)}>
-            {PROVIDERS.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                </MenuItem>
-            ))}
-        </Select>
-    </FormControl>
-);
 
 const Composer = ({
     input,
@@ -297,7 +267,6 @@ type ChatPaneProps = {
 };
 
 const ChatPane = ({ chatId, onImageUploaded }: ChatPaneProps) => {
-    const [provider, setProvider] = useState<Provider>("google");
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState<ChatMessage[]>([]);
 
@@ -310,7 +279,9 @@ const ChatPane = ({ chatId, onImageUploaded }: ChatPaneProps) => {
 
         const loadHistory = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/chat/history/${chatId}`);
+                const response = await fetch(`${API_BASE_URL}/api/chat/history/${chatId}`, {
+                    headers: { "X-Session-Id": getSessionId() },
+                });
                 if (!response.ok) return;
                 const snapshot = (await response.json()) as ChatSnapshot;
                 if (!cancelled) {
@@ -425,10 +396,9 @@ const ChatPane = ({ chatId, onImageUploaded }: ChatPaneProps) => {
 
             const response = await fetch(`${API_BASE_URL}/api/chat/stream`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "X-Session-Id": getSessionId() },
                 body: JSON.stringify({
                     chatId,
-                    provider,
                     messages: payloadMessages,
                     images: uploadedImageUrls,
                     promptImages: imagesForPrompt,
@@ -510,28 +480,6 @@ const ChatPane = ({ chatId, onImageUploaded }: ChatPaneProps) => {
 
     return (
         <Box sx={{ display: "flex", flexDirection: "column", minHeight: 0, flex: 1 }}>
-            <Box
-                sx={{
-                    px: 2.5,
-                    py: 2,
-                    bgcolor: "background.paper",
-                    borderBottom: "1px solid",
-                    borderColor: "divider",
-                }}>
-                <Stack direction="row" alignItems="center" spacing={2}>
-                    <Box>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                            Chat session
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                            Provider: {PROVIDERS.find((item) => item.value === provider)?.label}
-                        </Typography>
-                    </Box>
-                    <Box sx={{ flexGrow: 1 }} />
-                    <ProviderSelector provider={provider} onChange={setProvider} />
-                </Stack>
-            </Box>
-
             <ChatMessages messages={messages} />
             <Divider />
 

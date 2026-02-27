@@ -1,8 +1,11 @@
 import { PropsWithChildren, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Box } from "@mui/material";
+import { AppBar, Avatar, Box, Button, IconButton, Toolbar, Typography } from "@mui/material";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import ChatPane from "./chat/ChatPane";
 import WorkspacePane from "./chat/WorkspacePane";
+import SettingsDialog from "@/components/SettingsDialog";
 
 type ResizableSplitProps = PropsWithChildren<{
     left: React.ReactNode;
@@ -53,7 +56,7 @@ function ResizableSplit({ left, right, initialLeftPct = 30, minLeftPct = 20, max
             ref={containerRef}
             sx={{
                 display: "flex",
-                height: "100dvh",
+                height: "100%",
                 minHeight: 0,
                 width: "100%",
                 overflow: "hidden",
@@ -98,19 +101,22 @@ function ResizableSplit({ left, right, initialLeftPct = 30, minLeftPct = 20, max
 }
 
 function Page() {
-    const [workspaceImageUrl, setWorkspaceImageUrl] = useState<string | undefined>(undefined);
     const { chatId } = useParams();
     const navigate = useNavigate();
     const [localChatId, setLocalChatId] = useState<string | null>(null);
+    const [settingsOpen, setSettingsOpen] = useState(false);
+
+    const createNewChat = () => {
+        const nextId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `chat-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        setLocalChatId(nextId);
+        navigate(`/chat/${nextId}/studio`);
+    };
 
     useEffect(() => {
         if (chatId) return;
-        const nextId =
-            typeof crypto !== "undefined" && "randomUUID" in crypto
-                ? crypto.randomUUID()
-                : `chat-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        const nextId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `chat-${Date.now()}-${Math.random().toString(16).slice(2)}`;
         setLocalChatId(nextId);
-        navigate(`/chat/${nextId}`, { replace: true });
+        navigate(`/chat/${nextId}/studio`, { replace: true });
     }, [chatId, navigate]);
 
     const resolvedChatId = chatId ?? localChatId;
@@ -118,11 +124,47 @@ function Page() {
     if (!resolvedChatId) return null;
 
     return (
-        <Box sx={{ height: "100dvh", width: "100%", overflow: "hidden" }}>
-            <ResizableSplit
-                left={<ChatPane chatId={resolvedChatId} onImageUploaded={setWorkspaceImageUrl} />}
-                right={<WorkspacePane imageUrl={workspaceImageUrl} />}
-            />
+        <Box sx={{ height: "100dvh", width: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <AppBar position="sticky" color="default" elevation={0} sx={{ borderBottom: "1px solid", borderColor: "divider" }}>
+                <Toolbar
+                    sx={{
+                        minHeight: { xs: 56 },
+                        px: 2,
+                        display: "flex",
+                        justifyContent: "space-between",
+                    }}>
+                    <Box sx={{ width: 80 }} />
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700, letterSpacing: 0.2 }}>
+                        UGC Studio
+                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Button
+                            size="small"
+                            variant="contained"
+                            color="primary"
+                            startIcon={<EditOutlinedIcon />}
+                            sx={{ borderRadius: 999, textTransform: "none", fontWeight: 600 }}
+                            onClick={createNewChat}>
+                            New chat
+                        </Button>
+                        <IconButton size="small" aria-label="Open settings" onClick={() => setSettingsOpen(true)}>
+                            <SettingsOutlinedIcon sx={{ fontSize: 20 }} />
+                        </IconButton>
+                        <IconButton size="small" sx={{ p: 0 }}>
+                            <Avatar sx={{ width: 32, height: 32 }} alt="avatar" src="" />
+                        </IconButton>
+                    </Box>
+                </Toolbar>
+            </AppBar>
+
+            <Box sx={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
+                <ResizableSplit
+                    left={<ChatPane key={chatId} chatId={resolvedChatId} />}
+                    right={<WorkspacePane key={chatId} />}
+                />
+            </Box>
+
+            <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
         </Box>
     );
 }

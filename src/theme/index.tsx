@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { createContext, useContext, useMemo } from "react";
 import { CssBaseline } from "@mui/material";
 import { createTheme, StyledEngineProvider, ThemeProvider as MUIThemeProvider } from "@mui/material/styles";
 
@@ -8,9 +8,26 @@ import componentsOverride from "./overrides";
 import palette from "./palette";
 import shadows from "./shadows";
 import typography from "./typography";
+import useLocalStorage from "@/hooks/useLocalStorage";
 
+export type ThemeMode = "light" | "dark";
 
-const getThemeOptionsByMode = (themeMode: "light" | "dark" = "light") => {
+type ThemeModeContextValue = {
+    mode: ThemeMode;
+    setMode: (mode: ThemeMode) => void;
+};
+
+const ThemeModeContext = createContext<ThemeModeContextValue | null>(null);
+
+export const useThemeMode = () => {
+    const context = useContext(ThemeModeContext);
+    if (!context) {
+        throw new Error("useThemeMode must be used within ThemeProvider.");
+    }
+    return context;
+};
+
+const getThemeOptionsByMode = (themeMode: ThemeMode = "light") => {
     const theme = createTheme({
         palette: palette(themeMode),
         typography,
@@ -28,15 +45,18 @@ const getThemeOptionsByMode = (themeMode: "light" | "dark" = "light") => {
 
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const theme = useMemo(() => getThemeOptionsByMode(), []);
+    const [mode, setMode] = useLocalStorage<ThemeMode>("ugc_theme_mode", "light");
+    const theme = useMemo(() => getThemeOptionsByMode(mode), [mode]);
 
     return (
         <StyledEngineProvider injectFirst>
-            <MUIThemeProvider theme={theme}>
-                <CssBaseline />
-                <GlobalStyles />
-                {children}
-            </MUIThemeProvider>
+            <ThemeModeContext.Provider value={{ mode, setMode }}>
+                <MUIThemeProvider theme={theme}>
+                    <CssBaseline />
+                    <GlobalStyles />
+                    {children}
+                </MUIThemeProvider>
+            </ThemeModeContext.Provider>
         </StyledEngineProvider>
     );
 }
