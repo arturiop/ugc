@@ -24,6 +24,25 @@ import { PROVIDERS, type ChatMessage, type Provider } from "@/pages/chat/types";
 
 const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
 
+const addNgrokSkipParam = (url: string) => {
+    if (!url.includes("ngrok")) return url;
+    try {
+        const parsed = new URL(url);
+        if (!parsed.searchParams.has("ngrok-skip-browser-warning")) {
+            parsed.searchParams.set("ngrok-skip-browser-warning", "1");
+        }
+        return parsed.toString();
+    } catch {
+        return url;
+    }
+};
+
+const resolveAssetUrl = (url: string) => {
+    if (url.startsWith("data:")) return url;
+    const absolute = url.startsWith("http") ? url : new URL(url, API_BASE_URL).toString();
+    return addNgrokSkipParam(absolute);
+};
+
 const MessageBubble = ({ message }: { message: ChatMessage }) => {
     const isUser = message.role === "user";
 
@@ -278,9 +297,8 @@ const ChatPane = ({ onImageUploaded }: ChatPaneProps) => {
             throw new Error("Upload response missing url.");
         }
 
-        const url = payload.url.startsWith("http") ? payload.url : `${API_BASE_URL}${payload.url}`;
-        console.log('API_BASE_URL', url)
-        return url
+        const url = resolveAssetUrl(payload.url);
+        return url;
     };
 
     const handleSend = async () => {
@@ -394,9 +412,7 @@ const ChatPane = ({ onImageUploaded }: ChatPaneProps) => {
                             url?: string;
                         };
                         if (parsed.url) {
-                            const absoluteUrl = parsed.url.startsWith("http")
-                                ? parsed.url
-                                : `${API_BASE_URL}${parsed.url}`;
+                            const absoluteUrl = resolveAssetUrl(parsed.url);
                             setMessages((prev) =>
                                 prev.map((message) =>
                                     message.id === assistantMessageId
