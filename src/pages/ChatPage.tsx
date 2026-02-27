@@ -1,4 +1,5 @@
 import { PropsWithChildren, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Box } from "@mui/material";
 import ChatPane from "./chat/ChatPane";
 import WorkspacePane from "./chat/WorkspacePane";
@@ -98,11 +99,28 @@ function ResizableSplit({ left, right, initialLeftPct = 30, minLeftPct = 20, max
 
 function Page() {
     const [workspaceImageUrl, setWorkspaceImageUrl] = useState<string | undefined>(undefined);
+    const { chatId } = useParams();
+    const navigate = useNavigate();
+    const [localChatId, setLocalChatId] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (chatId) return;
+        const nextId =
+            typeof crypto !== "undefined" && "randomUUID" in crypto
+                ? crypto.randomUUID()
+                : `chat-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        setLocalChatId(nextId);
+        navigate(`/chat/${nextId}`, { replace: true });
+    }, [chatId, navigate]);
+
+    const resolvedChatId = chatId ?? localChatId;
+
+    if (!resolvedChatId) return null;
 
     return (
         <Box sx={{ height: "100dvh", width: "100%", overflow: "hidden" }}>
             <ResizableSplit
-                left={<ChatPane onImageUploaded={setWorkspaceImageUrl} />}
+                left={<ChatPane chatId={resolvedChatId} onImageUploaded={setWorkspaceImageUrl} />}
                 right={<WorkspacePane imageUrl={workspaceImageUrl} />}
             />
         </Box>

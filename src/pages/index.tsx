@@ -36,6 +36,10 @@ const router = [
                 path: "chat",
                 element: <ChatPage />,
             },
+            {
+                path: "chat/:chatId",
+                element: <ChatPage />,
+            },
         ],
     },
     {
