@@ -312,7 +312,7 @@ const ProductJourney = () => {
 
                             <div className="relative rounded-2xl border border-border bg-card overflow-hidden shadow-2xl">
                                 {/* Stage indicators - inside the block */}
-                                <div className="flex items-center justify-center gap-2 sm:gap-4 px-6 py-4">
+                                <div className="flex items-center justify-center gap-4 sm:gap-6 px-6 py-4">
                                     {stages.map((stage, i) => {
                                         const Icon = stage.icon;
                                         const isActive = activeStage === i;
@@ -331,11 +331,6 @@ const ProductJourney = () => {
                                                     <Icon className="w-4 h-4" />
                                                     <span className="text-sm font-medium hidden sm:inline">{stage.label}</span>
                                                 </button>
-                                                {i < stages.length - 1 && (
-                                                    <ArrowRight
-                                                        className={`w-4 h-4 transition-colors duration-500 ${isPast ? "text-accent" : "text-muted-foreground/40"}`}
-                                                    />
-                                                )}
                                             </div>
                                         );
                                     })}
@@ -406,13 +401,26 @@ const ProductJourney = () => {
                                                         <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-emerald-500/10" />
                                                         {/* Fake video UI */}
                                                         <div className="absolute inset-0 flex items-center justify-center">
-                                                            <motion.div
-                                                                className="w-16 h-16 rounded-full bg-accent/20 backdrop-blur-sm flex items-center justify-center"
-                                                                animate={{ scale: [1, 1.1, 1] }}
-                                                                transition={{ duration: 2, repeat: Infinity }}>
-                                                                <Play className="w-7 h-7 text-accent fill-accent ml-1" />
-                                                            </motion.div>
-                                                        </div>
+                                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                                <motion.div
+                                                                    initial={{ opacity: 0, scale: 0.95 }}
+                                                                    animate={{ opacity: 1, scale: 1 }}
+                                                                    transition={{ duration: 0.6, ease: "easeOut" }}
+                                                                    className="relative h-full aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl bg-black">
+                                                                    <motion.video
+                                                                        autoPlay
+                                                                        muted
+                                                                        loop
+                                                                        playsInline
+                                                                        initial={{ scale: 1.05 }}
+                                                                        animate={{ scale: 1 }}
+                                                                        transition={{ duration: 1.2, ease: "easeOut" }}
+                                                                        className="w-full h-full object-cover">
+                                                                        <source src="./assets/demo_s.mp4" type="video/mp4" />
+                                                                    </motion.video>
+                                                                </motion.div>
+                                                            </div>
+                                                            </div>
                                                         {/* Bottom text */}
                                                         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
                                                             <p className="text-white text-xs font-medium">Your UGC ad is ready 🎉</p>
