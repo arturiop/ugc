@@ -83,7 +83,7 @@ const HistoryPane = () => {
         <Paper variant="outlined" sx={{ p: 1.5 }}>
             <List disablePadding>
                 {items.map((item) => (
-                    <ListItemButton key={item.id} onClick={() => navigate(`/chat/${item.id}/studio`)} sx={{ borderRadius: 1 }}>
+                    <ListItemButton key={item.id} onClick={() => navigate(`/clip/${item.id}`)} sx={{ borderRadius: 1 }}>
                         <ListItemText
                             primary={
                                 <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>

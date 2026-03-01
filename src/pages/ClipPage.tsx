@@ -1,11 +1,12 @@
 import { PropsWithChildren, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { AppBar, Avatar, Box, Button, IconButton, Toolbar, Typography } from "@mui/material";
+import { AppBar, Avatar, Box, Button, IconButton, Stack, Toolbar, Typography } from "@mui/material";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import ChatPane from "./chat/ChatPane";
 import WorkspacePane from "./chat/WorkspacePane";
 import SettingsDialog from "@/components/SettingsDialog";
+import { getSessionId } from "@/utils/session";
 
 type ResizableSplitProps = PropsWithChildren<{
     left: React.ReactNode;
@@ -100,26 +101,80 @@ function ResizableSplit({ left, right, initialLeftPct = 30, minLeftPct = 20, max
     );
 }
 
-function Page() {
-    const { chatId } = useParams();
+function ClipPage() {
+    const { clipId } = useParams();
     const navigate = useNavigate();
     const [localChatId, setLocalChatId] = useState<string | null>(null);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [isCreatingClip, setIsCreatingClip] = useState(false);
+    const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
+    const [clipName, setClipName] = useState<string | null>(null);
+    const clipLabel = clipName ?? (clipId ? `Clip ${clipId}` : "Clip");
+
+    const createClip = async () => {
+        if (isCreatingClip) return;
+        setIsCreatingClip(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/chat/clip`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-Session-Id": getSessionId() },
+                body: JSON.stringify({}),
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || "Failed to create clip.");
+            }
+            const payload = (await response.json()) as { id?: string };
+            if (!payload.id) throw new Error("Clip creation response missing id.");
+            setLocalChatId(payload.id);
+            navigate(`/clip/${payload.id}`);
+        } finally {
+            setIsCreatingClip(false);
+        }
+    };
 
     const createNewChat = () => {
-        const nextId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `chat-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-        setLocalChatId(nextId);
-        navigate(`/chat/${nextId}/studio`);
+        createClip().catch((error) => {
+            console.error("Failed to create clip:", error);
+        });
     };
 
     useEffect(() => {
-        if (chatId) return;
-        const nextId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `chat-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-        setLocalChatId(nextId);
-        navigate(`/chat/${nextId}/studio`, { replace: true });
-    }, [chatId, navigate]);
+        if (clipId) return;
+        createClip().catch((error) => {
+            console.error("Failed to create clip:", error);
+        });
+    }, [clipId, navigate]);
 
-    const resolvedChatId = chatId ?? localChatId;
+    useEffect(() => {
+        let cancelled = false;
+        if (!clipId) {
+            setClipName(null);
+            return;
+        }
+
+        const loadClip = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/chat/clip/${clipId}`, {
+                    headers: { "X-Session-Id": getSessionId() },
+                });
+                if (!response.ok) return;
+                const data = (await response.json()) as { name?: string };
+                if (!cancelled) {
+                    setClipName(data.name || null);
+                }
+            } catch {
+                if (!cancelled) setClipName(null);
+            }
+        };
+
+        loadClip();
+        return () => {
+            cancelled = true;
+        };
+    }, [API_BASE_URL, clipId]);
+
+    const resolvedChatId = clipId ?? localChatId;
 
     if (!resolvedChatId) return null;
 
@@ -133,10 +188,13 @@ function Page() {
                         display: "flex",
                         justifyContent: "space-between",
                     }}>
-                    <Box sx={{ width: 80 }} />
-                    <Typography variant="subtitle1" sx={{ fontWeight: 700, letterSpacing: 0.2 }}>
-                        UGC Studio
-                    </Typography>
+                    <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
+                        <Avatar src="/favicon-32x32.png" alt="Project icon" sx={{ width: 36, height: 36, border: "1px solid", borderColor: "divider" }} />
+                        <Typography variant="h5" sx={{ textTransform: "uppercase" }} noWrap>
+                            {clipLabel}
+                        </Typography>
+                    </Stack>
+                    <Box sx={{ flex: 1 }} />
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <Button
                             size="small"
@@ -158,10 +216,7 @@ function Page() {
             </AppBar>
 
             <Box sx={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
-                <ResizableSplit
-                    left={<ChatPane key={chatId} chatId={resolvedChatId} />}
-                    right={<WorkspacePane key={chatId} />}
-                />
+                <ResizableSplit left={<ChatPane key={resolvedChatId} chatId={resolvedChatId} />} right={<WorkspacePane key={resolvedChatId} />} />
             </Box>
 
             <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
@@ -169,4 +224,4 @@ function Page() {
     );
 }
 
-export default Page;
+export default ClipPage;

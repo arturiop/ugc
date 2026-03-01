@@ -324,8 +324,10 @@ const ChatPane = ({ chatId, onImageUploaded }: ChatPaneProps) => {
         const formData = new FormData();
         formData.append("file", file);
 
+        formData.append("chatId", chatId);
         const response = await fetch(`${API_BASE_URL}/api/upload`, {
             method: "POST",
+            headers: { "X-Session-Id": getSessionId() },
             body: formData,
         });
 
