@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Sparkles, Play, ArrowRight, Check, Plus, Image, ArrowUp, Zap } from "lucide-react";
 import Button from "@mui/material/Button";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+    const navigate = useNavigate();
+
     return (
         <div className="min-h-screen bg-background">
             {/* Nav */}
@@ -13,7 +16,7 @@ const Index = () => {
                 </span>
                 <div className="flex items-center gap-3">
                     <Button size="small">Log in</Button>
-                    <Button size="small" variant="contained" className="rounded-full px-5 bg-black">
+                    <Button onClick={() => navigate("/chat")} size="small" variant="contained" className="rounded-full px-5 bg-black">
                         Get Started
                     </Button>
                 </div>
@@ -119,6 +122,7 @@ const stages = [
 const ProductJourney = () => {
     const [activeStage, setActiveStage] = useState(0);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!isAutoPlaying) return;
@@ -282,7 +286,7 @@ const ProductJourney = () => {
                                         </motion.button>
                                     </div>
                                 </div>
-                                <Button sx={{color: 'white'}} className="w-full rounded-xl h-12 tracking-wide bg-black">
+                                <Button onClick={() => navigate("/chat")} sx={{color: 'white'}} className="w-full rounded-xl h-12 tracking-wide bg-black">
                                     Get started
                                 </Button>
                             </div>
