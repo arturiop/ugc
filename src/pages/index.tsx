@@ -5,7 +5,8 @@ import { Loadable } from "@/components/Loadable";
 
 const Page404 = Loadable(lazy(() => import("./Page404")));
 const Hero = Loadable(lazy(() => import("./Hero")));
-const ClipPage = Loadable(lazy(() => import("./ClipPage")));
+const ProjectPage = Loadable(lazy(() => import("./ProjectPage")));
+const Dashboard = Loadable(lazy(() => import("./Dashboard")));
 
 const RootContainer = () => (
     <Box
@@ -30,12 +31,16 @@ const router = [
                 element: <Hero />,
             },
             {
-                path: "clip",
-                element: <ClipPage />,
+                path: "dashboard",
+                element: <Dashboard />,
             },
             {
-                path: "clip/:clipId",
-                element: <ClipPage />,
+                path: "clip",
+                element: <ProjectPage />,
+            },
+            {
+                path: "clip/:projectId",
+                element: <ProjectPage />,
             },
         ],
     },

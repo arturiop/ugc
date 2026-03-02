@@ -3,10 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { AppBar, Avatar, Box, Button, IconButton, Stack, Toolbar, Typography } from "@mui/material";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import ChatPane from "./chat/ChatPane";
-import WorkspacePane from "./chat/WorkspacePane";
+import WorkspacePane from "../components/workspace/WorkspacePane";
 import SettingsDialog from "@/components/SettingsDialog";
 import { getSessionId } from "@/utils/session";
+import { ProjectChat } from "@/components/chat/Chat";
 
 type ResizableSplitProps = PropsWithChildren<{
     left: React.ReactNode;
@@ -101,82 +101,92 @@ function ResizableSplit({ left, right, initialLeftPct = 30, minLeftPct = 20, max
     );
 }
 
-function ClipPage() {
-    const { clipId } = useParams();
+function ProjectPage() {
+    const { projectId } = useParams();
     const navigate = useNavigate();
-    const [localChatId, setLocalChatId] = useState<string | null>(null);
+    const [localProjectId, setLocalProjectId] = useState<string | null>(null);
     const [settingsOpen, setSettingsOpen] = useState(false);
-    const [isCreatingClip, setIsCreatingClip] = useState(false);
+    const [isCreatingProject, setIsCreatingProject] = useState(false);
+    const hasCreatedRef = useRef(false);
+    const createKeyRef = useRef<string | null>(null);
     const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
-    const [clipName, setClipName] = useState<string | null>(null);
-    const clipLabel = clipName ?? (clipId ? `Clip ${clipId}` : "Clip");
+    const [projectName, setProjectName] = useState<string | null>(null);
 
-    const createClip = async () => {
-        if (isCreatingClip) return;
-        setIsCreatingClip(true);
+    const createProject = async () => {
+        if (isCreatingProject) return;
+        setIsCreatingProject(true);
+        if (!createKeyRef.current) {
+            createKeyRef.current = crypto.randomUUID();
+        }
         try {
-            const response = await fetch(`${API_BASE_URL}/api/chat/clip`, {
+            const response = await fetch(`${API_BASE_URL}/api/project`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "X-Session-Id": getSessionId() },
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Session-Id": getSessionId(),
+                    "X-Idempotency-Key": createKeyRef.current,
+                },
                 body: JSON.stringify({}),
             });
             if (!response.ok) {
                 const errorText = await response.text();
-                throw new Error(errorText || "Failed to create clip.");
+                throw new Error(errorText || "Failed to create project.");
             }
             const payload = (await response.json()) as { id?: string };
-            if (!payload.id) throw new Error("Clip creation response missing id.");
-            setLocalChatId(payload.id);
-            navigate(`/clip/${payload.id}`);
+            if (!payload.id) throw new Error("Project creation response missing id.");
+            setLocalProjectId(payload.id);
+            navigate(`/project/${payload.id}`);
         } finally {
-            setIsCreatingClip(false);
+            setIsCreatingProject(false);
         }
     };
 
-    const createNewChat = () => {
-        createClip().catch((error) => {
-            console.error("Failed to create clip:", error);
+    const createNewProject = () => {
+        createProject().catch((error) => {
+            console.error("Failed to create project:", error);
         });
     };
 
     useEffect(() => {
-        if (clipId) return;
-        createClip().catch((error) => {
-            console.error("Failed to create clip:", error);
+        if (projectId) return;
+        if (hasCreatedRef.current) return;
+        hasCreatedRef.current = true;
+        createProject().catch((error) => {
+            console.error("Failed to create project:", error);
         });
-    }, [clipId, navigate]);
+    }, [projectId, navigate]);
 
     useEffect(() => {
         let cancelled = false;
-        if (!clipId) {
-            setClipName(null);
+        if (!projectId) {
+            setProjectName(null);
             return;
         }
 
-        const loadClip = async () => {
+        const loadProject = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/chat/clip/${clipId}`, {
+                const response = await fetch(`${API_BASE_URL}/api/project/${projectId}`, {
                     headers: { "X-Session-Id": getSessionId() },
                 });
                 if (!response.ok) return;
                 const data = (await response.json()) as { name?: string };
                 if (!cancelled) {
-                    setClipName(data.name || null);
+                    setProjectName(data.name || null);
                 }
             } catch {
-                if (!cancelled) setClipName(null);
+                if (!cancelled) setProjectName(null);
             }
         };
 
-        loadClip();
+        loadProject();
         return () => {
             cancelled = true;
         };
-    }, [API_BASE_URL, clipId]);
+    }, [API_BASE_URL, projectId]);
 
-    const resolvedChatId = clipId ?? localChatId;
+    const resolvedProjectId = projectId ?? localProjectId;
 
-    if (!resolvedChatId) return null;
+    if (!resolvedProjectId) return null;
 
     return (
         <Box sx={{ height: "100dvh", width: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
@@ -190,9 +200,11 @@ function ClipPage() {
                     }}>
                     <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
                         <Avatar src="/favicon-32x32.png" alt="Project icon" sx={{ width: 36, height: 36, border: "1px solid", borderColor: "divider" }} />
-                        <Typography variant="h5" sx={{ textTransform: "uppercase" }} noWrap>
-                            {clipLabel}
-                        </Typography>
+                        {projectName && (
+                            <Typography variant="h5" sx={{ textTransform: "uppercase" }} noWrap>
+                                {projectName}
+                            </Typography>
+                        )}
                     </Stack>
                     <Box sx={{ flex: 1 }} />
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -202,8 +214,9 @@ function ClipPage() {
                             color="primary"
                             startIcon={<EditOutlinedIcon />}
                             sx={{ borderRadius: 999, textTransform: "none", fontWeight: 600 }}
-                            onClick={createNewChat}>
-                            New chat
+                            onClick={createNewProject}
+                            disabled={isCreatingProject}>
+                            New project
                         </Button>
                         <IconButton size="small" aria-label="Open settings" onClick={() => setSettingsOpen(true)}>
                             <SettingsOutlinedIcon sx={{ fontSize: 20 }} />
@@ -216,7 +229,7 @@ function ClipPage() {
             </AppBar>
 
             <Box sx={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
-                <ResizableSplit left={<ChatPane key={resolvedChatId} chatId={resolvedChatId} />} right={<WorkspacePane key={resolvedChatId} />} />
+                <ResizableSplit left={<ProjectChat key={resolvedProjectId} projectId={resolvedProjectId} />} right={<WorkspacePane key={resolvedProjectId} />} />
             </Box>
 
             <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
@@ -224,4 +237,4 @@ function ClipPage() {
     );
 }
 
-export default ClipPage;
+export default ProjectPage;

@@ -13,15 +13,15 @@ type UploadItem = {
 };
 
 const UploadsPane = () => {
-    const { clipId } = useParams();
+    const { projectId } = useParams();
     const [items, setItems] = useState<UploadItem[]>([]);
 
     useEffect(() => {
         let cancelled = false;
-        if (!clipId) return;
+        if (!projectId) return;
         const load = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/chat/uploads/${clipId}`, {
+                const response = await fetch(`${API_BASE_URL}/api/project/uploads/${projectId}`, {
                     headers: { "X-Session-Id": getSessionId() },
                 });
                 if (!response.ok) return;
@@ -38,7 +38,7 @@ const UploadsPane = () => {
         return () => {
             cancelled = true;
         };
-    }, [clipId]);
+    }, [projectId]);
 
 
     if (items.length === 0) {
@@ -57,7 +57,7 @@ const UploadsPane = () => {
                     No uploads yet
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                    Upload an image in chat to preview it here.
+                    Upload an image in a clip to preview it here.
                 </Typography>
             </Paper>
         );

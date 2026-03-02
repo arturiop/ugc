@@ -6,10 +6,10 @@ import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 import StudioPane from "./StudioPane";
 import UploadsPane from "./UploadsPane";
-import HistoryPane from "./HistoryPane";
+import ClipHistoryPane from "../../pages/Dashboard";
 import GeneratedContentPanel from "@/components/GeneratedContentPanel";
 
-const VIEW_MODES = ["studio", "uploads", "generated_content", "history"] as const;
+const VIEW_MODES = ["studio", "uploads", "generated_content"] as const;
 type ViewMode = (typeof VIEW_MODES)[number];
 
 const resolveViewMode = (value: string | null): ViewMode => {
@@ -52,19 +52,12 @@ const WorkspacePane = () => {
                     sx={navButtonStyles(activeView === "generated_content")}>
                     Generated content
                 </Button>
-                <Button
-                    onClick={() => setViewMode("history")}
-                    startIcon={<HistoryRoundedIcon fontSize="small" />}
-                    sx={navButtonStyles(activeView === "history")}>
-                    Chat history
-                </Button>
             </Stack>
 
             <Box sx={{ p: 2.5, flex: 1, overflowY: "auto", bgcolor: "background.default" }}>
                 {activeView === "studio" && <StudioPane />}
                 {activeView === "uploads" && <UploadsPane />}
                 {activeView === "generated_content" && <GeneratedContentPanel />}
-                {activeView === "history" && <HistoryPane />}
             </Box>
         </Box>
     );

@@ -35,7 +35,7 @@ const Index = () => {
                                 <span className="text-accent font-black text-5xl leading-none">.</span>
                             </h1>
                             <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-sm">
-                                Upload your product · Chat with AI · Choose your storyboard · Get polished UGC video ads —{" "}
+                                Upload your product · Clip with AI · Choose your storyboard · Get polished UGC video ads —{" "}
                                 <span className="text-foreground font-medium">no production hassle</span>.
                             </p>
                         </div>
@@ -73,7 +73,7 @@ const Index = () => {
                                     <span className="text-accent font-black text-7xl leading-none">.</span>
                                 </h1>
                                 <p className="text-lg text-muted-foreground leading-relaxed max-w-sm">
-                                    Upload your product · Chat with AI Choose your storyboard · Get polished UGC video ads —{" "}
+                                    Upload your product · Clip with AI Choose your storyboard · Get polished UGC video ads —{" "}
                                     <span className="text-foreground font-medium">no production hassle</span>.
                                 </p>
                             </div>
@@ -108,7 +108,7 @@ const stages = [
     {
         id: "storyboard",
         label: "AI Storyboard",
-        sublabel: "Chat to refine the script",
+        sublabel: "Clip to refine the script",
         icon: Sparkles,
     },
     {
@@ -149,7 +149,7 @@ const ProductJourney = () => {
                     transition={{ duration: 0.6 }}
                     className="text-center mb-14 lg:mb-20">
                     <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
-                        Just chat, and your{" "}
+                        Just clip, and your{" "}
                         <span className="relative inline-block">
                             <span className="relative z-10 bg-accent/15 text-accent px-4 py-1 rounded-xl">ad</span>
                             <motion.span
@@ -166,7 +166,7 @@ const ProductJourney = () => {
                     </p>
                 </motion.div>
                 <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
-                    {/* Left side — Chat-style Builder Panel */}
+                    {/* Left side — Clip-style Builder Panel */}
                     <div className="lg:w-[380px] flex-shrink-0">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -174,7 +174,7 @@ const ProductJourney = () => {
                             viewport={{ once: true }}
                             transition={{ duration: 0.5 }}
                             className="rounded-3xl border border-border/60 bg-gradient-to-b from-card to-card/80 shadow-2xl overflow-hidden flex flex-col backdrop-blur-xl">
-                            {/* Chat messages area */}
+                            {/* Clip messages area */}
                             <div className="px-5 pt-6 pb-3 space-y-3 flex-1 flex flex-col">
                                 {/* AI thinking indicator */}
                                 <motion.div
@@ -347,7 +347,7 @@ const ProductJourney = () => {
                                                 exit={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }}
                                                 transition={{ duration: 0.5 }}
                                                 className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted/50 to-background p-8">
-                                                {/* Chat bubble + product */}
+                                                {/* Clip bubble + product */}
                                                 <div className="flex flex-col items-center gap-4">
                                                     <motion.div
                                                         initial={{ y: 20, opacity: 0 }}
