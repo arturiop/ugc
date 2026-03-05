@@ -79,36 +79,24 @@ function ProjectChat2({ projectId, m, sessionId }: { projectId: string; m: any[]
 }
 
 export function ProjectChat({ projectId }: { projectId: string }) {
-    const [initialMessages, setInitialMessages] = useState<any[] | null>(null);
+    const [initialMessages, setInitialMessages] = useState(null);
     const [historyError, setHistoryError] = useState<string | null>(null);
     const sessionId = getSessionId();
 
     useEffect(() => {
-        let cancelled = false;
-        const controller = new AbortController();
-
-        setInitialMessages(null);
         setHistoryError(null);
 
         const loadHistory = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/project/chat_history/${projectId}`, {
                     headers: { "X-Session-Id": sessionId },
-                    signal: controller.signal,
                 });
 
-                if (!response.ok) {
-                    if (!cancelled) setInitialMessages([]);
-                    return;
-                }
-
-                const data = (await response.json()) as { messages?: HistoryMessage[] };
-                if (cancelled) return;
-
-                const normalized = Array.isArray(data.messages) ? normalizeHistory(data.messages) : [];
-                setInitialMessages(normalized);
+                const data = await response.json()
+                console.log('data', data);
+                const normalized = Array.isArray(data?.messages) ? normalizeHistory(data.messages) : [];
+                setInitialMessages(normalized || []);
             } catch (error) {
-                if (cancelled) return;
                 if (error instanceof DOMException && error.name === "AbortError") return;
                 console.log('error', error, `${API_BASE_URL}/api/project/chat_history/${projectId}`)
                 setHistoryError("Failed to load chat history.");
@@ -116,11 +104,9 @@ export function ProjectChat({ projectId }: { projectId: string }) {
             }
         };
 
-        loadHistory();
-        return () => {
-            cancelled = true;
-            controller.abort();
-        };
+        if(projectId && sessionId) {
+            loadHistory();
+        }
     }, [projectId, sessionId]);
 
     return (
