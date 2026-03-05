@@ -2,6 +2,7 @@ import { AuiIf, ComposerPrimitive, useAui, useAuiState } from "@assistant-ui/rea
 import { Box, IconButton, Paper, Stack, Tooltip } from "@mui/material";
 import { ArrowUp, ImagePlus, Square, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 
 export function ProjectChatComposer() {
     return (
@@ -102,6 +103,7 @@ function ComposerImageAttachment() {
 
     if (!attachment) return null;
     const src = contentUrl || previewUrl;
+    const { src: resolvedSrc } = useNgrokImageSrc(src || undefined);
     if (!src) return null;
 
     return (
@@ -115,7 +117,7 @@ function ComposerImageAttachment() {
             }}>
             <Box
                 component="img"
-                src={src}
+                src={resolvedSrc || src}
                 alt={attachment.name}
                 sx={{
                     width: 64,

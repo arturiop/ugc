@@ -2,6 +2,7 @@ import { Box, Paper, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getSessionId } from "@/utils/session";
+import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 
 const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
 
@@ -66,24 +67,31 @@ const UploadsPane = () => {
     return (
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" }, gap: 2 }}>
             {items.map((item) => (
-                <Box
-                    key={item.id}
-                    component="img"
-                    src={API_BASE_URL + item.url}
-                    alt={item.filename}
-                    sx={{
-                        width: "100%",
-                        height: 220,
-                        objectFit: "cover",
-                        borderRadius: 3,
-                        border: "1px solid",
-                        borderColor: "divider",
-                        display: "block",
-                    }}
-                />
+                <UploadImageItem key={item.id} filename={item.filename} url={API_BASE_URL + item.url} />
             ))}
         </Box>
     );
 };
+
+function UploadImageItem({ filename, url }: { filename: string; url: string }) {
+    const { src } = useNgrokImageSrc(url);
+
+    return (
+        <Box
+            component="img"
+            src={src || url}
+            alt={filename}
+            sx={{
+                width: "100%",
+                height: 220,
+                objectFit: "cover",
+                borderRadius: 3,
+                border: "1px solid",
+                borderColor: "divider",
+                display: "block",
+            }}
+        />
+    );
+}
 
 export default UploadsPane;

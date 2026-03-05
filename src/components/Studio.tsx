@@ -3,6 +3,7 @@ import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import PlayCircleOutlineRoundedIcon from "@mui/icons-material/PlayCircleOutlineRounded";
 import ViewQuiltOutlinedIcon from "@mui/icons-material/ViewQuiltOutlined";
 import BoltRoundedIcon from "@mui/icons-material/BoltRounded";
+import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 
 const steps = [
   {
@@ -82,6 +83,9 @@ function StepCard({
 }
 
 function ExampleResultCard() {
+  const { src: productImageSrc } = useNgrokImageSrc(productImage);
+  const { src: storyboardImageSrc } = useNgrokImageSrc(storyboardImage);
+
   return (
     <Card
       elevation={0}
@@ -119,7 +123,7 @@ function ExampleResultCard() {
 
               <Box
                 component="img"
-                src={productImage}
+                src={productImageSrc || productImage}
                 alt="Product example"
                 sx={{
                   width: "100%",
@@ -144,7 +148,7 @@ function ExampleResultCard() {
 
               <Box
                 component="img"
-                src={storyboardImage}
+                src={storyboardImageSrc || storyboardImage}
                 alt="Storyboard example"
                 sx={{
                   width: "100%",

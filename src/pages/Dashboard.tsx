@@ -25,6 +25,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 
 import { getSessionId } from "@/utils/session";
+import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 
 const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
 
@@ -241,106 +242,109 @@ export default function ProjectsDashboard() {
           <Divider sx={{ opacity: 0.6 }} />
 
           <Grid container spacing={2}>
-            {filtered.map((item) => {
-              const title = item.title || "New project";
-              const thumb = resolveAssetUrl(getThumb(item));
-
-              return (
-                //@ts-ignore
-                <Grid item key={item.id} xs={12} sm={6} md={4} lg={3}>
-                  <Card
-                    variant="outlined"
-                    sx={{
-                      borderRadius: 3,
-                      overflow: "hidden",
-                      transition: "transform 160ms ease, box-shadow 160ms ease",
-                      "&:hover": {
-                        transform: "translateY(-4px)",
-                        boxShadow: "0px 18px 45px rgba(15, 23, 42, 0.10)",
-                      },
-                    }}
-                  >
-                    <CardActionArea onClick={() => navigate(`/clip/${item.id}`)}>
-                      {/* Media */}
-                      {thumb ? (
-                        <CardMedia
-                          component="img"
-                          height="150"
-                          image={thumb}
-                          alt={title}
-                          sx={{ objectFit: "cover" }}
-                        />
-                      ) : (
-                        <Box
-                          sx={{
-                            height: 150,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            bgcolor: "action.hover",
-                            position: "relative",
-                          }}
-                        >
-                          <Stack spacing={1} alignItems="center">
-                            <ImageOutlinedIcon />
-                            <Typography variant="caption" color="text.secondary">
-                              No image
-                            </Typography>
-                          </Stack>
-
-                          {/* nice initials badge */}
-                          <Box
-                            sx={{
-                              position: "absolute",
-                              top: 12,
-                              left: 12,
-                              width: 36,
-                              height: 36,
-                              borderRadius: 999,
-                              bgcolor: "background.paper",
-                              border: "1px solid",
-                              borderColor: "divider",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontWeight: 900,
-                            }}
-                          >
-                            <Typography variant="caption" sx={{ fontWeight: 900 }}>
-                              {initials(title)}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      )}
-
-                      <CardContent sx={{ pb: 2 }}>
-                        <Stack spacing={1}>
-                          <Typography variant="subtitle1" sx={{ fontWeight: 900 }} noWrap>
-                            {title}
-                          </Typography>
-
-                          <Stack direction="row" alignItems="center" justifyContent="space-between">
-                            <Typography variant="caption" color="text.secondary">
-                              Updated {formatDate(item.updatedAt)}
-                            </Typography>
-
-                            <Stack direction="row" spacing={0.5} alignItems="center">
-                              <Typography variant="caption" color="text.secondary">
-                                Open
-                              </Typography>
-                              <ArrowForwardIcon fontSize="inherit" />
-                            </Stack>
-                          </Stack>
-                        </Stack>
-                      </CardContent>
-                    </CardActionArea>
-                  </Card>
-                </Grid>
-              );
-            })}
+            {filtered.map((item) => (
+              <ProjectCard key={item.id} item={item} onOpen={() => navigate(`/clip/${item.id}`)} />
+            ))}
           </Grid>
         </>
       )}
     </Box>
+  );
+}
+
+function ProjectCard({ item, onOpen }: { item: ClipSummary; onOpen: () => void }) {
+  const title = item.title || "New project";
+  const thumbUrl = resolveAssetUrl(getThumb(item));
+  const { src } = useNgrokImageSrc(thumbUrl || undefined);
+
+  return (
+    //@ts-ignore
+    <Grid item xs={12} sm={6} md={4} lg={3}>
+      <Card
+        variant="outlined"
+        sx={{
+          borderRadius: 3,
+          overflow: "hidden",
+          transition: "transform 160ms ease, box-shadow 160ms ease",
+          "&:hover": {
+            transform: "translateY(-4px)",
+            boxShadow: "0px 18px 45px rgba(15, 23, 42, 0.10)",
+          },
+        }}
+      >
+        <CardActionArea onClick={onOpen}>
+          {thumbUrl ? (
+            <CardMedia
+              component="img"
+              height="150"
+              image={src || thumbUrl}
+              alt={title}
+              sx={{ objectFit: "cover" }}
+            />
+          ) : (
+            <Box
+              sx={{
+                height: 150,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                bgcolor: "action.hover",
+                position: "relative",
+              }}
+            >
+              <Stack spacing={1} alignItems="center">
+                <ImageOutlinedIcon />
+                <Typography variant="caption" color="text.secondary">
+                  No image
+                </Typography>
+              </Stack>
+
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 12,
+                  left: 12,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 999,
+                  bgcolor: "background.paper",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 900,
+                }}
+              >
+                <Typography variant="caption" sx={{ fontWeight: 900 }}>
+                  {initials(title)}
+                </Typography>
+              </Box>
+            </Box>
+          )}
+
+          <CardContent sx={{ pb: 2 }}>
+            <Stack spacing={1}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 900 }} noWrap>
+                {title}
+              </Typography>
+
+              <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Typography variant="caption" color="text.secondary">
+                  Updated {formatDate(item.updatedAt)}
+                </Typography>
+
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  <Typography variant="caption" color="text.secondary">
+                    Open
+                  </Typography>
+                  <ArrowForwardIcon fontSize="inherit" />
+                </Stack>
+              </Stack>
+            </Stack>
+          </CardContent>
+        </CardActionArea>
+      </Card>
+    </Grid>
   );
 }

@@ -1,4 +1,5 @@
 import { Box } from "@mui/material";
+import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 
 const storyboardImageUrl = "https://1e6c-73-15-197-136.ngrok-free.app/gen_imgs/4c6cfec1-4898-41a8-bfee-7ec381ad79f4.png";
 
@@ -19,25 +20,32 @@ const generatedItems = [
     },
 ];
 
+function GeneratedImageItem({ url, title }: { url: string; title: string }) {
+    const { src } = useNgrokImageSrc(url);
+
+    return (
+        <Box
+            component="img"
+            src={src || url}
+            alt={title}
+            sx={{
+                width: "100%",
+                height: 220,
+                objectFit: "contain",
+                borderRadius: 2,
+                border: "1px solid",
+                borderColor: "divider",
+                display: "block",
+            }}
+        />
+    );
+}
+
 const GeneratedContentPanel = () => {
     return (
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" }, gap: 2 }}>
             {generatedItems.map((item) => (
-                <Box
-                    key={item.id}
-                    component="img"
-                    src={item.url}
-                    alt={item.title}
-                    sx={{
-                        width: "100%",
-                        height: 220,
-                        objectFit: "contain",
-                        borderRadius: 2,
-                        border: "1px solid",
-                        borderColor: "divider",
-                        display: "block",
-                    }}
-                />
+                <GeneratedImageItem key={item.id} url={item.url} title={item.title} />
             ))}
         </Box>
     );

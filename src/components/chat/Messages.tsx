@@ -2,6 +2,7 @@ import { AuiIf, ErrorPrimitive, MessagePrimitive, ThreadPrimitive, useAuiState }
 import { Box, CircularProgress, Paper, Stack, Typography } from "@mui/material";
 import { Bot } from "lucide-react";
 import { useMemo } from "react";
+import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 
 const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
 
@@ -18,27 +19,11 @@ function MessageDataImages() {
     return (
         <Stack spacing={1} sx={{ mb: 1 }}>
             {imageMessages.map((imgM, idx) => (
-                <Box
+                <MessageDataImageItem
                     key={`${imgM.data.name}_${idx}`}
-                    sx={{
-                        borderRadius: 2,
-                        overflow: "hidden",
-                        border: "1px solid",
-                        borderColor: "divider",
-                    }}>
-                    <Box
-                        component="img"
-                        src={API_BASE_URL + imgM.data.url}
-                        alt={imgM.data.name}
-                        sx={{
-                            display: "block",
-                            width: "100%",
-                            height: "auto",
-                            maxHeight: 280,
-                            objectFit: "cover",
-                        }}
-                    />
-                </Box>
+                    name={imgM.data.name}
+                    url={API_BASE_URL + imgM.data.url}
+                />
             ))}
         </Stack>
     );
@@ -159,6 +144,8 @@ function MessageImageAttachment() {
         return imagePart && "image" in imagePart ? imagePart.image : null;
     }, [attachment]);
 
+    const { src } = useNgrokImageSrc(imageUrl || undefined);
+
     if (!imageUrl) return null;
 
     return (
@@ -172,8 +159,35 @@ function MessageImageAttachment() {
             }}>
             <Box
                 component="img"
-                src={imageUrl}
+                src={src || imageUrl}
                 alt={attachment?.name || "uploaded image"}
+                sx={{
+                    display: "block",
+                    width: "100%",
+                    height: "auto",
+                    maxHeight: 280,
+                    objectFit: "cover",
+                }}
+            />
+        </Box>
+    );
+}
+
+function MessageDataImageItem({ name, url }: { name: string; url: string }) {
+    const { src } = useNgrokImageSrc(url);
+
+    return (
+        <Box
+            sx={{
+                borderRadius: 2,
+                overflow: "hidden",
+                border: "1px solid",
+                borderColor: "divider",
+            }}>
+            <Box
+                component="img"
+                src={src || url}
+                alt={name}
                 sx={{
                     display: "block",
                     width: "100%",
