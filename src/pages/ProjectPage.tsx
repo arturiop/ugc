@@ -125,6 +125,8 @@ function ProjectPage() {
                     "Content-Type": "application/json",
                     "X-Session-Id": getSessionId(),
                     "X-Idempotency-Key": createKeyRef.current,
+                    "ngrok-skip-browser-warning": "1",
+
                 },
                 body: JSON.stringify({}),
             });
@@ -166,7 +168,10 @@ function ProjectPage() {
         const loadProject = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/project/${projectId}`, {
-                    headers: { "X-Session-Id": getSessionId() },
+                    headers: { "X-Session-Id": getSessionId(), 
+                        "ngrok-skip-browser-warning": "1",
+
+                     },
                 });
                 if (!response.ok) return;
                 const data = (await response.json()) as { name?: string };

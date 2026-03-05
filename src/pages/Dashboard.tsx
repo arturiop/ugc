@@ -85,7 +85,10 @@ export default function ProjectsDashboard() {
     const load = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/project/history`, {
-            headers: { "X-Session-Id": getSessionId() },
+            headers: { "X-Session-Id": getSessionId(), 
+                "ngrok-skip-browser-warning": "1",
+
+             },
         });
         if (!response.ok) throw new Error("Unable to load projects.");
         const data = (await response.json()) as { items?: ClipSummary[] };

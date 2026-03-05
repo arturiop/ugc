@@ -23,7 +23,10 @@ const UploadsPane = () => {
         const load = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/project/uploads/${projectId}`, {
-                    headers: { "X-Session-Id": getSessionId() },
+                    headers: { "X-Session-Id": getSessionId(), 
+                        "ngrok-skip-browser-warning": "1",
+
+                     },
                 });
                 if (!response.ok) return;
                 const data = (await response.json()) as { items?: UploadItem[] };

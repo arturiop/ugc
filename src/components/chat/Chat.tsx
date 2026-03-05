@@ -89,7 +89,10 @@ export function ProjectChat({ projectId }: { projectId: string }) {
         const loadHistory = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/project/chat_history/${projectId}`, {
-                    headers: { "X-Session-Id": sessionId },
+                    headers: {
+                        "X-Session-Id": sessionId,
+                        "ngrok-skip-browser-warning": "1",
+                    },
                 });
 
                 const data = await response.json()
