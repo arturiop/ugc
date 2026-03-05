@@ -110,6 +110,7 @@ export function ProjectChat({ projectId }: { projectId: string }) {
             } catch (error) {
                 if (cancelled) return;
                 if (error instanceof DOMException && error.name === "AbortError") return;
+                console.log('error', error)
                 setHistoryError("Failed to load chat history.");
                 setInitialMessages([]);
             }
