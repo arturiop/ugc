@@ -1,5 +1,4 @@
 import type { AttachmentAdapter, PendingAttachment, CompleteAttachment } from "@assistant-ui/react";
-import { generateId } from "ai";
 
 type UploadAttachmentAdapterOptions = {
     apiBaseUrl: string;
@@ -26,7 +25,7 @@ export const createUploadAttachmentAdapter = ({
     accept: "image/*",
     async add({ file }): Promise<PendingAttachment> {
         return {
-            id: generateId(),
+            id: crypto.randomUUID(),
             type: "image",
             name: file.name,
             contentType: file.type,
