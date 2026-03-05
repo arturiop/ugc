@@ -3,6 +3,48 @@ import { Box, CircularProgress, Paper, Stack, Typography } from "@mui/material";
 import { Bot } from "lucide-react";
 import { useMemo } from "react";
 
+const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
+
+function MessageDataImages() {
+    const message = useAuiState((s) => s.message)
+    const imageMessages: any[] = useMemo(() => {
+
+        return (message.parts || []).filter((p) => p?.type === "data" && p.name === "image")
+    }, [message]);
+
+
+    if (!imageMessages.length) return null;
+
+    return (
+        <Stack spacing={1} sx={{ mb: 1 }}>
+            {imageMessages.map((imgM, idx) => (
+                <Box
+                    key={`${imgM.data.name}_${idx}`}
+                    sx={{
+                        borderRadius: 2,
+                        overflow: "hidden",
+                        border: "1px solid",
+                        borderColor: "divider",
+                    }}>
+                    <Box
+                        component="img"
+                        src={API_BASE_URL + imgM.data.url}
+                        alt={imgM.data.name}
+                        sx={{
+                            display: "block",
+                            width: "100%",
+                            height: "auto",
+                            maxHeight: 280,
+                            objectFit: "cover",
+                        }}
+                    />
+                </Box>
+            ))}
+        </Stack>
+    );
+}
+
+
 export function ProjectChatMessages() {
     return (
         <ThreadPrimitive.Messages
@@ -74,6 +116,7 @@ function AssistantMessage() {
                             py: 1.5,
                             overflowWrap: "anywhere",
                         }}>
+                        <MessageDataImages />
                         <MessagePrimitive.Parts />
 
                         <MessagePrimitive.Error>

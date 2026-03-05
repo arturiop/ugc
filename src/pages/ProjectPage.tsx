@@ -135,7 +135,7 @@ function ProjectPage() {
             const payload = (await response.json()) as { id?: string };
             if (!payload.id) throw new Error("Project creation response missing id.");
             setLocalProjectId(payload.id);
-            navigate(`/project/${payload.id}`);
+            navigate(`/clip/${payload.id}`);
         } finally {
             setIsCreatingProject(false);
         }

@@ -257,7 +257,7 @@ export default function ProjectsDashboard() {
                       },
                     }}
                   >
-                    <CardActionArea onClick={() => navigate(`/project/${item.id}`)}>
+                    <CardActionArea onClick={() => navigate(`/clip/${item.id}`)}>
                       {/* Media */}
                       {thumb ? (
                         <CardMedia
