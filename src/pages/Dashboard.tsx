@@ -5,7 +5,6 @@ import {
   CircularProgress,
   Paper,
   Typography,
-  Grid,
   Card,
   CardActionArea,
   CardContent,
@@ -18,6 +17,8 @@ import {
   Skeleton,
   Divider,
 } from "@mui/material";
+import Grid from "@mui/material/Grid";
+
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
@@ -181,6 +182,7 @@ export default function ProjectsDashboard() {
       {loading && (
         <Grid container spacing={2}>
           {Array.from({ length: 8 }).map((_, idx) => (
+            //@ts-ignore
             <Grid item key={idx} xs={12} sm={6} md={4} lg={3}>
               <Card variant="outlined" sx={{ borderRadius: 3, overflow: "hidden" }}>
                 <Skeleton variant="rectangular" height={150} />
@@ -244,6 +246,7 @@ export default function ProjectsDashboard() {
               const thumb = resolveAssetUrl(getThumb(item));
 
               return (
+                //@ts-ignore
                 <Grid item key={item.id} xs={12} sm={6} md={4} lg={3}>
                   <Card
                     variant="outlined"

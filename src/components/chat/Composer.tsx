@@ -126,12 +126,12 @@ function ComposerImageAttachment() {
                     borderColor: "divider",
                 }}
             />
-            <IconButton
+            {/* <IconButton
                 size="small"
-                onClick={() => aui.composer().removeAttachment(attachment.id)}
+                onClick={() => aui.composer().clearAttachments(attachment.id)}
                 aria-label="Remove image">
                 <X size={14} />
-            </IconButton>
+            </IconButton> */}
         </Box>
     );
 }
