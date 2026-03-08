@@ -32,7 +32,7 @@ export function ProjectChatWelcome() {
             overflowWrap: "anywhere",
           }}
         >
-          Ask UGC Creator to create a storyboard for…
+          Ask Watchable to create a ads for…
         </Typography>
 
         <Stack

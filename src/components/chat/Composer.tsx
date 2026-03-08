@@ -6,7 +6,7 @@ import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 
 export function ProjectChatComposer() {
     return (
-        <ComposerPrimitive.Root>
+        <ComposerPrimitive.Root className="w-full">
             <Paper
                 variant="outlined"
                 sx={{
@@ -14,6 +14,7 @@ export function ProjectChatComposer() {
                     p: 1,
                     mt: 1,
                     overflow: "hidden",
+                    width: "100%",
                 }}>
                 <Stack spacing={1}>
                     <ComposerPrimitive.Attachments

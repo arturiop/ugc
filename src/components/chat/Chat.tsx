@@ -64,6 +64,9 @@ function ProjectChat2({ projectId, m, sessionId }: { projectId: string; m: any[]
                 sx={
                     {
                         height: "100%",
+                        minHeight: 0,
+                        flex: 1,
+                        width: "100%",
                         display: "flex",
                         flexDirection: "column",
                         bgcolor: "background.default",
@@ -113,7 +116,7 @@ export function ProjectChat({ projectId }: { projectId: string }) {
     }, [projectId, sessionId]);
 
     return (
-        <>
+        <Box sx={{ height: "100%", minHeight: 0, width: "100%", display: "flex", flexDirection: "column" }}>
             {initialMessages === null ? (
                 <Box sx={{ flex: 1, display: "grid", placeItems: "center" }}>
                     <CircularProgress size={18} />
@@ -130,6 +133,6 @@ export function ProjectChat({ projectId }: { projectId: string }) {
                     )}
                 </>
             )}
-        </>
+        </Box>
     );
 }

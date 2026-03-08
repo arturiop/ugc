@@ -28,8 +28,10 @@ const steps = [
   },
 ];
 
-const productImage = "https://1e6c-73-15-197-136.ngrok-free.app/uploads/1772223487446-Screenshot_2026-02-23_at_12.55.29___PM.png";
-const storyboardImage = "https://1e6c-73-15-197-136.ngrok-free.app/gen_imgs/cd4a0c39-bcf6-4d6f-9f26-2fa70c7b88e3.png";
+const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
+
+const productImage = API_BASE_URL + "/uploads/1772223487446-Screenshot_2026-02-23_at_12.55.29___PM.png";
+const storyboardImage = API_BASE_URL + "/gen_imgs/cd4a0c39-bcf6-4d6f-9f26-2fa70c7b88e3.png";
 
 
 function StepCard({

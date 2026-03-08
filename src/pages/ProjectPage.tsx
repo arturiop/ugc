@@ -7,6 +7,7 @@ import WorkspacePane from "../components/workspace/WorkspacePane";
 import SettingsDialog from "@/components/SettingsDialog";
 import { getSessionId } from "@/utils/session";
 import { ProjectChat } from "@/components/chat/Chat";
+import { GeneratedContentProvider } from "@/contexts/GeneratedContentContext";
 
 type ResizableSplitProps = PropsWithChildren<{
     left: React.ReactNode;
@@ -234,7 +235,9 @@ function ProjectPage() {
             </AppBar>
 
             <Box sx={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
-                <ResizableSplit left={<ProjectChat key={resolvedProjectId} projectId={resolvedProjectId} />} right={<WorkspacePane key={resolvedProjectId} />} />
+                <GeneratedContentProvider>
+                    <ResizableSplit left={<ProjectChat key={resolvedProjectId} projectId={resolvedProjectId} />} right={<WorkspacePane key={resolvedProjectId} />} />
+                </GeneratedContentProvider>
             </Box>
 
             <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />

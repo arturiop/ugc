@@ -1,18 +1,25 @@
 import { AuiIf, ErrorPrimitive, MessagePrimitive, ThreadPrimitive, useAuiState } from "@assistant-ui/react";
 import { Box, CircularProgress, Paper, Stack, Typography } from "@mui/material";
 import { Bot } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
-
-const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
+import { useGeneratedContent } from "@/contexts/GeneratedContentContext";
 
 function MessageDataImages() {
-    const message = useAuiState((s) => s.message)
+    const message = useAuiState((s) => s.message);
+    const { addImages } = useGeneratedContent();
     const imageMessages: any[] = useMemo(() => {
 
         return (message.parts || []).filter((p) => p?.type === "data" && p.name === "image")
     }, [message]);
 
+    useEffect(() => {
+        if (!imageMessages.length) return;
+        const urls = imageMessages
+            .map((imgM) => imgM?.data?.url)
+            .filter((url): url is string => typeof url === "string" && url.length > 0);
+        if (urls.length) addImages(urls);
+    }, [addImages, imageMessages]);
 
     if (!imageMessages.length) return null;
 
@@ -22,7 +29,7 @@ function MessageDataImages() {
                 <MessageDataImageItem
                     key={`${imgM.data.name}_${idx}`}
                     name={imgM.data.name}
-                    url={API_BASE_URL + imgM.data.url}
+                    url={    imgM.data.url}
                 />
             ))}
         </Stack>
@@ -44,8 +51,8 @@ export function ProjectChatMessages() {
 function UserMessage() {
     return (
         <MessagePrimitive.Root className="w-full" style={{ padding: "10px 0" }} data-role="user">
-            <Stack direction="row" justifyContent="flex-end" sx={{ px: 1 }}>
-                <Box sx={{ maxWidth: { xs: "100%", sm: "80%" }, minWidth: 0 }}>
+            <Stack direction="row" justifyContent="flex-end" sx={{ px: 1, width: "100%" }}>
+                <Box sx={{ width: "100%", minWidth: 0, display: "flex", justifyContent: "flex-end" }}>
                     <Paper
                         elevation={0}
                         sx={{
@@ -56,6 +63,7 @@ function UserMessage() {
                             px: 2,
                             py: 1.25,
                             overflowWrap: "anywhere",
+                            maxWidth: { xs: "100%", sm: "80%" },
                         }}>
                         <MessagePrimitive.Attachments
                             components={{
@@ -73,7 +81,7 @@ function UserMessage() {
 function AssistantMessage() {
     return (
         <MessagePrimitive.Root className="w-full" style={{ padding: "10px 0" }} data-role="assistant">
-            <Stack direction="row" spacing={1.5} sx={{ px: 1 }}>
+            <Stack direction="row" spacing={1.5} sx={{ px: 1, width: "100%" }}>
                 <Box
                     sx={{
                         width: 32,
@@ -145,7 +153,7 @@ function MessageImageAttachment() {
     }, [attachment]);
 
     const { src } = useNgrokImageSrc(imageUrl || undefined);
-
+    console.log('src', src)
     if (!imageUrl) return null;
 
     return (

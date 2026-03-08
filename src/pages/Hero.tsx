@@ -12,7 +12,7 @@ const Index = () => {
             {/* Nav */}
             <nav className="flex items-center justify-between px-6 md:px-16 py-5">
                 <span className="text-xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                    UGC Creator
+                    Watchable
                 </span>
                 <div className="flex items-center gap-3">
                     <Button size="small">Log in</Button>
