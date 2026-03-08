@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import UGCMainWorkspaceEmptyState from "@/components/Studio";
 import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 import { useGeneratedContent } from "@/contexts/GeneratedContentContext";
+const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
 
 const StudioPane = () => {
     const { images } = useGeneratedContent();
@@ -51,7 +52,7 @@ const GeneratedOutput = ({
     switchTimerRef: React.MutableRefObject<number | null>;
 }) => {
     const latest = images[images.length - 1];
-    const { src } = useNgrokImageSrc(latest.url);
+    const { src } = useNgrokImageSrc(API_BASE_URL + latest.url);
 
     const requestSwap = () => {
         if (switchTimerRef.current) {
@@ -98,7 +99,7 @@ const GeneratedOutput = ({
                 >
                     <Box
                         component="video"
-                        src="/assets/1234.mp4"
+                        src="/assets/12345.mp4"
                         controls
                         autoPlay
                         loop
