@@ -4,6 +4,7 @@ import { Bot } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 import { useGeneratedContent } from "@/contexts/GeneratedContentContext";
+const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
 
 function MessageDataImages() {
     const message = useAuiState((s) => s.message);
@@ -29,7 +30,7 @@ function MessageDataImages() {
                 <MessageDataImageItem
                     key={`${imgM.data.name}_${idx}`}
                     name={imgM.data.name}
-                    url={    imgM.data.url}
+                    url={API_BASE_URL + imgM.data.url}
                 />
             ))}
         </Stack>
