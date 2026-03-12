@@ -1,10 +1,10 @@
 import { AuiIf, ErrorPrimitive, MessagePrimitive, ThreadPrimitive, useAuiState } from "@assistant-ui/react";
-import { Box, CircularProgress, Paper, Stack, Typography } from "@mui/material";
-import { Bot } from "lucide-react";
+import { Box, CircularProgress, Link, Paper, Stack, Typography } from "@mui/material";
+import { Bot, FileText } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 import { useGeneratedContent } from "@/contexts/GeneratedContentContext";
-const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
+import { resolveAssetUrl } from "@/api/urls";
 
 function MessageDataImages() {
     const message = useAuiState((s) => s.message);
@@ -30,7 +30,7 @@ function MessageDataImages() {
                 <MessageDataImageItem
                     key={`${imgM.data.name}_${idx}`}
                     name={imgM.data.name}
-                    url={API_BASE_URL + imgM.data.url}
+                    url={resolveAssetUrl(imgM.data.url) || ""}
                 />
             ))}
         </Stack>
@@ -69,6 +69,7 @@ function UserMessage() {
                         <MessagePrimitive.Attachments
                             components={{
                                 Image: MessageImageAttachment,
+                                File: MessageFileAttachment,
                             }}
                         />
                         <MessagePrimitive.Parts />
@@ -178,6 +179,57 @@ function MessageImageAttachment() {
                     objectFit: "cover",
                 }}
             />
+        </Box>
+    );
+}
+
+function MessageFileAttachment() {
+    const attachment = useAuiState((s) => s.attachment);
+    if (!attachment) return null;
+
+    const filePart = attachment.content?.find((part) => part.type === "file");
+    const fileUrl = filePart && "data" in filePart ? filePart.data : null;
+    const resolvedUrl = resolveAssetUrl(fileUrl || "");
+
+    return (
+        <Box
+            sx={{
+                mb: 1,
+                borderRadius: 2,
+                border: "1px solid",
+                borderColor: "divider",
+                p: 1.5,
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+            }}>
+            <Box
+                sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 2,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    display: "grid",
+                    placeItems: "center",
+                    bgcolor: "background.paper",
+                }}>
+                <FileText size={16} />
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
+                    {attachment.name}
+                </Typography>
+                {resolvedUrl ? (
+                    <Link href={resolvedUrl} target="_blank" rel="noreferrer" variant="caption">
+                        Open file
+                    </Link>
+                ) : (
+                    <Typography variant="caption" color="text.secondary">
+                        File uploaded
+                    </Typography>
+                )}
+            </Box>
         </Box>
     );
 }

@@ -1,6 +1,6 @@
-import { AuiIf, ComposerPrimitive, useAui, useAuiState } from "@assistant-ui/react";
-import { Box, IconButton, Paper, Stack, Tooltip } from "@mui/material";
-import { ArrowUp, ImagePlus, Square, X } from "lucide-react";
+import { AuiIf, ComposerPrimitive, useAuiState } from "@assistant-ui/react";
+import { Box, IconButton, Paper, Stack, Tooltip, Typography } from "@mui/material";
+import { ArrowUp, FileText, ImagePlus, Square } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 
@@ -20,6 +20,7 @@ export function ProjectChatComposer() {
                     <ComposerPrimitive.Attachments
                         components={{
                             Image: ComposerImageAttachment,
+                            File: ComposerFileAttachment,
                         }}
                     />
                     <ComposerPrimitive.Input
@@ -83,7 +84,6 @@ export function ProjectChatComposer() {
 
 function ComposerImageAttachment() {
     const attachment = useAuiState((s) => s.attachment);
-    const aui = useAui();
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
     const contentUrl = useMemo(() => {
@@ -135,6 +135,45 @@ function ComposerImageAttachment() {
                 aria-label="Remove image">
                 <X size={14} />
             </IconButton> */}
+        </Box>
+    );
+}
+
+function ComposerFileAttachment() {
+    const attachment = useAuiState((s) => s.attachment);
+
+    if (!attachment) return null;
+
+    return (
+        <Box
+            sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                px: 1,
+                pt: 1,
+            }}>
+            <Box
+                sx={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 2,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    display: "grid",
+                    placeItems: "center",
+                    bgcolor: "background.paper",
+                }}>
+                <FileText size={16} />
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
+                    {attachment.name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                    File ready to upload
+                </Typography>
+            </Box>
         </Box>
     );
 }

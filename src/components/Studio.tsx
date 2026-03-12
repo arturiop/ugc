@@ -4,6 +4,7 @@ import PlayCircleOutlineRoundedIcon from "@mui/icons-material/PlayCircleOutlineR
 import ViewQuiltOutlinedIcon from "@mui/icons-material/ViewQuiltOutlined";
 import BoltRoundedIcon from "@mui/icons-material/BoltRounded";
 import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
+import { resolveAssetUrl } from "@/api/urls";
 
 const steps = [
   {
@@ -28,10 +29,8 @@ const steps = [
   },
 ];
 
-const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
-
-const productImage = API_BASE_URL + "/uploads/1772223487446-Screenshot_2026-02-23_at_12.55.29___PM.png";
-const storyboardImage = API_BASE_URL + "/gen_imgs/cd4a0c39-bcf6-4d6f-9f26-2fa70c7b88e3.png";
+const productImage = resolveAssetUrl("/uploads/1772223487446-Screenshot_2026-02-23_at_12.55.29___PM.png");
+const storyboardImage = resolveAssetUrl("/gen_imgs/cd4a0c39-bcf6-4d6f-9f26-2fa70c7b88e3.png");
 
 
 function StepCard({
@@ -85,8 +84,8 @@ function StepCard({
 }
 
 function ExampleResultCard() {
-  const { src: productImageSrc } = useNgrokImageSrc(productImage);
-  const { src: storyboardImageSrc } = useNgrokImageSrc(storyboardImage);
+  const { src: productImageSrc } = useNgrokImageSrc(productImage || undefined);
+  const { src: storyboardImageSrc } = useNgrokImageSrc(storyboardImage || undefined);
 
   return (
     <Card

@@ -1,14 +1,24 @@
 import type { AttachmentAdapter, PendingAttachment, CompleteAttachment } from "@assistant-ui/react";
+import { getDefaultHeaders } from "@/api/httpClient";
 
 type UploadAttachmentAdapterOptions = {
     apiBaseUrl: string;
     projectId: string;
     sessionId: string;
+    onUploadComplete?: (asset: UploadAsset) => void;
+};
+
+type UploadAsset = {
+    id: number;
+    url: string;
+    filename: string;
+    label: "product" | "logo" | "brandbook" | "reference";
+    createdAt: string;
+    updatedAt: string;
 };
 
 type UploadResponse = {
-    url?: string;
-    filename?: string;
+    asset?: UploadAsset;
 };
 
 const resolveUploadUrl = (apiBaseUrl: string, url: string) => {
@@ -21,12 +31,14 @@ export const createUploadAttachmentAdapter = ({
     apiBaseUrl,
     projectId,
     sessionId,
+    onUploadComplete,
 }: UploadAttachmentAdapterOptions): AttachmentAdapter => ({
-    accept: "image/*",
+    accept: "*/*",
     async add({ file }): Promise<PendingAttachment> {
+        const isImage = file.type.startsWith("image/");
         return {
             id: crypto.randomUUID(),
-            type: "image",
+            type: isImage ? "image" : "file",
             name: file.name,
             contentType: file.type,
             file,
@@ -36,15 +48,10 @@ export const createUploadAttachmentAdapter = ({
     async send(attachment: PendingAttachment): Promise<CompleteAttachment> {
         const form = new FormData();
         form.append("file", attachment.file);
-        form.append("projectId", projectId);
-        form.append("sessionId", sessionId);
 
-        const response = await fetch(`${apiBaseUrl}/api/v1/upload`, {
+        const response = await fetch(`${apiBaseUrl}/api/v1/projects/${projectId}/assets/upload`, {
             method: "POST",
-            headers: { "X-Session-Id": sessionId,
-                "ngrok-skip-browser-warning": "1",
-
-             },
+            headers: getDefaultHeaders(sessionId),
             body: form,
         });
 
@@ -54,20 +61,30 @@ export const createUploadAttachmentAdapter = ({
         }
 
         const payload = (await response.json()) as UploadResponse;
-        const url = payload.url ? resolveUploadUrl(apiBaseUrl, payload.url) : "";
-        if (!url) {
-            throw new Error("Upload response missing url.");
+        const asset = payload.asset;
+        const url = asset?.url ? resolveUploadUrl(apiBaseUrl, asset.url) : "";
+        if (!asset || !url) {
+            throw new Error("Upload response missing asset data.");
         }
+
+        onUploadComplete?.({ ...asset, url });
 
         return {
             ...attachment,
             status: { type: "complete" },
             content: [
-                {
-                    type: "image",
-                    image: url,
-                    filename: attachment.name,
-                },
+                attachment.type === "image"
+                    ? {
+                        type: "image",
+                        image: url,
+                        filename: attachment.name,
+                    }
+                    : {
+                        type: "file",
+                        data: url,
+                        mimeType: attachment.contentType || "application/octet-stream",
+                        filename: attachment.name,
+                    },
             ],
         };
     },

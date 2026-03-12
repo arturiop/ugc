@@ -1,24 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { AssistantChatTransport, useChatRuntime } from "@assistant-ui/react-ai-sdk";
 
 import { Box, CircularProgress, Typography } from "@mui/material";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { ProjectChatThread } from "./Thread";
 import { getSessionId } from "@/utils/session";
 import { createUploadAttachmentAdapter } from "./uploadAttachmentAdapter";
 import { useProject } from "@/contexts/project/ProjectContext";
-
-const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
-const CHAT_ENDPOINT = "/api/v1/projects/chat"; // we'll implement server later
-
-type HistoryMessage = {
-    id?: string;
-    role: "user" | "assistant";
-    content?: string;
-    parts?: Array<{ type: "text"; text: string } | { type: "file"; url: string; mediaType: string; filename?: string }>;
-    createdAt?: string;
-};
+import { API_BASE_URL } from "@/api/httpClient";
+import { getProjectChatTransportConfig, HistoryMessage } from "@/api/chat";
+import { useProjectChatHistory } from "@/api/chat/hooks";
+import { queryKeys } from "@/api/queryKeys";
 
 function normalizeHistory(messages: HistoryMessage[]) {
     return messages
@@ -33,14 +27,15 @@ function normalizeHistory(messages: HistoryMessage[]) {
             };
         });
 }
+  
 
+  
 function ProjectChat2({ projectId, m, sessionId }: { projectId: string; m: any[]; sessionId: any }) {
+    const queryClient = useQueryClient();
+    const runtimeRef = useRef<ReturnType<typeof useChatRuntime> | null>(null);
     const transport = useMemo(() => {
-        return new AssistantChatTransport({
-            api: `${API_BASE_URL}${CHAT_ENDPOINT}`,
-            headers: { "X-Session-Id": sessionId },
-            body: { projectId },
-        });
+        const config = getProjectChatTransportConfig(projectId, sessionId);
+        return new AssistantChatTransport(config);
     }, [projectId, sessionId]);
 
     const attachmentAdapter = useMemo(
@@ -49,8 +44,20 @@ function ProjectChat2({ projectId, m, sessionId }: { projectId: string; m: any[]
                 apiBaseUrl: API_BASE_URL,
                 projectId,
                 sessionId,
+                onUploadComplete: (asset) => {
+                    runtimeRef.current?.thread.append({
+                        role: "assistant",
+                        content: [
+                            {
+                                type: "text",
+                                text: `Saved "${asset.filename}" to Assets (${formatAssetLabel(asset.label)}).`,
+                            },
+                        ],
+                    });
+                    queryClient.invalidateQueries({ queryKey: queryKeys.projects.assets(projectId) });
+                },
             }),
-        [projectId, sessionId]
+        [projectId, queryClient, sessionId]
     );
 
     const runtime = useChatRuntime({
@@ -58,6 +65,10 @@ function ProjectChat2({ projectId, m, sessionId }: { projectId: string; m: any[]
         messages: m ?? undefined,
         adapters: { attachments: attachmentAdapter },
     });
+
+    useEffect(() => {
+        runtimeRef.current = runtime;
+    }, [runtime]);
 
     return (
         <AssistantRuntimeProvider runtime={runtime}>
@@ -82,54 +93,39 @@ function ProjectChat2({ projectId, m, sessionId }: { projectId: string; m: any[]
     );
 }
 
+const formatAssetLabel = (label: string) => {
+    switch (label) {
+        case "product":
+            return "Product";
+        case "logo":
+            return "Logo";
+        case "brandbook":
+            return "Brandbook";
+        case "reference":
+            return "Reference";
+        default:
+            return "Asset";
+    }
+};
+
 export function ProjectChat() {
-    const [initialMessages, setInitialMessages] = useState(null);
-    const [historyError, setHistoryError] = useState<string | null>(null);
     const sessionId = getSessionId();
     const { projectId } = useProject();
-
-    useEffect(() => {
-        setHistoryError(null);
-
-        const loadHistory = async () => {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/v1/projects/chat_history/${projectId}`, {
-                    headers: {
-                        "X-Session-Id": sessionId,
-                        "ngrok-skip-browser-warning": "1",
-                    },
-                });
-
-                const data = await response.json()
-                console.log('data', data);
-                const normalized = Array.isArray(data?.messages) ? normalizeHistory(data.messages) : [];
-                setInitialMessages(normalized || []);
-            } catch (error) {
-                if (error instanceof DOMException && error.name === "AbortError") return;
-                console.log('error', error, `${API_BASE_URL}/api/v1/projects/chat_history/${projectId}`)
-                setHistoryError("Failed to load chat history.");
-                setInitialMessages([]);
-            }
-        };
-
-        if(projectId && sessionId) {
-            loadHistory();
-        }
-    }, [projectId, sessionId]);
-
+    const { data, isLoading, error, isFetching } = useProjectChatHistory(projectId);
+    console.log('data, isLoading, error, isFetching', data, isLoading, error, isFetching)
     return (
         <Box sx={{ height: "100%", minHeight: 0, width: "100%", display: "flex", flexDirection: "column" }}>
-            {initialMessages === null ? (
+            {(isLoading || !data) ? (
                 <Box sx={{ flex: 1, display: "grid", placeItems: "center" }}>
                     <CircularProgress size={18} />
                 </Box>
             ) : (
                 <>
-                    <ProjectChat2 sessionId={sessionId} projectId={projectId} m={initialMessages} />
-                    {historyError && (
+                    <ProjectChat2 sessionId={sessionId} projectId={projectId} m={data?.messages || []} />
+                    {error && (
                         <Box sx={{ px: 2, pt: 1 }}>
                             <Typography variant="caption" color="error">
-                                {historyError}
+                                Failed to load chat history.
                             </Typography>
                         </Box>
                     )}

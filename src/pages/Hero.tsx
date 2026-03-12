@@ -3,9 +3,26 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Sparkles, Play, ArrowRight, Check, Plus, Image, ArrowUp, Zap } from "lucide-react";
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
+import { useCreateProject } from "@/api/projects/hooks";
 
 const Index = () => {
     const navigate = useNavigate();
+    const createProject = useCreateProject();
+
+        async function handleCreateProject() {
+            try {
+                const data = await createProject.mutateAsync();
+                const id = data?.short_id || data?.uuid;
+    
+                if (id) {
+                    navigate(`/projects/${id}`);
+                } else {
+                    console.error("Project created but id missing", data);
+                }
+            } catch (err) {
+                console.error("Failed to create project", err);
+            }
+        }
 
     return (
         <div className="min-h-screen bg-background">
@@ -16,7 +33,7 @@ const Index = () => {
                 </span>
                 <div className="flex items-center gap-3">
                     <Button size="small">Log in</Button>
-                    <Button onClick={() => navigate("/project")} size="small" variant="contained" className="rounded-full px-5 bg-black">
+                    <Button onClick={handleCreateProject} size="small" variant="contained" className="rounded-full px-5 bg-black" disabled={createProject.isPending}>
                         Get Started
                     </Button>
                 </div>

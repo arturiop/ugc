@@ -1,0 +1,9 @@
+export const queryKeys = {
+    projects: {
+        all: ["projects"] as const,
+        list: () => [...queryKeys.projects.all, "list"] as const,
+        detail: (projectId: string) => [...queryKeys.projects.all, "detail", projectId] as const,
+        assets: (projectId: string) => [...queryKeys.projects.all, "assets", projectId] as const,
+        chatMessages: (projectId: string) => [...queryKeys.projects.all, "chat", projectId] as const,
+    },
+};

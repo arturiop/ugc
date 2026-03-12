@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import UGCMainWorkspaceEmptyState from "@/components/Studio";
 import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 import { useGeneratedContent } from "@/contexts/GeneratedContentContext";
-const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
+import { resolveAssetUrl } from "@/api/urls";
 
 const StudioPane = () => {
     const { images } = useGeneratedContent();
@@ -52,7 +52,8 @@ const GeneratedOutput = ({
     switchTimerRef: React.MutableRefObject<number | null>;
 }) => {
     const latest = images[images.length - 1];
-    const { src } = useNgrokImageSrc(API_BASE_URL + latest.url);
+    const resolvedUrl = resolveAssetUrl(latest.url) || latest.url;
+    const { src } = useNgrokImageSrc(resolvedUrl);
 
     const requestSwap = () => {
         if (switchTimerRef.current) {
@@ -119,7 +120,7 @@ const GeneratedOutput = ({
             ) : (
                 <Box
                     component="img"
-                    src={src || latest.url}
+                    src={src || resolvedUrl}
                     alt={latest.title}
                     sx={{
                         width: "100%",

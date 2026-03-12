@@ -7,36 +7,20 @@ import AddIcon from "@mui/icons-material/Add";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 
-import { getSessionId } from "@/utils/session";
-
-const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
-
-type Project = {
-    id: string;
-    title?: string;
-    updatedAt: string;
-    thumbnailUrl?: string | null;
-};
-
-function resolveAssetUrl(url?: string | null) {
-    if (!url) return null;
-    if (url.startsWith("http")) return url;
-    return new URL(url, API_BASE_URL).toString();
-}
+import { resolveAssetUrl } from "@/api/urls";
+import { useCreateProject, useProjects } from "@/api/projects/hooks";
 
 export default function Dashboard() {
     const navigate = useNavigate();
 
-    const [projects, setProjects] = useState<Project[]>([]);
-    const [loading, setLoading] = useState(true);
     const [prompt, setPrompt] = useState("");
     const [showInput, setShowInput] = useState(true);
 
     const lastScroll = useRef(0);
+    const { data, isLoading } = useProjects();
+    const createProject = useCreateProject();
 
-    /*
-  Scroll hide input
-  */
+
     useEffect(() => {
         const onScroll = () => {
             const current = window.scrollY;
@@ -51,51 +35,9 @@ export default function Dashboard() {
         return () => window.removeEventListener("scroll", onScroll);
     }, []);
 
-    /*
-  Fetch projects
-  */
-    useEffect(() => {
-        const controller = new AbortController();
-
-        async function load() {
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/v1/projects`, {
-                    headers: {
-                        "X-Session-Id": getSessionId(),
-                        "ngrok-skip-browser-warning": "1",
-                    },
-                    signal: controller.signal,
-                });
-
-                const data = await res.json();
-                const items = Array.isArray(data?.items) ? data.items : [];
-
-                setProjects(items);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        load();
-
-        return () => controller.abort();
-    }, []);
-
     async function handleCreateProject() {
         try {
-            const res = await fetch(`${API_BASE_URL}/api/v1/projects`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Session-Id": getSessionId(),
-                    "ngrok-skip-browser-warning": "1",
-                },
-                body: JSON.stringify({}),
-            });
-
-            const data = await res.json();
+            const data = await createProject.mutateAsync();
             const id = data?.short_id || data?.uuid;
 
             if (id) {
@@ -108,6 +50,7 @@ export default function Dashboard() {
         }
     }
 
+    const projects = data?.items ?? [];
     const sorted = useMemo(() => {
         return [...projects].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     }, [projects]);
@@ -147,7 +90,8 @@ export default function Dashboard() {
                         bgcolor: "#111",
                         "&:hover": { bgcolor: "#000" },
                     }}
-                    onClick={handleCreateProject}>
+                    onClick={handleCreateProject}
+                    disabled={createProject.isPending}>
                     New Ad
                 </Button>
             </Box>
@@ -159,7 +103,7 @@ export default function Dashboard() {
                     gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))",
                     gap: 3,
                 }}>
-                {loading &&
+                {isLoading &&
                     Array.from({ length: 6 }).map((_, i) => (
                         <Card key={i} sx={{ borderRadius: 3 }}>
                             <Skeleton variant="rectangular" height={160} />
@@ -170,7 +114,7 @@ export default function Dashboard() {
                         </Card>
                     ))}
 
-                {!loading &&
+                {!isLoading &&
                     sorted.map((project) => {
                         const thumb = resolveAssetUrl(project.thumbnailUrl);
 

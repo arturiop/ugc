@@ -4,13 +4,14 @@ import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 import StudioPane from "./StudioPane";
-import UploadsPane from "./UploadsPane";
+import AssetsPane from "./AssetsPane";
 import GeneratedContentPanel from "@/components/GeneratedContentPanel";
 
-const VIEW_MODES = ["studio", "uploads", "generated_content"] as const;
+const VIEW_MODES = ["studio", "assets", "generated_content"] as const;
 type ViewMode = (typeof VIEW_MODES)[number];
 
 const resolveViewMode = (value: string | null): ViewMode => {
+    if (value === "uploads") return "assets";
     if (value && (VIEW_MODES as readonly string[]).includes(value)) return value as ViewMode;
     return "studio";
 };
@@ -39,10 +40,10 @@ const WorkspacePane = () => {
                     Studio
                 </Button>
                 <Button
-                    onClick={() => setViewMode("uploads")}
+                    onClick={() => setViewMode("assets")}
                     startIcon={<FolderOutlinedIcon fontSize="small" />}
-                    sx={navButtonStyles(activeView === "uploads")}>
-                    Uploads
+                    sx={navButtonStyles(activeView === "assets")}>
+                    Assets
                 </Button>
                 <Button
                     onClick={() => setViewMode("generated_content")}
@@ -54,7 +55,7 @@ const WorkspacePane = () => {
 
             <Box sx={{ p: 2.5, flex: 1, overflowY: "auto", bgcolor: "background.default" }}>
                 {activeView === "studio" && <StudioPane />}
-                {activeView === "uploads" && <UploadsPane />}
+                {activeView === "assets" && <AssetsPane />}
                 {activeView === "generated_content" && <GeneratedContentPanel />}
             </Box>
         </Box>
