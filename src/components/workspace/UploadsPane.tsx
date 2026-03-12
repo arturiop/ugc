@@ -22,7 +22,7 @@ const UploadsPane = () => {
         if (!projectId) return;
         const load = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/project/uploads/${projectId}`, {
+                const response = await fetch(`${API_BASE_URL}/api/v1/projects/uploads/${projectId}`, {
                     headers: { "X-Session-Id": getSessionId(), 
                         "ngrok-skip-browser-warning": "1",
 
@@ -61,7 +61,7 @@ const UploadsPane = () => {
                     No uploads yet
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                    Upload an image in a clip to preview it here.
+                    Upload an image in a project to preview it here.
                 </Typography>
             </Paper>
         );

@@ -7,9 +7,10 @@ import { Box, CircularProgress, Typography } from "@mui/material";
 import { ProjectChatThread } from "./Thread";
 import { getSessionId } from "@/utils/session";
 import { createUploadAttachmentAdapter } from "./uploadAttachmentAdapter";
+import { useProject } from "@/contexts/project/ProjectContext";
 
 const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
-const CHAT_ENDPOINT = "/api/project/chat"; // we'll implement server later
+const CHAT_ENDPOINT = "/api/v1/projects/chat"; // we'll implement server later
 
 type HistoryMessage = {
     id?: string;
@@ -81,17 +82,18 @@ function ProjectChat2({ projectId, m, sessionId }: { projectId: string; m: any[]
     );
 }
 
-export function ProjectChat({ projectId }: { projectId: string }) {
+export function ProjectChat() {
     const [initialMessages, setInitialMessages] = useState(null);
     const [historyError, setHistoryError] = useState<string | null>(null);
     const sessionId = getSessionId();
+    const { projectId } = useProject();
 
     useEffect(() => {
         setHistoryError(null);
 
         const loadHistory = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/project/chat_history/${projectId}`, {
+                const response = await fetch(`${API_BASE_URL}/api/v1/projects/chat_history/${projectId}`, {
                     headers: {
                         "X-Session-Id": sessionId,
                         "ngrok-skip-browser-warning": "1",
@@ -104,7 +106,7 @@ export function ProjectChat({ projectId }: { projectId: string }) {
                 setInitialMessages(normalized || []);
             } catch (error) {
                 if (error instanceof DOMException && error.name === "AbortError") return;
-                console.log('error', error, `${API_BASE_URL}/api/project/chat_history/${projectId}`)
+                console.log('error', error, `${API_BASE_URL}/api/v1/projects/chat_history/${projectId}`)
                 setHistoryError("Failed to load chat history.");
                 setInitialMessages([]);
             }

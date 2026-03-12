@@ -16,7 +16,7 @@ const Index = () => {
                 </span>
                 <div className="flex items-center gap-3">
                     <Button size="small">Log in</Button>
-                    <Button onClick={() => navigate("/clip")} size="small" variant="contained" className="rounded-full px-5 bg-black">
+                    <Button onClick={() => navigate("/project")} size="small" variant="contained" className="rounded-full px-5 bg-black">
                         Get Started
                     </Button>
                 </div>
@@ -35,7 +35,7 @@ const Index = () => {
                                 <span className="text-accent font-black text-5xl leading-none">.</span>
                             </h1>
                             <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-sm">
-                                Upload your product · Clip with AI · Choose your storyboard · Get polished UGC video ads —{" "}
+                                Upload your product · Project with AI · Choose your storyboard · Get polished UGC video ads —{" "}
                                 <span className="text-foreground font-medium">no production hassle</span>.
                             </p>
                         </div>
@@ -166,7 +166,6 @@ const ProductJourney = () => {
                     </p>
                 </motion.div>
                 <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
-                    {/* Left side — Clip-style Builder Panel */}
                     <div className="lg:w-[380px] flex-shrink-0">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -174,7 +173,6 @@ const ProductJourney = () => {
                             viewport={{ once: true }}
                             transition={{ duration: 0.5 }}
                             className="rounded-3xl border border-border/60 bg-gradient-to-b from-card to-card/80 shadow-2xl overflow-hidden flex flex-col backdrop-blur-xl">
-                            {/* Clip messages area */}
                             <div className="px-5 pt-6 pb-3 space-y-3 flex-1 flex flex-col">
                                 {/* AI thinking indicator */}
                                 <motion.div
@@ -286,7 +284,7 @@ const ProductJourney = () => {
                                         </motion.button>
                                     </div>
                                 </div>
-                                <Button onClick={() => navigate("/clip")} sx={{color: 'white'}} className="w-full rounded-xl h-12 tracking-wide bg-black">
+                                <Button onClick={() => navigate("/project")} sx={{ color: "white" }} className="w-full rounded-xl h-12 tracking-wide bg-black">
                                     Get started
                                 </Button>
                             </div>
@@ -347,7 +345,6 @@ const ProductJourney = () => {
                                                 exit={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }}
                                                 transition={{ duration: 0.5 }}
                                                 className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted/50 to-background p-8">
-                                                {/* Clip bubble + product */}
                                                 <div className="flex flex-col items-center gap-4">
                                                     <motion.div
                                                         initial={{ y: 20, opacity: 0 }}

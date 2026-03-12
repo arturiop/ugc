@@ -39,7 +39,7 @@ export const createUploadAttachmentAdapter = ({
         form.append("projectId", projectId);
         form.append("sessionId", sessionId);
 
-        const response = await fetch(`${apiBaseUrl}/api/upload`, {
+        const response = await fetch(`${apiBaseUrl}/api/v1/upload`, {
             method: "POST",
             headers: { "X-Session-Id": sessionId,
                 "ngrok-skip-browser-warning": "1",
