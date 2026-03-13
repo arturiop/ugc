@@ -5,5 +5,6 @@ export const queryKeys = {
         detail: (projectId: string) => [...queryKeys.projects.all, "detail", projectId] as const,
         assets: (projectId: string) => [...queryKeys.projects.all, "assets", projectId] as const,
         chatMessages: (projectId: string) => [...queryKeys.projects.all, "chat", projectId] as const,
+        storyboard: (projectId: string) => [...queryKeys.projects.all, "storyboard", projectId] as const,
     },
 };

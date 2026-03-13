@@ -1,12 +1,18 @@
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import UGCMainWorkspaceEmptyState from "@/components/Studio";
 import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 import { useGeneratedContent } from "@/contexts/GeneratedContentContext";
 import { resolveAssetUrl } from "@/api/urls";
+import { useProjectStoryboard } from "@/api/storyboard/hooks";
+import { useProject } from "@/contexts/project/ProjectContext";
+import ConceptCard from "./ConceptCard";
 
 const StudioPane = () => {
     const { images } = useGeneratedContent();
+    const { projectId } = useProject();
+    const { data: storyboardData } = useProjectStoryboard(projectId);
+    const storyboard = storyboardData?.storyboard ?? null;
     const [showVideo, setShowVideo] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
     const switchTimerRef = useRef<number | null>(null);
@@ -30,6 +36,26 @@ const StudioPane = () => {
                 setIsGenerating={setIsGenerating}
                 switchTimerRef={switchTimerRef}
             />
+        );
+    }
+
+    if (storyboard) {
+        return (
+            <Box
+                sx={{
+                    width: "100%",
+                    minHeight: "100%",
+                    p: { xs: 2, md: 4 },
+                    overflowY: "auto",
+                    bgcolor: "#f2efe8",
+                    background:
+                        "radial-gradient(circle at top, rgba(255,255,255,0.8), rgba(242,239,232,0.85) 35%, rgba(232,226,210,0.92) 100%)",
+                }}
+            >
+                <Box sx={{ maxWidth: 980, mx: "auto" }}>
+                    <ConceptCard storyboard={storyboard} />
+                </Box>
+            </Box>
         );
     }
 
