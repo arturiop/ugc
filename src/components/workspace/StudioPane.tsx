@@ -7,6 +7,7 @@ import { resolveAssetUrl } from "@/api/urls";
 import { useProjectStoryboard } from "@/api/storyboard/hooks";
 import { useProject } from "@/contexts/project/ProjectContext";
 import ConceptCard from "./ConceptCard";
+import ScenesPanel from "./ScenesPanel";
 
 const StudioPane = () => {
     const { images } = useGeneratedContent();
@@ -54,6 +55,11 @@ const StudioPane = () => {
             >
                 <Box sx={{ maxWidth: 980, mx: "auto" }}>
                     <ConceptCard storyboard={storyboard} />
+                    {storyboard.scenes?.length ? (
+                        <Box sx={{ mt: 3 }}>
+                            <ScenesPanel storyboard={storyboard} />
+                        </Box>
+                    ) : null}
                 </Box>
             </Box>
         );
