@@ -9,20 +9,20 @@ const Index = () => {
     const navigate = useNavigate();
     const createProject = useCreateProject();
 
-        async function handleCreateProject() {
-            try {
-                const data = await createProject.mutateAsync();
-                const id = data?.short_id || data?.uuid;
-    
-                if (id) {
-                    navigate(`/projects/${id}`);
-                } else {
-                    console.error("Project created but id missing", data);
-                }
-            } catch (err) {
-                console.error("Failed to create project", err);
+    async function handleCreateProject() {
+        try {
+            const data = await createProject.mutateAsync();
+            const id = data?.short_id || data?.uuid;
+
+            if (id) {
+                navigate(`/projects/${id}`);
+            } else {
+                console.error("Project created but id missing", data);
             }
+        } catch (err) {
+            console.error("Failed to create project", err);
         }
+    }
 
     return (
         <div className="min-h-screen bg-background">
@@ -32,9 +32,8 @@ const Index = () => {
                     Watchable
                 </span>
                 <div className="flex items-center gap-3">
-                    <Button size="small">Log in</Button>
-                    <Button onClick={handleCreateProject} size="small" variant="contained" className="rounded-full px-5 bg-black" disabled={createProject.isPending}>
-                        Get Started
+                    <Button size="small" onClick={() => navigate("/login")}>
+                        Log in
                     </Button>
                 </div>
             </nav>
@@ -301,7 +300,7 @@ const ProductJourney = () => {
                                         </motion.button>
                                     </div>
                                 </div>
-                                <Button onClick={() => navigate("/project")} sx={{ color: "white" }} className="w-full rounded-xl h-12 tracking-wide bg-black">
+                                <Button onClick={() => navigate("/login")} sx={{ color: "white" }} className="w-full rounded-xl h-12 tracking-wide bg-black">
                                     Get started
                                 </Button>
                             </div>
@@ -434,7 +433,7 @@ const ProductJourney = () => {
                                                                     </motion.video>
                                                                 </motion.div>
                                                             </div>
-                                                            </div>
+                                                        </div>
                                                         {/* Bottom text */}
                                                         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
                                                             <p className="text-white text-xs font-medium">Your UGC ad is ready 🎉</p>

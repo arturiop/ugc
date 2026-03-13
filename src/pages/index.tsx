@@ -2,11 +2,15 @@ import { Box } from "@mui/material";
 import { lazy } from "react";
 import { Outlet, useRoutes } from "react-router-dom";
 import { Loadable } from "@/components/Loadable";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import GuestRoute from "@/components/GuestRoute";
 
 const Page404 = Loadable(lazy(() => import("./Page404")));
 const Hero = Loadable(lazy(() => import("./Hero")));
 const ProjectPage = Loadable(lazy(() => import("./Project")));
 const Dashboard = Loadable(lazy(() => import("./Dashboard")));
+const Login = Loadable(lazy(() => import("./Login")));
+const Signup = Loadable(lazy(() => import("./Signup")));
 
 const RootContainer = () => (
     <Box
@@ -30,13 +34,21 @@ const router = [
                 index: true,
                 element: <Hero />,
             },
+
             {
-                path: "dashboard",
-                element: <Dashboard />,
+                element: <GuestRoute />,
+                children: [
+                    { path: "login", element: <Login /> },
+                    { path: "signup", element: <Signup /> },
+                ],
             },
+
             {
-                path: "projects/:projectId",
-                element: <ProjectPage />,
+                element: <ProtectedRoute />,
+                children: [
+                    { path: "dashboard", element: <Dashboard /> },
+                    { path: "projects/:projectId", element: <ProjectPage /> },
+                ],
             },
         ],
     },

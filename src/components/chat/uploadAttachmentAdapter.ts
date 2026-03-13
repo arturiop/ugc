@@ -4,7 +4,6 @@ import { getDefaultHeaders } from "@/api/httpClient";
 type UploadAttachmentAdapterOptions = {
     apiBaseUrl: string;
     projectId: string;
-    sessionId: string;
     onUploadComplete?: (asset: UploadAsset) => void;
 };
 
@@ -30,7 +29,6 @@ const resolveUploadUrl = (apiBaseUrl: string, url: string) => {
 export const createUploadAttachmentAdapter = ({
     apiBaseUrl,
     projectId,
-    sessionId,
     onUploadComplete,
 }: UploadAttachmentAdapterOptions): AttachmentAdapter => ({
     accept: "*/*",
@@ -51,7 +49,7 @@ export const createUploadAttachmentAdapter = ({
 
         const response = await fetch(`${apiBaseUrl}/api/v1/projects/${projectId}/assets/upload`, {
             method: "POST",
-            headers: getDefaultHeaders(sessionId),
+            headers: getDefaultHeaders(),
             body: form,
         });
 

@@ -3,9 +3,9 @@ import WorkspacePane from "../components/workspace/WorkspacePane";
 import { ProjectChat } from "@/components/chat/Chat";
 import { ProjectProvider } from "@/contexts/project/ProjectProvider";
 import ResizableSplit from "@/components/ResizableSplit";
-import AppHeader from "@/components/AppHeader";
 import { useProject } from "@/contexts/project/ProjectContext";
 import { GeneratedContentProvider } from "@/contexts/GeneratedContentContext";
+import AppHeader from "@/components/AppHeader";
 
 
 function ProjectLayout() {

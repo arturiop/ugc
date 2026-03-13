@@ -1,4 +1,4 @@
-import { getSessionId } from "@/utils/session";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 export const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
 
@@ -8,7 +8,6 @@ export type RequestOptions = {
     body?: unknown;
     headers?: HeadersInit;
     signal?: AbortSignal;
-    sessionId?: string;
 };
 
 export function buildUrl(path: string) {
@@ -16,11 +15,17 @@ export function buildUrl(path: string) {
     return new URL(path, API_BASE_URL).toString();
 }
 
-export function getDefaultHeaders(sessionId?: string): Record<string, string> {
-    return {
-        "X-Session-Id": sessionId ?? getSessionId(),
+export function getDefaultHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
         "ngrok-skip-browser-warning": "1",
     };
+
+    const token = useAuthStore.getState().token;
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    return headers;
 }
 
 async function readError(response: Response) {
@@ -39,13 +44,12 @@ export async function requestJson<T>({
     body,
     headers,
     signal,
-    sessionId,
 }: RequestOptions): Promise<T> {
     const response = await fetch(buildUrl(path), {
         method,
         headers: {
             "Content-Type": "application/json",
-            ...getDefaultHeaders(sessionId),
+            ...getDefaultHeaders(),
             ...headers,
         },
         body: body ? JSON.stringify(body) : undefined,

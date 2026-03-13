@@ -19,10 +19,10 @@ export async function getProjectChatMessages(projectId: string, signal?: AbortSi
     });
 }
 
-export function getProjectChatTransportConfig(projectId: string, sessionId: string) {
+export function getProjectChatTransportConfig(projectId: string) {
     return {
         api: buildUrl("/api/v1/projects/chat"),
-        headers: getDefaultHeaders(sessionId),
+        headers: getDefaultHeaders(),
         body: { projectId },
     };
 }

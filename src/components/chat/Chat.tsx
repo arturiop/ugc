@@ -6,7 +6,6 @@ import { Box, CircularProgress, Typography } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { ProjectChatThread } from "./Thread";
-import { getSessionId } from "@/utils/session";
 import { createUploadAttachmentAdapter } from "./uploadAttachmentAdapter";
 import { useProject } from "@/contexts/project/ProjectContext";
 import { API_BASE_URL } from "@/api/httpClient";
@@ -30,20 +29,19 @@ function normalizeHistory(messages: HistoryMessage[]) {
   
 
   
-function ProjectChat2({ projectId, m, sessionId }: { projectId: string; m: any[]; sessionId: any }) {
+function ProjectChat2({ projectId, m }: { projectId: string; m: any[] }) {
     const queryClient = useQueryClient();
     const runtimeRef = useRef<ReturnType<typeof useChatRuntime> | null>(null);
     const transport = useMemo(() => {
-        const config = getProjectChatTransportConfig(projectId, sessionId);
+        const config = getProjectChatTransportConfig(projectId);
         return new AssistantChatTransport(config);
-    }, [projectId, sessionId]);
+    }, [projectId]);
 
     const attachmentAdapter = useMemo(
         () =>
             createUploadAttachmentAdapter({
                 apiBaseUrl: API_BASE_URL,
                 projectId,
-                sessionId,
                 onUploadComplete: (asset) => {
                     runtimeRef.current?.thread.append({
                         role: "assistant",
@@ -57,7 +55,7 @@ function ProjectChat2({ projectId, m, sessionId }: { projectId: string; m: any[]
                     queryClient.invalidateQueries({ queryKey: queryKeys.projects.assets(projectId) });
                 },
             }),
-        [projectId, queryClient, sessionId]
+        [projectId, queryClient]
     );
 
     const runtime = useChatRuntime({
@@ -109,7 +107,6 @@ const formatAssetLabel = (label: string) => {
 };
 
 export function ProjectChat() {
-    const sessionId = getSessionId();
     const { projectId } = useProject();
     const { data, isLoading, error, isFetching } = useProjectChatHistory(projectId);
     console.log('data, isLoading, error, isFetching', data, isLoading, error, isFetching)
@@ -121,7 +118,7 @@ export function ProjectChat() {
                 </Box>
             ) : (
                 <>
-                    <ProjectChat2 sessionId={sessionId} projectId={projectId} m={data?.messages || []} />
+                    <ProjectChat2 projectId={projectId} m={data?.messages || []} />
                     {error && (
                         <Box sx={{ px: 2, pt: 1 }}>
                             <Typography variant="caption" color="error">

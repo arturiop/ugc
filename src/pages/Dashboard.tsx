@@ -9,9 +9,12 @@ import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 
 import { resolveAssetUrl } from "@/api/urls";
 import { useCreateProject, useProjects } from "@/api/projects/hooks";
+import { useAuthStore } from "@/stores/useAuthStore";
+import AppHeader from "@/components/AppHeader";
 
 export default function Dashboard() {
     const navigate = useNavigate();
+    const user = useAuthStore((state) => state.user);
 
     const [prompt, setPrompt] = useState("");
     const [showInput, setShowInput] = useState(true);
@@ -20,6 +23,13 @@ export default function Dashboard() {
     const { data, isLoading } = useProjects();
     const createProject = useCreateProject();
 
+    const displayName = useMemo(() => {
+        const name = user?.full_name?.trim();
+        if (name) return name;
+        const email = user?.email?.trim();
+        if (email) return email.split("@")[0];
+        return "there";
+    }, [user?.full_name, user?.email]);
 
     useEffect(() => {
         const onScroll = () => {
@@ -56,15 +66,9 @@ export default function Dashboard() {
     }, [projects]);
 
     return (
-        <Box
-            sx={{
-                width: "100%",
-                maxWidth: 1200,
-                mx: "auto",
-                px: 4,
-                pt: 6,
-                pb: 16,
-            }}>
+        <Box sx={{ height: "100dvh", width: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <AppHeader />
+            <Box sx={{ width: "100%", mx: "auto", px: 4, }}>
             {/* HEADER */}
             <Box
                 sx={{
@@ -74,6 +78,9 @@ export default function Dashboard() {
                     mb: 4,
                 }}>
                 <Box>
+                    <Typography variant="subtitle1" color="text.secondary" sx={{ fontWeight: 600 }}>
+                        Hello. {displayName}
+                    </Typography>
                     <Typography variant="h5" sx={{ fontWeight: 800 }}>
                         My Projects
                     </Typography>
@@ -218,6 +225,7 @@ export default function Dashboard() {
                     }}>
                     <ArrowUpwardIcon />
                 </IconButton>
+            </Box>
             </Box>
         </Box>
     );

@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
     Box,
     Button,
@@ -18,6 +19,7 @@ import {
 } from "@mui/material";
 import BrushOutlinedIcon from "@mui/icons-material/BrushOutlined";
 import { useThemeMode } from "@/theme";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 type SettingsDialogProps = {
     open: boolean;
@@ -26,6 +28,13 @@ type SettingsDialogProps = {
 
 const SettingsDialog = ({ open, onClose }: SettingsDialogProps) => {
     const { mode, setMode } = useThemeMode();
+    const logout = useAuthStore((s) => s.logout);
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate("/login", { replace: true });
+    };
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -96,6 +105,10 @@ const SettingsDialog = ({ open, onClose }: SettingsDialogProps) => {
                 </Stack>
             </DialogContent>
             <DialogActions>
+                <Button color="error" onClick={handleLogout}>
+                    Log out
+                </Button>
+                <Box sx={{ flex: 1 }} />
                 <Button onClick={onClose}>Close</Button>
             </DialogActions>
         </Dialog>
