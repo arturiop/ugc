@@ -17,7 +17,7 @@ const StudioPane = () => {
     const [showVideo, setShowVideo] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
     const switchTimerRef = useRef<number | null>(null);
-
+    console.log('storyboardData', storyboardData)
     useEffect(() => {
         return () => {
             if (switchTimerRef.current) {

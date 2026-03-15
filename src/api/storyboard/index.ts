@@ -9,6 +9,8 @@ export type StoryboardScene = {
     visual_prompt: string;
     frame_prompt: string;
     generated_image_url?: string | null;
+    generated_video_url?: string | null;
+    video_status?: "not_started" | "generating" | "ready" | "approved" | "failed" | null;
 };
 
 export type Storyboard = {
@@ -37,5 +39,29 @@ export async function getProjectStoryboard(projectId: string, signal?: AbortSign
     return requestJson<StoryboardResponse>({
         path: `/api/v1/projects/${projectId}/storyboard`,
         signal,
+    });
+}
+
+export type SceneVideoResponse = {
+    scene: StoryboardScene;
+};
+
+export type SceneApproveResponse = {
+    scene: StoryboardScene;
+    next_scene_index: number | null;
+};
+
+export async function generateSceneVideo(projectId: string, sceneIndex: number, force = false) {
+    const query = force ? "?force=true" : "";
+    return requestJson<SceneVideoResponse>({
+        path: `/api/v1/projects/${projectId}/scenes/${sceneIndex}/video${query}`,
+        method: "POST",
+    });
+}
+
+export async function approveSceneVideo(projectId: string, sceneIndex: number) {
+    return requestJson<SceneApproveResponse>({
+        path: `/api/v1/projects/${projectId}/scenes/${sceneIndex}/approve`,
+        method: "POST",
     });
 }
