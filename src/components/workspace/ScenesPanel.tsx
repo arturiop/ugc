@@ -1,15 +1,19 @@
 import { Box, Stack, Typography } from "@mui/material";
 import type { Storyboard } from "@/api/storyboard";
+import { resolveAssetUrl } from "@/api/urls";
+import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 
 type Props = {
     storyboard: Storyboard;
 };
 
 const ScenesPanel = ({ storyboard }: Props) => {
+    const storyboardUrl = resolveAssetUrl(storyboard.storyboard_image_url || undefined);
+    const { src: storyboardImageSrc } = useNgrokImageSrc(storyboardUrl || undefined);
+
     if (!storyboard.scenes || storyboard.scenes.length === 0) {
         return null;
     }
-
     return (
         <Box
             sx={{
@@ -49,6 +53,45 @@ const ScenesPanel = ({ storyboard }: Props) => {
                         Storyboard scene list
                     </Typography>
                 </Box>
+
+                {storyboardUrl ? (
+                    <Box
+                        sx={{
+                            borderRadius: 3,
+                            border: "1px solid var(--scene-border)",
+                            bgcolor: "rgba(255,255,255,0.92)",
+                            p: { xs: 1.5, md: 2 },
+                        }}
+                    >
+                        <Typography
+                            variant="caption"
+                            sx={{
+                                display: "block",
+                                mb: 1,
+                                letterSpacing: 1.4,
+                                fontWeight: 700,
+                                textTransform: "uppercase",
+                                color: "var(--scene-ink-soft)",
+                            }}
+                        >
+                            Storyboard preview
+                        </Typography>
+                        <Box
+                            component="img"
+                            src={storyboardImageSrc || storyboardUrl}
+                            alt="Storyboard preview"
+                            sx={{
+                                width: "100%",
+                                maxHeight: 520,
+                                objectFit: "contain",
+                                borderRadius: 2,
+                                border: "1px solid var(--scene-border)",
+                                bgcolor: "#f5f2eb",
+                                display: "block",
+                            }}
+                        />
+                    </Box>
+                ) : null}
 
                 <Stack spacing={2}>
                     {storyboard.scenes.map((scene) => (

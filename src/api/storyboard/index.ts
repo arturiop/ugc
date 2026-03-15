@@ -24,6 +24,7 @@ export type Storyboard = {
     key_message?: string;
     assumptions?: string[];
     aspect_ratio: string;
+    storyboard_image_url?: string | null;
     scenes: StoryboardScene[];
     updated_at: string | null;
 };
