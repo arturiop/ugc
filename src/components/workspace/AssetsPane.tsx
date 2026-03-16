@@ -1,7 +1,8 @@
-import { Box, FormControl, MenuItem, Paper, Select, Stack, Typography } from "@mui/material";
+import { Box, FormControl, IconButton, MenuItem, Paper, Select, Stack, Tooltip, Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
-import { useProjectAssets, useUpdateProjectAssetLabel } from "@/api/assets/hooks";
+import { useDeleteProjectAsset, useProjectAssets, useUpdateProjectAssetLabel } from "@/api/assets/hooks";
 import type { AssetLabel } from "@/api/assets";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
 const ASSET_LABELS: Array<{ value: AssetLabel; label: string }> = [
     { value: "product", label: "Product" },
@@ -14,6 +15,7 @@ const AssetsPane = () => {
     const { projectId } = useParams();
     const { data } = useProjectAssets(projectId);
     const updateLabel = useUpdateProjectAssetLabel(projectId);
+    const deleteAsset = useDeleteProjectAsset(projectId);
     const items = Array.isArray(data?.items) ? data.items : [];
 
     if (items.length === 0) {
@@ -47,7 +49,13 @@ const AssetsPane = () => {
                     label={item.label}
                     url={item.url || ""}
                     isUpdating={updateLabel.isPending && updateLabel.variables?.assetId === item.id}
+                    isDeleting={deleteAsset.isPending && deleteAsset.variables?.assetId === item.id}
                     onLabelChange={(label) => updateLabel.mutate({ assetId: item.id, label })}
+                    onDelete={() => {
+                        const confirmed = window.confirm(`Delete "${item.filename}" from this project?`);
+                        if (!confirmed) return;
+                        deleteAsset.mutate({ assetId: item.id });
+                    }}
                 />
             ))}
         </Box>
@@ -59,13 +67,17 @@ function AssetItem({
     url,
     label,
     isUpdating,
+    isDeleting,
     onLabelChange,
+    onDelete,
 }: {
     filename: string;
     url: string;
     label: AssetLabel;
     isUpdating: boolean;
+    isDeleting: boolean;
     onLabelChange: (label: AssetLabel) => void;
+    onDelete: () => void;
 }) {
     return (
         <Paper
@@ -91,14 +103,28 @@ function AssetItem({
                 }}
             />
             <Stack spacing={1} sx={{ p: 2 }}>
-                <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>
-                    {filename}
-                </Typography>
+                <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
+                    <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>
+                        {filename}
+                    </Typography>
+                    <Tooltip title="Delete asset">
+                        <span>
+                            <IconButton
+                                size="small"
+                                onClick={onDelete}
+                                disabled={isDeleting}
+                                aria-label="Delete asset"
+                            >
+                                <DeleteOutlineIcon fontSize="small" />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                </Stack>
                 <FormControl size="small" fullWidth>
                     <Select
                         value={label}
                         onChange={(event) => onLabelChange(event.target.value as AssetLabel)}
-                        disabled={isUpdating}
+                        disabled={isUpdating || isDeleting}
                     >
                         {ASSET_LABELS.map((option) => (
                             <MenuItem key={option.value} value={option.value}>

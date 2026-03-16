@@ -37,3 +37,11 @@ export async function updateProjectAssetLabel(
         signal,
     });
 }
+
+export async function deleteProjectAsset(projectId: string, assetId: number, signal?: AbortSignal) {
+    return requestJson<void>({
+        path: `/api/v1/projects/${projectId}/assets/${assetId}`,
+        method: "DELETE",
+        signal,
+    });
+}
