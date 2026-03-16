@@ -16,6 +16,8 @@ dist-ssr
 agents.md
 .env-prod
 
+*.tsbuildinfo
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
