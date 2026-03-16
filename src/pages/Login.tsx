@@ -15,11 +15,21 @@ export default function Login() {
     const [error, setError] = useState("");
     const [loadingProvider, setLoadingProvider] = useState<"email" | "google" | null>(null);
     const [showPassword, setShowPassword] = useState(false);
-    const googleEnabled = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+    const [showPasswordField, setShowPasswordField] = useState(false);
+    const hasEmail = email.trim().length > 0;
+    const canSubmit = showPasswordField && hasEmail && password.length > 0 && loadingProvider === null;
 
     async function handleEmailLogin(e: React.FormEvent) {
         e.preventDefault();
         setError("");
+        if (!showPasswordField) {
+            if (!hasEmail) {
+                setError("Please enter your email.");
+                return;
+            }
+            setShowPasswordField(true);
+            return;
+        }
         setLoadingProvider("email");
         try {
             const normalizedEmail = email.trim().toLowerCase();
@@ -124,7 +134,15 @@ export default function Login() {
                         required
                         fullWidth
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                            const next = e.target.value;
+                            setEmail(next);
+                            if (next.trim().length === 0) {
+                                setPassword("");
+                                setShowPassword(false);
+                                setShowPasswordField(false);
+                            }
+                        }}
                         autoComplete="email"
                         slotProps={{ inputLabel: { sx: { color: "rgba(15,23,42,0.6)" } } }}
                         sx={{
@@ -137,48 +155,50 @@ export default function Login() {
                             },
                         }}
                     />
-                    <TextField
-                        id="login-password"
-                        label="Password"
-                        type={showPassword ? "text" : "password"}
-                        required
-                        fullWidth
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        autoComplete="current-password"
-                        slotProps={{
-                            inputLabel: { sx: { color: "rgba(15,23,42,0.6)" } },
-                            input: {
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            aria-label={showPassword ? "Hide password" : "Show password"}
-                                            onClick={() => setShowPassword((prev) => !prev)}
-                                            edge="end"
-                                            sx={{ color: "rgba(15,23,42,0.6)" }}>
-                                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            },
-                        }}
-                        sx={{
-                            "& .MuiOutlinedInput-root": {
-                                color: "#0f172a",
-                                borderRadius: 2,
-                                "& fieldset": { borderColor: "rgba(15,23,42,0.12)" },
-                                "&:hover fieldset": { borderColor: "rgba(15,23,42,0.25)" },
-                                "&.Mui-focused fieldset": { borderColor: "#2563eb" },
-                            },
-                        }}
-                    />
+                    {showPasswordField && (
+                        <TextField
+                            id="login-password"
+                            label="Password"
+                            type={showPassword ? "text" : "password"}
+                            required
+                            fullWidth
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            autoComplete="current-password"
+                            slotProps={{
+                                inputLabel: { sx: { color: "rgba(15,23,42,0.6)" } },
+                                input: {
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label={showPassword ? "Hide password" : "Show password"}
+                                                onClick={() => setShowPassword((prev) => !prev)}
+                                                edge="end"
+                                                sx={{ color: "rgba(15,23,42,0.6)" }}>
+                                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                },
+                            }}
+                            sx={{
+                                "& .MuiOutlinedInput-root": {
+                                    color: "#0f172a",
+                                    borderRadius: 2,
+                                    "& fieldset": { borderColor: "rgba(15,23,42,0.12)" },
+                                    "&:hover fieldset": { borderColor: "rgba(15,23,42,0.25)" },
+                                    "&.Mui-focused fieldset": { borderColor: "#2563eb" },
+                                },
+                            }}
+                        />
+                    )}
 
                     <Button
                         id="login-submit"
                         type="submit"
                         variant="contained"
                         fullWidth
-                        disabled={loadingProvider !== null}
+                        disabled={loadingProvider !== null || (!showPasswordField && !hasEmail) || (showPasswordField && !canSubmit)}
                         sx={{
                             mt: 1,
                             py: 1.5,
@@ -193,7 +213,7 @@ export default function Login() {
                                 boxShadow: "0 8px 22px rgba(37,99,235,0.35)",
                             },
                         }}>
-                        {loadingProvider === "email" ? <CircularProgress size={22} sx={{ color: "#fff" }} /> : "Sign in"}
+                        {loadingProvider === "email" ? <CircularProgress size={22} sx={{ color: "#fff" }} /> : showPasswordField ? "Sign in" : "Continue"}
                     </Button>
                 </Box>
 

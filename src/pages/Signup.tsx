@@ -1,17 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
-import {
-    Box,
-    Typography,
-    TextField,
-    Button,
-    Divider,
-    Alert,
-    CircularProgress,
-    IconButton,
-    InputAdornment,
-} from "@mui/material";
+import { Box, Typography, TextField, Button, Divider, Alert, CircularProgress, IconButton, InputAdornment } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { googleLogin, emailRegister } from "@/api/auth/auth";
@@ -26,7 +16,6 @@ export default function Signup() {
     const [error, setError] = useState("");
     const [loadingProvider, setLoadingProvider] = useState<"email" | "google" | null>(null);
     const [showPassword, setShowPassword] = useState(false);
-    const googleEnabled = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
 
     async function handleEmailSignup(e: React.FormEvent) {
         e.preventDefault();
@@ -110,30 +99,21 @@ export default function Signup() {
                     </Alert>
                 )}
 
-                {/* Google Sign-In */}
-                {googleEnabled ? (
-                    <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
-                        <GoogleLogin
-                            onSuccess={handleGoogleSuccess}
-                            onError={() => setError("Google Sign-In failed")}
-                            theme="outline"
-                            size="large"
-                            width="340"
-                            text="signup_with"
-                            shape="pill"
-                            disabled={loadingProvider !== null}
-                        />
-                    </Box>
-                ) : (
-                    <Alert severity="info" sx={{ mb: 2, borderRadius: 2 }}>
-                        Google sign-up is disabled. Set `VITE_GOOGLE_CLIENT_ID` to enable it.
-                    </Alert>
-                )}
+                <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+                    <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={() => setError("Google Sign-In failed")}
+                        theme="outline"
+                        size="large"
+                        width="340"
+                        text="signup_with"
+                        shape="pill"
+                        disabled={loadingProvider !== null}
+                    />
+                </Box>
 
                 <Divider sx={{ my: 3, color: "rgba(15,23,42,0.2)", "&::before, &::after": { borderColor: "rgba(15,23,42,0.1)" } }}>
-                    <Typography sx={{ color: "rgba(15,23,42,0.45)", fontSize: 12, px: 2 }}>
-                        or create an account with email
-                    </Typography>
+                    <Typography sx={{ color: "rgba(15,23,42,0.45)", fontSize: 12, px: 2 }}>or create an account with email</Typography>
                 </Divider>
 
                 <Box component="form" onSubmit={handleEmailSignup} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -234,11 +214,7 @@ export default function Signup() {
                                 boxShadow: "0 8px 22px rgba(37,99,235,0.35)",
                             },
                         }}>
-                        {loadingProvider === "email" ? (
-                            <CircularProgress size={22} sx={{ color: "#fff" }} />
-                        ) : (
-                            "Create account"
-                        )}
+                        {loadingProvider === "email" ? <CircularProgress size={22} sx={{ color: "#fff" }} /> : "Create account"}
                     </Button>
                 </Box>
 
