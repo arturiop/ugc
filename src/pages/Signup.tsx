@@ -108,6 +108,8 @@ export default function Signup() {
                         width="340"
                         text="signup_with"
                         shape="pill"
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        //@ts-expect-error
                         disabled={loadingProvider !== null}
                     />
                 </Box>

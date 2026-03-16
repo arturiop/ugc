@@ -118,6 +118,8 @@ export default function Login() {
                         width="340"
                         text="signin_with"
                         shape="pill"
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        //@ts-expect-error
                         disabled={loadingProvider !== null}
                     />
                 </Box>
