@@ -2,9 +2,7 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { approveSceneVideo, generateSceneVideo, type Storyboard } from "@/api/storyboard";
-import { resolveAssetUrl } from "@/api/urls";
 import { queryKeys } from "@/api/queryKeys";
-import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 import { useProject } from "@/contexts/project/ProjectContext";
 
 type Props = {
@@ -12,8 +10,7 @@ type Props = {
 };
 
 const ScenesPanel = ({ storyboard }: Props) => {
-    const storyboardUrl = resolveAssetUrl(storyboard.storyboard_image_url || undefined);
-    const { src: storyboardImageSrc } = useNgrokImageSrc(storyboardUrl || undefined);
+    const storyboardUrl = storyboard.storyboard_image_url || "";
     const { projectId } = useProject();
     const queryClient = useQueryClient();
     const [generatingSceneIndex, setGeneratingSceneIndex] = useState<number | null>(null);
@@ -131,7 +128,7 @@ const ScenesPanel = ({ storyboard }: Props) => {
                         </Typography>
                         <Box
                             component="img"
-                            src={storyboardImageSrc || storyboardUrl}
+                            src={storyboardUrl}
                             alt="Storyboard preview"
                             sx={{
                                 width: "100%",
@@ -198,8 +195,7 @@ const SceneCard = ({
     onGenerate,
     onApprove,
 }: SceneCardProps) => {
-    const videoUrl = resolveAssetUrl(scene.generated_video_url || undefined);
-    const { src: videoSrc } = useNgrokImageSrc(videoUrl || undefined);
+    const videoUrl = scene.generated_video_url || "";
 
     return (
         <Box
@@ -291,7 +287,7 @@ const SceneCard = ({
                 {videoUrl ? (
                     <Box
                         component="video"
-                        src={videoSrc || videoUrl}
+                        src={videoUrl}
                         controls
                         playsInline
                         preload="metadata"

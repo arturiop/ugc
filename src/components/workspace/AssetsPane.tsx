@@ -1,9 +1,7 @@
 import { Box, FormControl, MenuItem, Paper, Select, Stack, Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
-import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 import { useProjectAssets, useUpdateProjectAssetLabel } from "@/api/assets/hooks";
 import type { AssetLabel } from "@/api/assets";
-import { resolveAssetUrl } from "@/api/urls";
 
 const ASSET_LABELS: Array<{ value: AssetLabel; label: string }> = [
     { value: "product", label: "Product" },
@@ -47,7 +45,7 @@ const AssetsPane = () => {
                     key={item.id}
                     filename={item.filename}
                     label={item.label}
-                    url={resolveAssetUrl(item.url) || ""}
+                    url={item.url || ""}
                     isUpdating={updateLabel.isPending && updateLabel.variables?.assetId === item.id}
                     onLabelChange={(label) => updateLabel.mutate({ assetId: item.id, label })}
                 />
@@ -69,8 +67,6 @@ function AssetItem({
     isUpdating: boolean;
     onLabelChange: (label: AssetLabel) => void;
 }) {
-    const { src } = useNgrokImageSrc(url);
-
     return (
         <Paper
             elevation={0}
@@ -82,7 +78,7 @@ function AssetItem({
             }}>
             <Box
                 component="img"
-                src={src || url}
+                src={url}
                 alt={filename}
                 sx={{
                     width: "100%",

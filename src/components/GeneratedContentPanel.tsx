@@ -1,14 +1,11 @@
 import { Box, Stack, Typography } from "@mui/material";
-import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 import { useGeneratedContent } from "@/contexts/GeneratedContentContext";
 
 function GeneratedImageItem({ url, title }: { url: string; title: string }) {
-    const { src } = useNgrokImageSrc(url);
-
     return (
         <Box
             component="img"
-            src={src || url}
+            src={url}
             alt={title}
             sx={{
                 width: "100%",

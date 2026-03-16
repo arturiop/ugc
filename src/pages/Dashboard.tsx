@@ -7,7 +7,6 @@ import AddIcon from "@mui/icons-material/Add";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 
-import { resolveAssetUrl } from "@/api/urls";
 import { useCreateProject, useProjects } from "@/api/projects/hooks";
 import { useAuthStore } from "@/stores/useAuthStore";
 import AppHeader from "@/components/AppHeader";
@@ -123,7 +122,7 @@ export default function Dashboard() {
 
                 {!isLoading &&
                     sorted.map((project) => {
-                        const thumb = resolveAssetUrl(project.thumbnailUrl);
+                        const thumb = project.thumbnailUrl || "";
 
                         return (
                             <Card

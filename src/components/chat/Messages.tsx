@@ -2,9 +2,7 @@ import { AuiIf, ErrorPrimitive, MessagePrimitive, ThreadPrimitive, useAuiState }
 import { Box, CircularProgress, Link, Paper, Stack, Typography } from "@mui/material";
 import { Bot, FileText } from "lucide-react";
 import { useEffect, useMemo } from "react";
-import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 import { useGeneratedContent } from "@/contexts/GeneratedContentContext";
-import { resolveAssetUrl } from "@/api/urls";
 
 function MessageDataImages() {
     const message = useAuiState((s) => s.message);
@@ -30,7 +28,7 @@ function MessageDataImages() {
                 <MessageDataImageItem
                     key={`${imgM.data.name}_${idx}`}
                     name={imgM.data.name}
-                    url={resolveAssetUrl(imgM.data.url) || ""}
+                    url={imgM.data.url || ""}
                 />
             ))}
         </Stack>
@@ -154,8 +152,6 @@ function MessageImageAttachment() {
         return imagePart && "image" in imagePart ? imagePart.image : null;
     }, [attachment]);
 
-    const { src } = useNgrokImageSrc(imageUrl || undefined);
-    console.log('src', src)
     if (!imageUrl) return null;
 
     return (
@@ -169,7 +165,7 @@ function MessageImageAttachment() {
             }}>
             <Box
                 component="img"
-                src={src || imageUrl}
+                src={imageUrl}
                 alt={attachment?.name || "uploaded image"}
                 sx={{
                     display: "block",
@@ -189,8 +185,6 @@ function MessageFileAttachment() {
 
     const filePart = attachment.content?.find((part) => part.type === "file");
     const fileUrl = filePart && "data" in filePart ? filePart.data : null;
-    const resolvedUrl = resolveAssetUrl(fileUrl || "");
-
     return (
         <Box
             sx={{
@@ -220,8 +214,8 @@ function MessageFileAttachment() {
                 <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
                     {attachment.name}
                 </Typography>
-                {resolvedUrl ? (
-                    <Link href={resolvedUrl} target="_blank" rel="noreferrer" variant="caption">
+                {fileUrl ? (
+                    <Link href={fileUrl} target="_blank" rel="noreferrer" variant="caption">
                         Open file
                     </Link>
                 ) : (
@@ -235,8 +229,6 @@ function MessageFileAttachment() {
 }
 
 function MessageDataImageItem({ name, url }: { name: string; url: string }) {
-    const { src } = useNgrokImageSrc(url);
-
     return (
         <Box
             sx={{
@@ -247,7 +239,7 @@ function MessageDataImageItem({ name, url }: { name: string; url: string }) {
             }}>
             <Box
                 component="img"
-                src={src || url}
+                src={url}
                 alt={name}
                 sx={{
                     display: "block",

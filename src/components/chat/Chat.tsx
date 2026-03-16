@@ -8,7 +8,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ProjectChatThread } from "./Thread";
 import { createUploadAttachmentAdapter } from "./uploadAttachmentAdapter";
 import { useProject } from "@/contexts/project/ProjectContext";
-import { API_BASE_URL } from "@/api/httpClient";
 import { getProjectChatTransportConfig, HistoryMessage } from "@/api/chat";
 import { useProjectChatHistory } from "@/api/chat/hooks";
 import { queryKeys } from "@/api/queryKeys";
@@ -40,7 +39,7 @@ function ProjectChat2({ projectId, m }: { projectId: string; m: any[] }) {
     const attachmentAdapter = useMemo(
         () =>
             createUploadAttachmentAdapter({
-                apiBaseUrl: API_BASE_URL,
+                apiBaseUrl: import.meta.env.VITE_APP_API_BASE,
                 projectId,
                 onUploadComplete: (asset) => {
                     runtimeRef.current?.thread.append({

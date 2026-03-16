@@ -1,6 +1,6 @@
 import { useAuthStore } from "@/stores/useAuthStore";
 
-export const API_BASE_URL = import.meta.env.VITE_APP_NGROK || "http://localhost:5050";
+export const API_BASE_URL = import.meta.env.VITE_APP_API_BASE;
 
 export type RequestOptions = {
     path: string;
@@ -16,9 +16,7 @@ export function buildUrl(path: string) {
 }
 
 export function getDefaultHeaders(): Record<string, string> {
-    const headers: Record<string, string> = {
-        "ngrok-skip-browser-warning": "1",
-    };
+    const headers: Record<string, string> = {};
 
     const token = useAuthStore.getState().token;
     if (token) {

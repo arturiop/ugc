@@ -1,9 +1,7 @@
 import { Box } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import UGCMainWorkspaceEmptyState from "@/components/Studio";
-import { useNgrokImageSrc } from "@/hooks/useNgrokImageSrc";
 import { useGeneratedContent } from "@/contexts/GeneratedContentContext";
-import { resolveAssetUrl } from "@/api/urls";
 import { useProjectStoryboard } from "@/api/storyboard/hooks";
 import { useProject } from "@/contexts/project/ProjectContext";
 import ConceptCard from "./ConceptCard";
@@ -84,8 +82,6 @@ const GeneratedOutput = ({
     switchTimerRef: React.MutableRefObject<number | null>;
 }) => {
     const latest = images[images.length - 1];
-    const resolvedUrl = resolveAssetUrl(latest.url) || latest.url;
-    const { src } = useNgrokImageSrc(resolvedUrl);
 
     const requestSwap = () => {
         if (switchTimerRef.current) {
@@ -152,7 +148,7 @@ const GeneratedOutput = ({
             ) : (
                 <Box
                     component="img"
-                    src={src || resolvedUrl}
+                    src={latest.url}
                     alt={latest.title}
                     sx={{
                         width: "100%",
