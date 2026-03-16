@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import UGCMainWorkspaceEmptyState from "@/components/Studio";
 import { useGeneratedContent } from "@/contexts/GeneratedContentContext";
 import { useProjectStoryboard } from "@/api/storyboard/hooks";
-import { useProject } from "@/contexts/project/ProjectContext";
+import { useProject } from "@/contexts/Project/ProjectContext";
 import ConceptCard from "./ConceptCard";
 import ScenesPanel from "./ScenesPanel";
 

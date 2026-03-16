@@ -1,9 +1,9 @@
 import { Box } from "@mui/material";
 import WorkspacePane from "../components/workspace/WorkspacePane";
 import { ProjectChat } from "@/components/chat/Chat";
-import { ProjectProvider } from "@/contexts/project/ProjectProvider";
+import { ProjectProvider } from "@/contexts/Project/ProjectProvider";
 import ResizableSplit from "@/components/ResizableSplit";
-import { useProject } from "@/contexts/project/ProjectContext";
+import { useProject } from "@/contexts/Project/ProjectContext";
 import { GeneratedContentProvider } from "@/contexts/GeneratedContentContext";
 import AppHeader from "@/components/AppHeader";
 

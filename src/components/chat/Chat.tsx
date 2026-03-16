@@ -7,7 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { ProjectChatThread } from "./Thread";
 import { createUploadAttachmentAdapter } from "./uploadAttachmentAdapter";
-import { useProject } from "@/contexts/project/ProjectContext";
+import { useProject } from "@/contexts/Project/ProjectContext";
 import { getProjectChatTransportConfig, HistoryMessage } from "@/api/chat";
 import { useProjectChatHistory } from "@/api/chat/hooks";
 import { queryKeys } from "@/api/queryKeys";

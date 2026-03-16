@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { AppBar, Avatar, Box, Button, IconButton, Menu, MenuItem, Stack, Toolbar, Typography } from "@mui/material";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import { useProject } from "@/contexts/project/ProjectContext";
 import SettingsDialog from "./SettingsDialog";
 import { useCreateProject } from "@/api/projects/hooks";
 import { useAuthStore } from "@/stores/useAuthStore";

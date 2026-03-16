@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { approveSceneVideo, generateSceneVideo, type Storyboard } from "@/api/storyboard";
 import { queryKeys } from "@/api/queryKeys";
-import { useProject } from "@/contexts/project/ProjectContext";
+import { useProject } from "@/contexts/Project/ProjectContext";
 
 type Props = {
     storyboard: Storyboard;
