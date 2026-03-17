@@ -8,6 +8,5 @@ export function useProjectStoryboard(projectId: string | null | undefined) {
         queryKey: projectId ? queryKeys.projects.storyboard(projectId) : queryKeys.projects.storyboard(""),
         queryFn: ({ signal }) => getProjectStoryboard(projectId as string, signal),
         enabled: Boolean(projectId),
-        refetchInterval: 5000, // Poll every 5s to pick up pipeline results
     });
 }

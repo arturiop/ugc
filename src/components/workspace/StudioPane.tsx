@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import UGCMainWorkspaceEmptyState from "@/components/Studio";
 import { useGeneratedContent } from "@/contexts/GeneratedContentContext";
@@ -10,7 +10,7 @@ import ScenesPanel from "./ScenesPanel";
 const StudioPane = () => {
     const { images } = useGeneratedContent();
     const { projectId } = useProject();
-    const { data: storyboardData } = useProjectStoryboard(projectId);
+    const { data: storyboardData, isFetching: isRefreshing, refetch } = useProjectStoryboard(projectId);
     const storyboard = storyboardData?.storyboard ?? null;
     const [showVideo, setShowVideo] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -24,6 +24,12 @@ const StudioPane = () => {
             }
         };
     }, []);
+
+    const handleRefresh = () => {
+        if (projectId) {
+            void refetch();
+        }
+    };
 
     if (images.length > 0) {
         return (
@@ -52,6 +58,16 @@ const StudioPane = () => {
                 }}
             >
                 <Box sx={{ maxWidth: 980, mx: "auto" }}>
+                    <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                        <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={handleRefresh}
+                            disabled={!projectId || isRefreshing}
+                        >
+                            {isRefreshing ? "Refreshing..." : "Refresh"}
+                        </Button>
+                    </Box>
                     <ConceptCard storyboard={storyboard} />
                     {storyboard.scenes?.length ? (
                         <Box sx={{ mt: 3 }}>
@@ -63,7 +79,30 @@ const StudioPane = () => {
         );
     }
 
-    return <UGCMainWorkspaceEmptyState />;
+    return (
+        <Box
+            sx={{
+                width: "100%",
+                minHeight: "100%",
+                p: { xs: 2, md: 4 },
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+            }}
+        >
+            <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={handleRefresh}
+                    disabled={!projectId || isRefreshing}
+                >
+                    {isRefreshing ? "Refreshing..." : "Refresh"}
+                </Button>
+            </Box>
+            <UGCMainWorkspaceEmptyState />
+        </Box>
+    );
 };
 
 const GeneratedOutput = ({
