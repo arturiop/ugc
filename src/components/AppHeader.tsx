@@ -53,7 +53,7 @@ const AppHeader = () => {
                         justifyContent: "space-between",
                     }}>
                     <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
-                        <Avatar onClick={() => navigate('/dashboard')} src="/favicon-32x32.png" alt="Project icon" sx={{ width: 36, height: 36, border: "1px solid", borderColor: "divider", cursor: "pointer" }} />
+                        <Avatar onClick={() => navigate('/dashboard')} src="/logo.png" alt="Project icon" sx={{ width: 36, height: 36, border: "1px solid", borderColor: "divider", cursor: "pointer" }} />
                     </Stack>
                     <Box sx={{ flex: 1 }} />
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
