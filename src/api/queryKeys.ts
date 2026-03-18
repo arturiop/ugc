@@ -7,4 +7,9 @@ export const queryKeys = {
         chatMessages: (projectId: string) => [...queryKeys.projects.all, "chat", projectId] as const,
         storyboard: (projectId: string) => [...queryKeys.projects.all, "storyboard", projectId] as const,
     },
+    settings: {
+        all: ["settings"] as const,
+        list: () => [...queryKeys.settings.all, "list"] as const,
+        detail: (key: string) => [...queryKeys.settings.all, "detail", key] as const,
+    },
 };

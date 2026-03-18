@@ -18,6 +18,7 @@ import {
     Typography,
 } from "@mui/material";
 import BrushOutlinedIcon from "@mui/icons-material/BrushOutlined";
+import TuneOutlinedIcon from "@mui/icons-material/TuneOutlined";
 import { useThemeMode } from "@/theme";
 import { useAuthStore } from "@/stores/useAuthStore";
 
@@ -48,6 +49,17 @@ const SettingsDialog = ({ open, onClose }: SettingsDialogProps) => {
                                     <BrushOutlinedIcon fontSize="small" />
                                 </ListItemIcon>
                                 <ListItemText primary="Appearance" />
+                            </ListItemButton>
+                            <ListItemButton
+                                sx={{ borderRadius: 1 }}
+                                onClick={() => {
+                                    onClose();
+                                    navigate("/settings");
+                                }}>
+                                <ListItemIcon sx={{ minWidth: 36 }}>
+                                    <TuneOutlinedIcon fontSize="small" />
+                                </ListItemIcon>
+                                <ListItemText primary="Global settings" />
                             </ListItemButton>
                         </List>
                     </Paper>

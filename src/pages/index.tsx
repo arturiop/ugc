@@ -9,6 +9,7 @@ const Page404 = Loadable(lazy(() => import("./Page404")));
 const Hero = Loadable(lazy(() => import("./Hero")));
 const ProjectPage = Loadable(lazy(() => import("./Project")));
 const Dashboard = Loadable(lazy(() => import("./Dashboard")));
+const SettingsPage = Loadable(lazy(() => import("./Settings")));
 const Login = Loadable(lazy(() => import("./Login")));
 const Signup = Loadable(lazy(() => import("./Signup")));
 
@@ -48,6 +49,7 @@ const router = [
                 children: [
                     { path: "dashboard", element: <Dashboard /> },
                     { path: "projects/:projectId", element: <ProjectPage /> },
+                    { path: "settings", element: <SettingsPage /> },
                 ],
             },
         ],
