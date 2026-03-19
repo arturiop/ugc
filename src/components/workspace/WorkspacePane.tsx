@@ -28,7 +28,7 @@ const WorkspacePane = () => {
     const { projectId, projectName } = useProject();
     const { data: storyboardData, isFetching: isRefreshing, refetch } = useProjectStoryboard(projectId);
     const storyboard = storyboardData?.storyboard ?? null;
-    const [mode, setMode] = useState<WorkspaceMode>("storyboard");
+    const [mode, setMode] = useState<WorkspaceMode>("brief");
     const scenes = useMemo(() => storyboard?.scenes ?? [], [storyboard]);
     const [selectedSceneIndex, setSelectedSceneIndex] = useState<number | null>(null);
     const selectedScene = scenes.find((scene) => scene.scene_index === selectedSceneIndex) ?? scenes[0] ?? null;
@@ -121,7 +121,7 @@ const WorkspacePane = () => {
             {activeView === "studio" ? (
                 <Box sx={{ flex: 1, minHeight: 0, overflow: "hidden", bgcolor: "background.default", display: "flex" }}>
                     <Box sx={{ flex: 1, minWidth: 0, minHeight: 0, overflow: "hidden" }}>{renderMode()}</Box>
-                    {mode !== "final" && (
+                    {(mode !== "final" && mode !== "brief") && (
                         <InspectorPanel mode={mode} storyboard={storyboard} scene={selectedScene} />
                     )}
                 </Box>

@@ -35,9 +35,29 @@ export type StoryboardResponse = {
     storyboard: Storyboard | null;
 };
 
+export type StoryboardUpdateRequest = {
+    audience?: string | null;
+    tone?: string | null;
+    platform?: string | null;
+    aspect_ratio?: string | null;
+};
+
 export async function getProjectStoryboard(projectId: string, signal?: AbortSignal) {
     return requestJson<StoryboardResponse>({
         path: `/api/v1/projects/${projectId}/storyboard`,
+        signal,
+    });
+}
+
+export async function updateProjectStoryboard(
+    projectId: string,
+    updates: StoryboardUpdateRequest,
+    signal?: AbortSignal
+) {
+    return requestJson<StoryboardResponse>({
+        path: `/api/v1/projects/${projectId}/storyboard`,
+        method: "PATCH",
+        body: updates,
         signal,
     });
 }

@@ -233,50 +233,30 @@ const BriefInspector = ({ storyboard }: { storyboard: Storyboard | null }) => {
 
     return (
         <Box sx={{ p: 2, overflowY: "auto" }}>
+            <Stack spacing={2.5}>
                 <Box>
-                    <Typography variant="caption" color="text.secondary">
-                        Audience
+                    <Typography variant="overline" sx={{ letterSpacing: 1.4, fontWeight: 700, color: "text.secondary" }}>
+                        Messaging
                     </Typography>
-                    <Typography variant="body2">{storyboard.audience}</Typography>
+                    <Stack spacing={1.25} sx={{ mt: 1.5 }}>
+                        <LabeledValue label="Hook" value={storyboard.hook} />
+                        <LabeledValue label="Key message" value={storyboard.key_message} />
+                        <LabeledValue label="CTA" value={storyboard.cta} />
+                    </Stack>
                 </Box>
-                <Box>
-                    <Typography variant="caption" color="text.secondary">
-                        Tone
-                    </Typography>
-                    <Typography variant="body2">{storyboard.tone}</Typography>
-                </Box>
-                {storyboard.hook && (
-                    <Box>
-                        <Typography variant="caption" color="text.secondary">
-                            Hook
-                        </Typography>
-                        <Typography variant="body2">{storyboard.hook}</Typography>
-                    </Box>
-                )}
-                {storyboard.key_message && (
-                    <Box>
-                        <Typography variant="caption" color="text.secondary">
-                            Key message
-                        </Typography>
-                        <Typography variant="body2">{storyboard.key_message}</Typography>
-                    </Box>
-                )}
-                {storyboard.cta && (
-                    <Box>
-                        <Typography variant="caption" color="text.secondary">
-                            CTA
-                        </Typography>
-                        <Typography variant="body2">{storyboard.cta}</Typography>
-                    </Box>
-                )}
+
                 {storyboard.assumptions && storyboard.assumptions.length > 0 && (
                     <Box>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="overline" sx={{ letterSpacing: 1.4, fontWeight: 700, color: "text.secondary" }}>
                             Assumptions
                         </Typography>
-                        <Stack spacing={1} sx={{ mt: 1 }}>
+                        <Stack spacing={1} sx={{ mt: 1.5 }}>
                             {storyboard.assumptions.map((item, index) => (
-                                <Card key={`${item}-${index}`} elevation={0} sx={{ borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
+                                <Card
+                                    key={`${item}-${index}`}
+                                    elevation={0}
+                                    sx={{ borderRadius: 2, border: "1px solid", borderColor: "divider" }}
+                                >
                                     <CardContent sx={{ py: 1.25 }}>
                                         <Typography variant="body2">{item}</Typography>
                                     </CardContent>
@@ -285,8 +265,20 @@ const BriefInspector = ({ storyboard }: { storyboard: Storyboard | null }) => {
                         </Stack>
                     </Box>
                 )}
+            </Stack>
         </Box>
     );
 };
 
 export default InspectorPanel;
+
+const LabeledValue = ({ label, value }: { label: string; value?: string }) => {
+    return (
+        <Box>
+            <Typography variant="caption" color="text.secondary">
+                {label}
+            </Typography>
+            <Typography variant="body2">{value || "Not set"}</Typography>
+        </Box>
+    );
+};

@@ -230,7 +230,6 @@ const getFallbackGridRects = (imageWidth: number, imageHeight: number, sceneCoun
 const detectStoryboardGrid = async (imageUrl: string): Promise<{ scenes: SceneRect[]; imageWidth: number; imageHeight: number }> => {
     const image = await new Promise<HTMLImageElement>((resolve, reject) => {
         const element = new Image();
-        element.crossOrigin = "anonymous";
         element.onload = () => resolve(element);
         element.onerror = () => reject(new Error("Failed to load storyboard image"));
         element.src = imageUrl;
@@ -353,7 +352,6 @@ const useStoryboardRects = (imageUrl: string | null, expectedSceneCount: number)
                 if (!cancelled) {
                     const image = await new Promise<HTMLImageElement>((resolve, reject) => {
                         const element = new Image();
-                        element.crossOrigin = "anonymous";
                         element.onload = () => resolve(element);
                         element.onerror = () => reject(new Error("Failed to load storyboard image"));
                         element.src = imageUrl;
@@ -400,7 +398,6 @@ const StoryboardSceneCrop = ({
     const scaleY = (imageHeight / rect.height) * 100 * zoom;
     const left = -(rect.x / rect.width) * 100 * zoom;
     const top = -(rect.y / rect.height) * 100 * zoom;
-
     return (
         <Box
             sx={{
