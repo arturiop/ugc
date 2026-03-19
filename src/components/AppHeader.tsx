@@ -51,11 +51,36 @@ const AppHeader = () => {
                         px: 2,
                         display: "flex",
                         justifyContent: "space-between",
+                        position: "relative",
                     }}>
-                    <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
-                        <Avatar onClick={() => navigate('/dashboard')} src="/logo.png" alt="Project icon" sx={{ width: 36, height: 36, border: "1px solid", borderColor: "divider", cursor: "pointer" }} />
+                    <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0, flex: 1 }}>
+                        <Avatar
+                            onClick={() => navigate('/dashboard')}
+                            src="/logo.png"
+                            alt="Project icon"
+                            sx={{ width: 36, height: 36, border: "1px solid", borderColor: "divider", cursor: "pointer" }}
+                        />
+                        <Box
+                            id="app-header-portal"
+                            sx={{
+                                minWidth: 0,
+                                display: "flex",
+                                alignItems: "center",
+                            }}
+                        />
                     </Stack>
-                    <Box sx={{ flex: 1 }} />
+                    <Box
+                        id="app-header-center-portal"
+                        sx={{
+                            position: "absolute",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            pointerEvents: "none",
+                        }}
+                    />
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <Button
                             size="small"

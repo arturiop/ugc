@@ -9,7 +9,7 @@ type ResizableSplitProps = PropsWithChildren<{
     maxLeftPct?: number;
 }>;
 
-function ResizableSplit({ left, right, initialLeftPct = 30, minLeftPct = 20, maxLeftPct = 60 }: ResizableSplitProps) {
+function ResizableSplit({ left, right, initialLeftPct = 21, minLeftPct = 20, maxLeftPct = 60 }: ResizableSplitProps) {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const draggingRef = useRef(false);
 
