@@ -14,10 +14,22 @@ interface AuthState {
     isAuthenticated: boolean;
     login: (token: string, user: AuthUser) => void;
     logout: () => void;
+    setToken: (token: string | null) => void;
     setUser: (user: AuthUser) => void;
 }
 
+function getUrlToken(): string | null {
+    if (typeof window === "undefined") return null;
+    const params = new URLSearchParams(window.location.search);
+    return params.get("token") || params.get("key");
+}
+
 function loadPersistedState(): { token: string | null; user: AuthUser | null } {
+    const urlToken = getUrlToken();
+    if (urlToken) {
+        return { token: urlToken, user: null };
+    }
+
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
@@ -31,7 +43,7 @@ function loadPersistedState(): { token: string | null; user: AuthUser | null } {
 }
 
 function persist(token: string | null, user: AuthUser | null) {
-    if (token && user) {
+    if (token) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ token, user }));
     } else {
         localStorage.removeItem(STORAGE_KEY);
@@ -53,6 +65,14 @@ export const useAuthStore = create<AuthState>((set) => ({
     logout: () => {
         persist(null, null);
         set({ token: null, user: null, isAuthenticated: false });
+    },
+
+    setToken: (token) => {
+        set((state) => {
+            const nextUser = token ? state.user : null;
+            persist(token, nextUser);
+            return { token, user: nextUser, isAuthenticated: !!token };
+        });
     },
 
     setUser: (user) => {

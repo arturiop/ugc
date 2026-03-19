@@ -68,3 +68,11 @@ export async function getCurrentUser(): Promise<CurrentUserResponse> {
         method: "GET",
     });
 }
+
+/** Generate a shareable access token for the current user. */
+export async function createShareToken(): Promise<AuthTokenResponse> {
+    return requestJson<AuthTokenResponse>({
+        path: "/api/v1/auth/share-token",
+        method: "POST",
+    });
+}

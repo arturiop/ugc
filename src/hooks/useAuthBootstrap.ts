@@ -5,6 +5,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 export default function useAuthBootstrap() {
     const token = useAuthStore((s) => s.token);
     const setUser = useAuthStore((s) => s.setUser);
+    const logout = useAuthStore((s) => s.logout);
 
     useEffect(() => {
         if (!token) return;
@@ -19,6 +20,7 @@ export default function useAuthBootstrap() {
             .catch((err) => {
                 if (!isActive) return;
                 console.warn("Failed to load current user", err);
+                logout();
             });
 
         return () => {

@@ -141,13 +141,18 @@ export default function Dashboard() {
                                     },
                                 }}>
                                 <CardActionArea component="div" onClick={() => navigate(`/projects/${project.id}`)}>
-                                    <Box sx={{ position: "relative" }}>
+                                    <Box sx={{ position: "relative", height: 160, overflow: "hidden" }}>
                                         {thumb ? (
-                                            <CardMedia component="img" height="160" image={thumb} />
+                                            <CardMedia
+                                                component="img"
+                                                image={thumb}
+                                                sx={{ height: "100%", width: "100%", objectFit: "cover", display: "block" }}
+                                                loading="lazy"
+                                            />
                                         ) : (
                                             <Box
                                                 sx={{
-                                                    height: 160,
+                                                    height: "100%",
                                                     display: "flex",
                                                     alignItems: "center",
                                                     justifyContent: "center",
