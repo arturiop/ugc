@@ -15,7 +15,12 @@ export default function useAuthBootstrap() {
         getCurrentUser()
             .then((data) => {
                 if (!isActive) return;
-                setUser({ id: data.id, email: data.email, full_name: data.full_name });
+                setUser({
+                    id: data.id,
+                    email: data.email,
+                    full_name: data.full_name,
+                    profile_image_url: data.profile_image_url,
+                });
             })
             .catch((err) => {
                 if (!isActive) return;

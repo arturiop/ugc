@@ -13,8 +13,18 @@ const AppHeader = () => {
     const [avatarAnchor, setAvatarAnchor] = useState<null | HTMLElement>(null);
     const createProject = useCreateProject();
     const logout = useAuthStore((s) => s.logout);
+    const user = useAuthStore((s) => s.user);
 
     const navigate = useNavigate();
+    const avatarLabel = user?.full_name?.trim() || user?.email?.trim() || "User";
+    const avatarInitials = avatarLabel
+        .split(" ")
+        .filter(Boolean)
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+    const avatarFallback = avatarInitials.padEnd(2, "U").slice(0, 2);
+    const hasProfileImage = Boolean(user?.profile_image_url);
 
     const handleCreateProject = async () => {
         try {
@@ -118,7 +128,42 @@ const AppHeader = () => {
                             <SettingsOutlinedIcon sx={{ fontSize: 20 }} />
                         </IconButton>
                         <IconButton size="small" sx={{ p: 0 }} aria-label="User menu" onClick={handleAvatarOpen}>
-                            <Avatar sx={{ width: 32, height: 32 }} alt="avatar" src="" />
+                            <Avatar
+                                sx={{
+                                    width: 32,
+                                    height: 32,
+                                    bgcolor: "#F7F3ED",
+                                    border: "1px solid",
+                                    borderColor: "rgba(255, 106, 26, 0.5)",
+                                    fontWeight: 700,
+                                    fontSize: 12,
+                                    letterSpacing: 0.6,
+                                    boxShadow:
+                                        "0 0 0 2px rgba(255, 106, 26, 0.18), 0 6px 14px rgba(91, 97, 255, 0.18)",
+                                    position: "relative",
+                                    overflow: "hidden",
+                                    "&::before": {
+                                        content: '""',
+                                        position: "absolute",
+                                        inset: 1,
+                                        borderRadius: "50%",
+                                        background:
+                                            "radial-gradient(65% 65% at 10% 15%, rgba(255, 106, 26, 0.28), transparent 70%), radial-gradient(65% 65% at 90% 85%, rgba(91, 97, 255, 0.28), transparent 70%)",
+                                    },
+                                }}
+                                alt={avatarLabel}
+                                src={user?.profile_image_url || undefined}>
+                                {!hasProfileImage && (
+                                    <Box component="span" sx={{ display: "inline-flex", gap: "2px", zIndex: 1 }}>
+                                        <Box component="span" sx={{ color: "#FF6A1A" }}>
+                                            {avatarFallback[0]}
+                                        </Box>
+                                        <Box component="span" sx={{ color: "#5B61FF" }}>
+                                            {avatarFallback[1]}
+                                        </Box>
+                                    </Box>
+                                )}
+                            </Avatar>
                         </IconButton>
                     </Box>
                 </Toolbar>

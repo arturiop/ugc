@@ -10,6 +10,7 @@ export interface AuthUserResponse {
     id: number;
     email: string;
     full_name?: string | null;
+    profile_image_url?: string | null;
     token: AuthTokenResponse;
 }
 
@@ -17,6 +18,7 @@ export interface CurrentUserResponse {
     id: number;
     email: string;
     full_name?: string | null;
+    profile_image_url?: string | null;
 }
 
 /** Authenticate via Google ID token. */

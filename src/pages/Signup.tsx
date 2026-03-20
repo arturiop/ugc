@@ -24,7 +24,12 @@ export default function Signup() {
         try {
             const normalizedEmail = email.trim().toLowerCase();
             const res = await emailRegister(normalizedEmail, password, fullName.trim() || undefined);
-            login(res.token.access_token, { id: res.id, email: res.email, full_name: res.full_name });
+            login(res.token.access_token, {
+                id: res.id,
+                email: res.email,
+                full_name: res.full_name,
+                profile_image_url: res.profile_image_url,
+            });
             navigate("/dashboard", { replace: true });
         } catch (err: any) {
             setError(err.message || "Registration failed");
@@ -42,7 +47,12 @@ export default function Signup() {
         setLoadingProvider("google");
         try {
             const res = await googleLogin(response.credential);
-            login(res.token.access_token, { id: res.id, email: res.email, full_name: res.full_name });
+            login(res.token.access_token, {
+                id: res.id,
+                email: res.email,
+                full_name: res.full_name,
+                profile_image_url: res.profile_image_url,
+            });
             navigate("/dashboard", { replace: true });
         } catch (err: any) {
             setError(err.message || "Google login failed");
