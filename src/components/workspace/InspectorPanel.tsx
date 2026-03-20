@@ -107,20 +107,28 @@ const VisualTab = ({ scene, storyboard }: { scene: StoryboardScene | null; story
     return (
         <Stack spacing={2}>
             <Card elevation={0} sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider" }}>
-                <Box sx={{ height: 180, bgcolor: "background.default", display: "grid", placeItems: "center" }}>
+                <Box
+                    sx={{
+                        height: 180,
+                        bgcolor: "background.default",
+                        display: "grid",
+                        placeItems: "center",
+                        overflow: "hidden",
+                    }}
+                >
                     {storyboard?.storyboard_image_url ? (
                         <Box
                             component="img"
                             src={storyboard.storyboard_image_url}
                             alt="Storyboard"
-                            sx={{ width: "100%", height: "100%", objectFit: "contain" }}
+                            sx={{ width: "350px", height: "170px", objectFit: "contain", display: "block" }}
                         />
                     ) : scene.generated_image_url ? (
                         <Box
                             component="img"
                             src={scene.generated_image_url}
                             alt={scene.title}
-                            sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            sx={{ width: "350px", height: "170px", objectFit: "contain", display: "block" }}
                         />
                     ) : (
                         <Typography variant="caption" color="text.secondary">

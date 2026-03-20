@@ -25,16 +25,41 @@ const resolveViewMode = (value: string | null): ViewMode => {
 const WorkspacePane = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const activeView = resolveViewMode(searchParams.get("viewMode"));
-    const { projectId, projectName } = useProject();
+    const { projectId, projectName, currentStage } = useProject();
     const { data: storyboardData, isFetching: isRefreshing, refetch } = useProjectStoryboard(projectId);
     const storyboard = storyboardData?.storyboard ?? null;
     const [mode, setMode] = useState<WorkspaceMode>("brief");
+    const [hasInitializedMode, setHasInitializedMode] = useState(false);
     const scenes = useMemo(() => storyboard?.scenes ?? [], [storyboard]);
     const [selectedSceneIndex, setSelectedSceneIndex] = useState<number | null>(null);
     const selectedScene = scenes.find((scene) => scene.scene_index === selectedSceneIndex) ?? scenes[0] ?? null;
     const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
     const [centerPortalTarget, setCenterPortalTarget] = useState<HTMLElement | null>(null);
     const projectTitle = projectName || storyboard?.title || "Project";
+
+    const resolveInitialMode = (stage: string | null, draft: typeof storyboard): WorkspaceMode => {
+        if (stage === "scene_generation") return "scenegen";
+        if (stage === "combine_scenes" || stage === "tags_and_upload") return "final";
+        if (stage === "storyboard") return "storyboard";
+        if (draft?.scenes?.some((scene) => scene.generated_video_url || (scene.video_status && scene.video_status !== "not_started"))) {
+            return "scenegen";
+        }
+        if (draft?.storyboard_image_url || (draft?.scenes && draft.scenes.length > 0)) {
+            return "storyboard";
+        }
+        return "brief";
+    };
+
+    useEffect(() => {
+        setHasInitializedMode(false);
+    }, [projectId]);
+
+    useEffect(() => {
+        if (hasInitializedMode) return;
+        if (!currentStage && !storyboard) return;
+        setMode(resolveInitialMode(currentStage, storyboard));
+        setHasInitializedMode(true);
+    }, [currentStage, storyboard, hasInitializedMode]);
     useEffect(() => {
         if (!scenes.length) {
             setSelectedSceneIndex(null);

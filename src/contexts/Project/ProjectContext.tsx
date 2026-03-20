@@ -3,6 +3,7 @@ import { createContext, useContext } from "react";
 export type ProjectContextType = {
   projectId: string | null;
   projectName: string | null;
+  currentStage: string | null;
 };
 
 export const ProjectContext = createContext<ProjectContextType | null>(null);

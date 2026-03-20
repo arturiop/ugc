@@ -146,7 +146,13 @@ export default function Dashboard() {
                                             <CardMedia
                                                 component="img"
                                                 image={thumb}
-                                                sx={{ height: "100%", width: "100%", objectFit: "cover", display: "block" }}
+                                                sx={{
+                                                    height: "100%",
+                                                    width: "100%",
+                                                    objectFit: "contain",
+                                                    display: "block",
+                                                    bgcolor: "background.default",
+                                                }}
                                                 loading="lazy"
                                             />
                                         ) : (

@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Stack, Typography } from "@mui/material";
+import { Box, Card, CardContent, Chip, Skeleton, Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import type { Storyboard } from "@/api/storyboard";
 
@@ -22,26 +22,43 @@ type StoryboardImageLike = {
     storyboard_url?: string | null;
 };
 
+const getGridDimensions = (imageWidth: number, imageHeight: number, sceneCount: number) => {
+    const isPortrait = imageHeight >= imageWidth;
+
+    if (sceneCount <= 0) {
+        return { columns: 1, rows: 1 };
+    }
+
+    if (isPortrait) {
+        return { columns: 1, rows: sceneCount };
+    }
+
+    if (sceneCount === 9) {
+        return { columns: 3, rows: 3 };
+    }
+    if (sceneCount === 6) {
+        return { columns: 3, rows: 2 };
+    }
+    if (sceneCount === 4) {
+        return { columns: 2, rows: 2 };
+    }
+    if (sceneCount === 3) {
+        return { columns: 3, rows: 1 };
+    }
+    if (sceneCount === 2) {
+        return { columns: 2, rows: 1 };
+    }
+
+    const columns = Math.ceil(Math.sqrt(sceneCount));
+    const rows = Math.ceil(sceneCount / columns);
+    return { columns, rows };
+};
+
 const getUniformGridRects = (imageWidth: number, imageHeight: number, sceneCount: number): SceneRect[] => {
     let columns = 1;
     let rows = 1;
 
-    if (sceneCount === 6) {
-        columns = 3;
-        rows = 2;
-    } else if (sceneCount === 4) {
-        columns = 2;
-        rows = 2;
-    } else if (sceneCount === 3) {
-        columns = 3;
-        rows = 1;
-    } else if (sceneCount === 2) {
-        columns = 2;
-        rows = 1;
-    } else if (sceneCount > 0) {
-        columns = Math.ceil(Math.sqrt(sceneCount));
-        rows = Math.ceil(sceneCount / columns);
-    }
+    ({ columns, rows } = getGridDimensions(imageWidth, imageHeight, sceneCount));
 
     const cellWidth = imageWidth / columns;
     const cellHeight = imageHeight / rows;
@@ -186,22 +203,7 @@ const getFallbackGridRects = (imageWidth: number, imageHeight: number, sceneCoun
     let columns = 1;
     let rows = 1;
 
-    if (sceneCount === 4) {
-        columns = 2;
-        rows = 2;
-    } else if (sceneCount === 6) {
-        columns = 3;
-        rows = 2;
-    } else if (sceneCount === 3) {
-        columns = 3;
-        rows = 1;
-    } else if (sceneCount === 2) {
-        columns = 2;
-        rows = 1;
-    } else if (sceneCount > 0) {
-        columns = Math.ceil(Math.sqrt(sceneCount));
-        rows = Math.ceil(sceneCount / columns);
-    }
+    ({ columns, rows } = getGridDimensions(imageWidth, imageHeight, sceneCount));
 
     const gap = Math.max(8, Math.round(Math.min(imageWidth, imageHeight) * 0.01));
     const cellWidth = (imageWidth - gap * (columns + 1)) / columns;
@@ -432,7 +434,11 @@ const StoryboardMode = ({ storyboard, selectedSceneIndex, onSelectScene }: Story
     const storyboardImageUrl = getStoryboardImageUrl(storyboard);
     const { rects, imageSize } = useStoryboardRects(storyboardImageUrl, scenes.length);
     const displayRects =
-        imageSize && scenes.length > 0 ? getUniformGridRects(imageSize.width, imageSize.height, scenes.length) : rects;
+        imageSize && scenes.length > 0
+            ? rects.length === scenes.length
+                ? rects
+                : getUniformGridRects(imageSize.width, imageSize.height, scenes.length)
+            : rects;
     const readyCount = scenes.filter((scene) => Boolean(scene.generated_image_url)).length;
     if (!storyboard) {
         return <StoryboardEmptyState />;
@@ -456,14 +462,102 @@ export default StoryboardMode;
 
 const StoryboardEmptyState = () => (
     <Box sx={{ p: { xs: 2.5, md: 4 }, height: "100%", overflowY: "auto" }}>
-        <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
+        <Card
+            elevation={0}
+            sx={{
+                borderRadius: 3,
+                border: "1px solid",
+                borderColor: "divider",
+                background:
+                    "linear-gradient(135deg, rgba(255, 240, 220, 0.6) 0%, rgba(245, 248, 255, 0.8) 55%, rgba(235, 245, 240, 0.7) 100%)",
+            }}
+        >
             <CardContent>
-                <Typography variant="h6" fontWeight={700}>
-                    No storyboard available
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                    Generate a storyboard to see the scenes laid out here.
-                </Typography>
+                <Stack spacing={3}>
+                    <Stack
+                        direction={{ xs: "column", md: "row" }}
+                        spacing={3}
+                        alignItems={{ xs: "stretch", md: "center" }}
+                        justifyContent="space-between"
+                    >
+                        <Stack spacing={1.5} sx={{ maxWidth: 420 }}>
+                            <Typography variant="overline" sx={{ letterSpacing: 1.6, fontWeight: 700, color: "text.secondary" }}>
+                                Storyboard preview
+                            </Typography>
+                            <Typography variant="h6" fontWeight={700}>
+                                No storyboard available
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                Generate a storyboard to see the scenes laid out here.
+                            </Typography>
+                            <Stack direction="row" spacing={1} flexWrap="wrap">
+                                {["Hook", "Problem", "Product", "CTA"].map((label) => (
+                                    <Chip key={label} label={label} size="small" />
+                                ))}
+                            </Stack>
+                        </Stack>
+                        <Card
+                            elevation={0}
+                            sx={{
+                                borderRadius: 2.5,
+                                border: "1px solid",
+                                borderColor: "divider",
+                                bgcolor: "background.paper",
+                                minWidth: { xs: "100%", md: 260 },
+                            }}
+                        >
+                            <CardContent sx={{ py: 2 }}>
+                                <Stack spacing={1.5}>
+                                    <Typography variant="subtitle2" fontWeight={700}>
+                                        Example scene flow
+                                    </Typography>
+                                    {[
+                                        "1. Creator hook",
+                                        "2. Pain point",
+                                        "3. Product demo",
+                                        "4. Results + CTA",
+                                    ].map((line) => (
+                                        <Stack key={line} direction="row" spacing={1} alignItems="center">
+                                            <Box
+                                                sx={{
+                                                    width: 8,
+                                                    height: 8,
+                                                    borderRadius: "50%",
+                                                    bgcolor: "text.secondary",
+                                                    opacity: 0.6,
+                                                }}
+                                            />
+                                            <Typography variant="body2" color="text.secondary">
+                                                {line}
+                                            </Typography>
+                                        </Stack>
+                                    ))}
+                                </Stack>
+                            </CardContent>
+                        </Card>
+                    </Stack>
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", sm: "repeat(3, minmax(0, 1fr))" },
+                            gap: 1.5,
+                        }}
+                    >
+                        {Array.from({ length: 6 }).map((_, index) => (
+                            <Card
+                                key={`storyboard-skeleton-${index}`}
+                                elevation={0}
+                                sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider", overflow: "hidden" }}
+                            >
+                                <Skeleton variant="rectangular" height={96} animation="wave" />
+                                <Box sx={{ p: 1.25 }}>
+                                    <Skeleton variant="text" width="70%" animation="wave" />
+                                    <Skeleton variant="text" width="55%" animation="wave" />
+                                </Box>
+                            </Card>
+                        ))}
+                    </Box>
+                </Stack>
             </CardContent>
         </Card>
     </Box>
