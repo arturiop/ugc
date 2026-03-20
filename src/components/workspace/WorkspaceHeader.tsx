@@ -15,13 +15,17 @@ const navButtonStyles = (isActive: boolean) => ({
     fontWeight: 600,
     borderRadius: 2,
     border: "1px solid",
-    borderColor: isActive ? "primary.main" : "transparent",
+    borderColor: isActive ? "secondary.main" : "transparent",
     color: "text.secondary",
+    "&:hover": {
+        bgcolor: isActive ? "secondary.dark" : "action.hover",
+        borderColor: isActive ? "secondary.dark" : "transparent",
+    },
     ...(isActive
         ? {
-              bgcolor: "primary.main",
-              color: "primary.contrastText",
-              boxShadow: "0 6px 16px rgba(0, 0, 0, 0.12)",
+              bgcolor: "secondary.main",
+              color: "secondary.contrastText",
+              boxShadow: "0 8px 18px rgba(91, 97, 255, 0.28)",
           }
         : {}),
 });
@@ -51,13 +55,13 @@ const WorkspaceHeader = ({ mode, activeView = "studio", onModeChange, onViewChan
                     display: "flex",
                     alignItems: "center",
                     gap: 1,
-                    px: 1,
-                    py: 0.5,
+                    px: 1.5,
+                    py: 0.75,
                     borderRadius: 999,
                     bgcolor: "background.paper",
                     border: "1px solid",
                     borderColor: "divider",
-                    boxShadow: "0 6px 16px rgba(0, 0, 0, 0.08)",
+                    boxShadow: "0 10px 24px rgba(11, 13, 18, 0.08)",
                 }}
             >
                 <Stack direction="row" spacing={1}>

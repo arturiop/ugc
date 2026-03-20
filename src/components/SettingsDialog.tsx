@@ -26,7 +26,6 @@ import BrushOutlinedIcon from "@mui/icons-material/BrushOutlined";
 import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
 import TuneOutlinedIcon from "@mui/icons-material/TuneOutlined";
 import { useThemeMode } from "@/theme";
-import { useAuthStore } from "@/stores/useAuthStore";
 import { createShareToken } from "@/api/auth/auth";
 
 type SettingsDialogProps = {
@@ -36,16 +35,10 @@ type SettingsDialogProps = {
 
 const SettingsDialog = ({ open, onClose }: SettingsDialogProps) => {
     const { mode, setMode } = useThemeMode();
-    const logout = useAuthStore((s) => s.logout);
     const navigate = useNavigate();
     const [shareLink, setShareLink] = useState("");
     const [shareError, setShareError] = useState<string | null>(null);
     const [sharePending, setSharePending] = useState(false);
-
-    const handleLogout = () => {
-        logout();
-        navigate("/login", { replace: true });
-    };
 
     const handleGenerateShare = async () => {
         setSharePending(true);
@@ -196,10 +189,6 @@ const SettingsDialog = ({ open, onClose }: SettingsDialogProps) => {
                 </Stack>
             </DialogContent>
             <DialogActions>
-                <Button color="error" onClick={handleLogout}>
-                    Log out
-                </Button>
-                <Box sx={{ flex: 1 }} />
                 <Button onClick={onClose}>Close</Button>
             </DialogActions>
         </Dialog>

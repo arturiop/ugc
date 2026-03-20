@@ -60,6 +60,7 @@ const WorkspacePane = () => {
         setMode(resolveInitialMode(currentStage, storyboard));
         setHasInitializedMode(true);
     }, [currentStage, storyboard, hasInitializedMode]);
+
     useEffect(() => {
         if (!scenes.length) {
             setSelectedSceneIndex(null);
@@ -151,7 +152,7 @@ const WorkspacePane = () => {
                     )}
                 </Box>
             ) : (
-                <Box sx={{ p: 2.5, flex: 1, overflowY: "auto", bgcolor: "background.default" }}>
+                <Box sx={{ p: 2.5, flex: 1, overflowY: "auto", bgcolor: "background.neutral" }}>
                     {activeView === "assets" && <AssetsPane />}
                     {activeView === "generated_content" && <GeneratedContentPanel />}
                 </Box>

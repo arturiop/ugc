@@ -170,7 +170,7 @@ const BriefMode = ({ storyboard }: BriefModeProps) => {
             <Box sx={{ maxWidth: 860, mx: "auto", px: 4, py: 5, display: "flex", flexDirection: "column", gap: 5 }}>
                 <Box component="section" sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     <FieldLabel icon={FileText} label="Creative Brief" />
-                    <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
+                    <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
                         <CardContent>
                             <TextField
                                 value={storyboard?.concept || ""}
@@ -204,7 +204,7 @@ const BriefMode = ({ storyboard }: BriefModeProps) => {
                             borderRadius: 3,
                             border: "1px dashed",
                             borderColor: "divider",
-                            bgcolor: "background.paper",
+                            bgcolor: "background.neutral",
                         }}
                         onDragOver={(event) => {
                             event.preventDefault();
@@ -320,7 +320,7 @@ const BriefMode = ({ storyboard }: BriefModeProps) => {
                                                             width: 100,
                                                             height: 100,
                                                             borderRadius: 1,
-                                                            bgcolor: "action.hover",
+                                                            bgcolor: "background.neutral",
                                                             overflow: "hidden",
                                                             display: "grid",
                                                             placeItems: "center",
@@ -364,7 +364,7 @@ const BriefMode = ({ storyboard }: BriefModeProps) => {
                 </Box>
 
                 <Box component="section" sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
+                    <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
                         <CardContent sx={{ py: 2 }}>
                             <Stack spacing={1}>
                                 <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} alignItems={{ md: "center" }}>
@@ -388,7 +388,7 @@ const BriefMode = ({ storyboard }: BriefModeProps) => {
                                 {references.length > 0 && (
                                     <Stack spacing={1.5}>
                                         {references.map((item, index) => (
-                                            <Card key={`${item}-${index}`} elevation={0} sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider" }}>
+                                            <Card key={`${item}-${index}`} elevation={0} sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
                                                 <CardContent sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 1.5 }}>
                                                     <Typography variant="body2" sx={{ mr: 2 }} noWrap>
                                                         {item}
@@ -414,7 +414,7 @@ const BriefMode = ({ storyboard }: BriefModeProps) => {
                                 <Chip
                                     key={opt}
                                     label={opt}
-                                    color={selectedTones.includes(opt) ? "primary" : "default"}
+                                    color={selectedTones.includes(opt) ? "secondary" : "default"}
                                     variant={selectedTones.includes(opt) ? "filled" : "outlined"}
                                     onClick={() => toggleTone(opt)}
                                 />
@@ -428,7 +428,7 @@ const BriefMode = ({ storyboard }: BriefModeProps) => {
                                 <Chip
                                     key={opt}
                                     label={opt}
-                                    color={formState.audience === opt ? "primary" : "default"}
+                                    color={formState.audience === opt ? "secondary" : "default"}
                                     variant={formState.audience === opt ? "filled" : "outlined"}
                                     onClick={() => updateField("audience", opt)}
                                 />
@@ -448,13 +448,16 @@ const BriefMode = ({ storyboard }: BriefModeProps) => {
                                     variant="outlined"
                                     onClick={() => setDuration(option)}
                                     sx={{
-                                        bgcolor: "transparent",
-                                        borderColor: duration === option ? "text.primary" : "divider",
-                                        color: duration === option ? "text.primary" : "text.secondary",
+                                        bgcolor: duration === option ? "secondary.lighter" : "transparent",
+                                        borderColor: duration === option ? "secondary.main" : "divider",
+                                        color: duration === option ? "secondary.main" : "text.secondary",
                                         borderRadius: 2,
                                         minWidth: 64,
                                         height: 40,
-                                        "&:hover": { bgcolor: "transparent", borderColor: "text.primary" },
+                                        "&:hover": {
+                                            bgcolor: duration === option ? "secondary.lighter" : "action.hover",
+                                            borderColor: duration === option ? "secondary.main" : "divider",
+                                        },
                                     }}>
                                     {option}
                                 </Button>
@@ -546,8 +549,9 @@ function FormatPreview({ format, active }: { format: Storyboard["aspect_ratio"];
                 display: "grid",
                 placeItems: "center",
                 border: "2px solid",
-                borderColor: active ? "text.primary" : "divider",
-                color: active ? "text.primary" : "text.secondary",
+                borderColor: active ? "secondary.main" : "divider",
+                color: active ? "secondary.main" : "text.secondary",
+                bgcolor: active ? "secondary.lighter" : "transparent",
                 fontSize: 9,
                 fontWeight: 700,
             }}>

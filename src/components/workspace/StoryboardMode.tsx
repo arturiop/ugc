@@ -469,7 +469,7 @@ const StoryboardEmptyState = () => (
                 border: "1px solid",
                 borderColor: "divider",
                 background:
-                    "linear-gradient(135deg, rgba(255, 240, 220, 0.6) 0%, rgba(245, 248, 255, 0.8) 55%, rgba(235, 245, 240, 0.7) 100%)",
+                    "linear-gradient(135deg, rgba(255, 106, 26, 0.12) 0%, rgba(91, 97, 255, 0.14) 100%)",
             }}
         >
             <CardContent>
@@ -633,8 +633,8 @@ const StoryboardGridItem = ({ scene, isSelected, onSelect, storyboardImageUrl, i
             sx={{
                 borderRadius: 3,
                 border: "1px solid",
-                borderColor: isSelected ? "primary.main" : "divider",
-                bgcolor: isSelected ? "action.selected" : "background.paper",
+                borderColor: isSelected ? "secondary.main" : "divider",
+                bgcolor: isSelected ? "secondary.lighter" : "background.paper",
                 overflow: "hidden",
                 cursor: "pointer",
             }}

@@ -31,7 +31,7 @@ const FinalVideoMode = ({ storyboard }: FinalVideoModeProps) => {
     return (
         <Box sx={{ p: { xs: 2.5, md: 4 }, height: "100%", overflowY: "auto" }}>
             <Stack spacing={2.5} sx={{ maxWidth: 960, mx: "auto" }}>
-                <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
+                <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
                     <CardContent>
                         <Typography variant="overline" sx={{ letterSpacing: 1.5, fontWeight: 700, color: "text.secondary" }}>
                             Final assembly
@@ -45,8 +45,8 @@ const FinalVideoMode = ({ storyboard }: FinalVideoModeProps) => {
                     </CardContent>
                 </Card>
 
-                <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider", overflow: "hidden" }}>
-                    <Box sx={{ bgcolor: "background.default", minHeight: 280, display: "grid", placeItems: "center" }}>
+                <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider", bgcolor: "background.paper", overflow: "hidden" }}>
+                    <Box sx={{ bgcolor: "background.neutral", minHeight: 280, display: "grid", placeItems: "center" }}>
                         {heroScene?.generated_video_url ? (
                             <Box
                                 component="video"
@@ -95,7 +95,7 @@ const FinalVideoMode = ({ storyboard }: FinalVideoModeProps) => {
                             <Card
                                 key={scene.scene_index}
                                 elevation={0}
-                                sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider" }}
+                                sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}
                             >
                                 <CardContent>
                                     <Typography variant="subtitle1" fontWeight={700} gutterBottom>

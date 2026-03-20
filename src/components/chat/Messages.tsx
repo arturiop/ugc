@@ -55,7 +55,7 @@ function UserMessage() {
                     <Paper
                         elevation={0}
                         sx={{
-                            bgcolor: "grey.100",
+                            bgcolor: "background.neutral",
                             border: "1px solid",
                             borderColor: "divider",
                             borderRadius: 3,
@@ -87,8 +87,8 @@ function AssistantMessage() {
                         width: 32,
                         height: 32,
                         borderRadius: "999px",
-                        bgcolor: "primary.main",
-                        color: "primary.contrastText",
+                        bgcolor: "secondary.main",
+                        color: "secondary.contrastText",
                         display: "grid",
                         placeItems: "center",
                         flex: "0 0 auto",

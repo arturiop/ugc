@@ -27,7 +27,7 @@ const InspectorPanel = ({ mode, storyboard, scene }: InspectorPanelProps) => {
                 minWidth: 300,
                 borderLeft: "1px solid",
                 borderColor: "divider",
-                bgcolor: "background.paper",
+                bgcolor: "background.neutral",
                 display: "flex",
                 flexDirection: "column",
             }}
@@ -46,6 +46,8 @@ const InspectorPanel = ({ mode, storyboard, scene }: InspectorPanelProps) => {
                             borderBottom: "1px solid",
                             borderColor: "divider",
                             "& .MuiTab-root": { minHeight: 40, textTransform: "none", fontWeight: 600 },
+                            "& .MuiTab-root.Mui-selected": { color: "secondary.main" },
+                            "& .MuiTabs-indicator": { backgroundColor: "secondary.main" },
                         }}
                     >
                         {TABS.map((tab) => (
@@ -67,7 +69,7 @@ const InspectorPanel = ({ mode, storyboard, scene }: InspectorPanelProps) => {
 const SceneHeader = ({ scene, statusLabel }: { scene: StoryboardScene | null; statusLabel: string }) => {
     if (!scene) {
         return (
-            <Box sx={{ px: 2, py: 2, borderBottom: "1px solid", borderColor: "divider" }}>
+            <Box sx={{ px: 2, py: 2, borderBottom: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
                 <Typography variant="body2" color="text.secondary">
                     Select a scene to inspect details.
                 </Typography>
@@ -76,7 +78,7 @@ const SceneHeader = ({ scene, statusLabel }: { scene: StoryboardScene | null; st
     }
 
     return (
-        <Box sx={{ px: 2, py: 2, borderBottom: "1px solid", borderColor: "divider" }}>
+        <Box sx={{ px: 2, py: 2, borderBottom: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
             <Stack spacing={0.5}>
                 <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
                     <Typography variant="subtitle2" fontWeight={700}>
@@ -106,11 +108,11 @@ const VisualTab = ({ scene, storyboard }: { scene: StoryboardScene | null; story
 
     return (
         <Stack spacing={2}>
-            <Card elevation={0} sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider" }}>
+            <Card elevation={0} sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
                 <Box
                     sx={{
                         height: 180,
-                        bgcolor: "background.default",
+                        bgcolor: "background.paper",
                         display: "grid",
                         placeItems: "center",
                         overflow: "hidden",
@@ -161,7 +163,7 @@ const ScriptTab = ({ scene }: { scene: StoryboardScene | null }) => {
             <Typography variant="caption" color="text.secondary">
                 Script
             </Typography>
-            <Card elevation={0} sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider" }}>
+            <Card elevation={0} sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
                 <CardContent>
                     <Typography variant="body2">{scene.script}</Typography>
                 </CardContent>
@@ -178,7 +180,11 @@ const MotionTab = () => {
             </Typography>
             <Stack spacing={1}>
                 {["Pacing", "Transitions", "Camera"].map((label) => (
-                    <Card key={label} elevation={0} sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider" }}>
+                    <Card
+                        key={label}
+                        elevation={0}
+                        sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}
+                    >
                         <CardContent sx={{ py: 1.5 }}>
                             <Stack direction="row" alignItems="center" justifyContent="space-between">
                                 <Typography variant="body2" color="text.secondary">
@@ -210,7 +216,7 @@ const PromptTab = ({ scene }: { scene: StoryboardScene | null }) => {
             <Typography variant="caption" color="text.secondary">
                 Visual prompt
             </Typography>
-            <Card elevation={0} sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider" }}>
+            <Card elevation={0} sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
                 <CardContent>
                     <Typography variant="body2">{scene.visual_prompt}</Typography>
                 </CardContent>
@@ -219,7 +225,7 @@ const PromptTab = ({ scene }: { scene: StoryboardScene | null }) => {
             <Typography variant="caption" color="text.secondary">
                 Frame prompt
             </Typography>
-            <Card elevation={0} sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider" }}>
+            <Card elevation={0} sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
                 <CardContent>
                     <Typography variant="body2">{scene.frame_prompt}</Typography>
                 </CardContent>
@@ -263,7 +269,7 @@ const BriefInspector = ({ storyboard }: { storyboard: Storyboard | null }) => {
                                 <Card
                                     key={`${item}-${index}`}
                                     elevation={0}
-                                    sx={{ borderRadius: 2, border: "1px solid", borderColor: "divider" }}
+                                    sx={{ borderRadius: 2, border: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}
                                 >
                                     <CardContent sx={{ py: 1.25 }}>
                                         <Typography variant="body2">{item}</Typography>

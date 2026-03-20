@@ -4,6 +4,8 @@ import { MessageSquare, Sparkles, Play, ArrowRight, Check, Plus, Image, ArrowUp,
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 import { useCreateProject } from "@/api/projects/hooks";
+import { WatchableLogoText } from "@/components/logoText";
+
 
 const Index = () => {
     const navigate = useNavigate();
@@ -28,9 +30,7 @@ const Index = () => {
         <div className="min-h-screen bg-background">
             {/* Nav */}
             <nav className="flex items-center justify-between px-6 md:px-16 py-5">
-                <span className="text-xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                    Watchable
-                </span>
+                <WatchableLogoText />
                 <div className="flex items-center gap-3">
                     <Button size="small" onClick={() => navigate("/login")}>
                         Log in

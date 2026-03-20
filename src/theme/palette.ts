@@ -18,69 +18,78 @@ declare module "@mui/material/styles" {
 
 const GREY = {
     0: "#FFFFFF",
-    100: "#FCFBFA",
-    200: "#F5F3EF",
-    300: "#ECE8E2",
-    400: "#D6D1C9",
-    500: "#B7B2A8",
-    600: "#8E8A82",
-    700: "#6A675F",
-    800: "#3A3935",
-    900: "#262522",
+    100: "#F5F7FA",
+    200: "#EEF2F6",
+    300: "#D7DEE7",
+    400: "#C5CEDA",
+    500: "#98A2B3",
+    600: "#667085",
+    700: "#2D3340",
+    800: "#151922",
+    900: "#0B0D12",
 };
 
 const PRIMARY = {
-    lighter: "#EEEDE9",
-    light: "#D6D4CE",
-    main: "#3A3935",
-    dark: "#2E2D29",
-    darker: "#1F1E1B",
+    lighter: "#FFE2D2",
+    light: "#FFB98F",
+    main: "#FF6A1A",
+    dark: "#E85A0C",
+    darker: "#C84B07",
+    contrastText: "#FFFFFF",
+};
+
+const PRIMARY2 = {
+    lighter: "#EEF2F6",
+    light: "#D7DEE7",
+    main: "#0B0D12",
+    dark: "#151922",
+    darker: "#2D3340",
     contrastText: "#FFFFFF",
 };
 
 const SECONDARY = {
-    lighter: "#EEF3EF",
-    light: "#D6E1D8",
-    main: "#B7C8BA",
-    dark: "#8FA294",
-    darker: "#6A7C70",
-    contrastText: "#262522",
+    lighter: "#E7E9FF",
+    light: "#C7CCFF",
+    main: "#5B61FF",
+    dark: "#4046E6",
+    darker: "#2D31B8",
+    contrastText: "#FFFFFF",
 };
 
 const INFO = {
-    lighter: "#F0F3F2",
-    light: "#D9E3E1",
-    main: "#B9C9C6",
-    dark: "#93A8A4",
-    darker: "#6E8480",
-    contrastText: "#262522",
+    lighter: "#E7E9FF",
+    light: "#C7CCFF",
+    main: "#5B61FF",
+    dark: "#4046E6",
+    darker: "#2D31B8",
+    contrastText: "#FFFFFF",
 };
 
 const SUCCESS = {
-    lighter: "#EFF5F1",
-    light: "#D6E8DD",
-    main: "#B6D3C3",
-    dark: "#8FB6A0",
-    darker: "#6C907E",
-    contrastText: "#262522",
+    lighter: "#DDF4EE",
+    light: "#AEE3D3",
+    main: "#0F8B6D",
+    dark: "#0B6E56",
+    darker: "#064E3B",
+    contrastText: "#FFFFFF",
 };
 
 const WARNING = {
-    lighter: "#F7F2EB",
-    light: "#EADFD1",
-    main: "#D4C3AE",
-    dark: "#B19A7F",
-    darker: "#8A6F57",
-    contrastText: "#262522",
+    lighter: "#FBE9D5",
+    light: "#F0C59B",
+    main: "#D9822B",
+    dark: "#B96A1F",
+    darker: "#8A4A12",
+    contrastText: "#FFFFFF",
 };
 
 const ERROR = {
-    lighter: "#F6ECE8",
-    light: "#E8D2C9",
-    main: "#D6B2A6",
-    dark: "#B3897B",
-    darker: "#8C5F54",
-    contrastText: "#262522",
+    lighter: "#F9D7D7",
+    light: "#F1B0B0",
+    main: "#D64545",
+    dark: "#B23333",
+    darker: "#7E1F1F",
+    contrastText: "#FFFFFF",
 };
 
 const COMMON = {
@@ -92,14 +101,14 @@ const COMMON = {
     warning: WARNING,
     error: ERROR,
     grey: GREY,
-    divider: alpha(GREY[500], 0.2),
+    divider: "#E6EBF1",
     action: {
-        hover: alpha(GREY[500], 0.06),
-        selected: alpha(GREY[500], 0.12),
+        hover: alpha(GREY[900], 0.04),
+        selected: alpha(GREY[900], 0.08),
         disabled: alpha(GREY[500], 0.4),
         disabledBackground: alpha(GREY[500], 0.16),
-        focus: alpha(GREY[500], 0.12),
-        hoverOpacity: 0.06,
+        focus: alpha(GREY[900], 0.12),
+        hoverOpacity: 0.04,
         disabledOpacity: 0.4,
     },
 };
@@ -108,14 +117,14 @@ export const lightPalette = {
     ...COMMON,
     mode: "light",
     text: {
-        primary: GREY[800],
+        primary: GREY[900],
         secondary: GREY[600],
         disabled: GREY[500],
     },
     background: {
-        default: "#FAF9F6",
-        paper: "#FFFFFF",
-        neutral: "#F1EFEA",
+        default: GREY[100],
+        paper: GREY[0],
+        neutral: GREY[200],
     },
     action: {
         ...COMMON.action,
@@ -128,22 +137,29 @@ export const darkPalette = {
     mode: "dark",
     primary: {
         ...PRIMARY,
-        lighter: "#F4EFE6",
-        light: "#E6DED3",
-        main: "#D1C4B1",
-        dark: "#B7A791",
-        darker: "#9A8A74",
-        contrastText: "#262522",
+        main: "#FF8A3D",
+        dark: "#FF6A1A",
+        darker: "#E85A0C",
+        contrastText: "#0B0D12",
+    },
+    secondary: {
+        ...SECONDARY,
+        lighter: "#E7E9FF",
+        light: "#C7CCFF",
+        main: "#5B61FF",
+        dark: "#4046E6",
+        darker: "#2D31B8",
+        contrastText: "#F8FAFC",
     },
     text: {
-        primary: "#F4F2ED",
-        secondary: "#D6D1C9",
-        disabled: "#9A958C",
+        primary: "#F8FAFC",
+        secondary: "#D7DEE7",
+        disabled: "#98A2B3",
     },
     background: {
-        paper: "#2F2E2B",
-        default: "#262522",
-        neutral: alpha(GREY[500], 0.16),
+        paper: "#151922",
+        default: "#0B0D12",
+        neutral: "#1C212B",
     },
     action: {
         ...COMMON.action,

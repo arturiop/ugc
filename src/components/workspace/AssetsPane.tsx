@@ -26,7 +26,7 @@ const AssetsPane = () => {
                 sx={{
                     p: 3,
                     borderRadius: 2.5,
-                    bgcolor: "background.paper",
+                    bgcolor: "background.neutral",
                     borderStyle: "dashed",
                     textAlign: "center",
                 }}>
@@ -87,6 +87,7 @@ function AssetItem({
                 borderRadius: 3,
                 borderStyle: "solid",
                 overflow: "hidden",
+                bgcolor: "background.paper",
             }}>
             <Box
                 component="img"
@@ -96,7 +97,7 @@ function AssetItem({
                     width: "100%",
                     aspectRatio: "1 / 1",
                     objectFit: "contain",
-                    bgcolor: "background.paper",
+                    bgcolor: "background.neutral",
                     display: "block",
                     borderBottom: "1px solid",
                     borderColor: "divider",

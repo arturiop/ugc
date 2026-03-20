@@ -6,6 +6,7 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import SettingsDialog from "./SettingsDialog";
 import { useCreateProject } from "@/api/projects/hooks";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { WatchableLogoText } from "./logoText";
 
 const AppHeader = () => {
     const [settingsOpen, setSettingsOpen] = useState(false);
@@ -44,11 +45,20 @@ const AppHeader = () => {
 
     return (
         <>
-            <AppBar position="sticky" color="default" elevation={0} sx={{ borderBottom: "1px solid", borderColor: "divider" }}>
+            <AppBar
+                position="sticky"
+                color="default"
+                elevation={0}
+                sx={{
+                    borderBottom: "1px solid",
+                    borderColor: "divider",
+                    bgcolor: "background.paper",
+                }}
+            >
                 <Toolbar
                     sx={{
                         minHeight: { xs: 56 },
-                        px: 2,
+                        px: 2.5,
                         display: "flex",
                         justifyContent: "space-between",
                         position: "relative",
@@ -58,7 +68,14 @@ const AppHeader = () => {
                             onClick={() => navigate('/dashboard')}
                             src="/logo.png"
                             alt="Project icon"
-                            sx={{ width: 36, height: 36, border: "1px solid", borderColor: "divider", cursor: "pointer" }}
+                            sx={{
+                                width: 36,
+                                height: 36,
+                                border: "1px solid",
+                                borderColor: "divider",
+                                bgcolor: "background.neutral",
+                                cursor: "pointer",
+                            }}
                         />
                         <Box
                             id="app-header-portal"
@@ -87,7 +104,12 @@ const AppHeader = () => {
                             variant="contained"
                             color="primary"
                             startIcon={<EditOutlinedIcon />}
-                            sx={{ borderRadius: 999, textTransform: "none", fontWeight: 600 }}
+                            sx={{
+                                borderRadius: 999,
+                                textTransform: "none",
+                                fontWeight: 700,
+                                boxShadow: "0 10px 18px rgba(255, 106, 26, 0.24)",
+                            }}
                             onClick={handleCreateProject}
                             disabled={createProject.isPending}>
                             New project

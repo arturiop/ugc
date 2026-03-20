@@ -112,20 +112,20 @@ const SceneGenMode = ({ storyboard, selectedSceneIndex, onSelectScene }: SceneGe
                                 </Typography>
                             </Stack>
 
-                            <Box
-                                sx={{
-                                    flex: 1,
-                                    mt: 2,
-                                    borderRadius: 3,
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                    bgcolor: "background.default",
-                                    display: "grid",
-                                    placeItems: "center",
-                                    minHeight: 240,
-                                    overflow: "hidden",
-                                }}
-                            >
+                                <Box
+                                    sx={{
+                                        flex: 1,
+                                        mt: 2,
+                                        borderRadius: 3,
+                                        border: "1px solid",
+                                        borderColor: "divider",
+                                        bgcolor: "background.neutral",
+                                        display: "grid",
+                                        placeItems: "center",
+                                        minHeight: 240,
+                                        overflow: "hidden",
+                                    }}
+                                >
                                 {selectedScene.generated_video_url ? (
                                     <Box
                                         component="video"
@@ -186,7 +186,7 @@ const SceneGenMode = ({ storyboard, selectedSceneIndex, onSelectScene }: SceneGe
                         width: { xs: 240, md: 300 },
                         borderLeft: "1px solid",
                         borderColor: "divider",
-                        bgcolor: "background.default",
+                        bgcolor: "background.neutral",
                         overflowY: "auto",
                     }}
                 >
@@ -206,8 +206,8 @@ const SceneGenMode = ({ storyboard, selectedSceneIndex, onSelectScene }: SceneGe
                                     sx={{
                                         borderRadius: 2.5,
                                         border: "1px solid",
-                                        borderColor: isSelected ? "primary.main" : "divider",
-                                        bgcolor: isSelected ? "action.selected" : "background.paper",
+                                        borderColor: isSelected ? "secondary.main" : "divider",
+                                        bgcolor: isSelected ? "secondary.lighter" : "background.paper",
                                     }}
                                 >
                                     <CardActions sx={{ px: 1.5, py: 1 }}>

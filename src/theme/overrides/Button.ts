@@ -32,32 +32,35 @@ export default function Button(theme: Theme) {
             ...(inheritColor && {
                 // CONTAINED
                 ...(containedVariant && {
-                    'color': theme.palette.grey[800],
+                    'backgroundColor': "#0B0D12",
+                    'color': theme.palette.common.white,
                     '&:hover': {
                         boxShadow: theme.customShadows.z8,
-                        backgroundColor: theme.palette.grey[400],
+                        backgroundColor: "#151922",
                     },
                 }),
                 // OUTLINED
                 ...(outlinedVariant && {
-                    'borderColor': alpha(theme.palette.grey[500], 0.32),
+                    'borderColor': "#0B0D12",
+                    'color': "#0B0D12",
                     '&:hover': {
-                        borderColor: theme.palette.text.primary,
-                        backgroundColor: theme.palette.action.hover,
+                        borderColor: "#151922",
+                        backgroundColor: alpha("#0B0D12", 0.04),
                     },
                 }),
                 // TEXT
                 ...(textVariant && {
+                    'color': "#0B0D12",
                     '&:hover': {
-                        backgroundColor: theme.palette.action.hover,
+                        backgroundColor: alpha("#0B0D12", 0.04),
                     },
                 }),
                 // SOFT
                 ...(softVariant && {
-                    'color': theme.palette.text.primary,
-                    'backgroundColor': alpha(theme.palette.grey[500], 0.08),
+                    'color': "#0B0D12",
+                    'backgroundColor': alpha("#0B0D12", 0.08),
                     '&:hover': {
-                        backgroundColor: alpha(theme.palette.grey[500], 0.24),
+                        backgroundColor: alpha("#0B0D12", 0.16),
                     },
                 }),
             }),
@@ -115,6 +118,7 @@ export default function Button(theme: Theme) {
         MuiButton: {
             defaultProps: {
                 disableElevation: true,
+                color: 'inherit',
             },
 
             styleOverrides: {

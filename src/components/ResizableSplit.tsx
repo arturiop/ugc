@@ -57,7 +57,19 @@ function ResizableSplit({ left, right, initialLeftPct = 21, minLeftPct = 20, max
                 bgcolor: "background.default",
             }}>
             {/* Left panel */}
-            <Box sx={{ ...leftStyle, minWidth: 320, overflow: "hidden", display: "flex" }}>{left}</Box>
+            <Box
+                sx={{
+                    ...leftStyle,
+                    minWidth: 320,
+                    overflow: "hidden",
+                    display: "flex",
+                    bgcolor: "background.paper",
+                    borderRight: "1px solid",
+                    borderColor: "divider",
+                }}
+            >
+                {left}
+            </Box>
 
             {/* Resize handle */}
             <Box
@@ -69,7 +81,7 @@ function ResizableSplit({ left, right, initialLeftPct = 21, minLeftPct = 20, max
                     document.body.style.userSelect = "none";
                 }}
                 sx={{
-                    width: 10,
+                    width: 8,
                     position: "relative",
                     cursor: "col-resize",
                     flex: "0 0 auto",
@@ -84,12 +96,22 @@ function ResizableSplit({ left, right, initialLeftPct = 21, minLeftPct = 20, max
                         bgcolor: "divider",
                         opacity: 0.6,
                     },
-                    "&:hover::after": { opacity: 1 },
+                    "&:hover::after": { opacity: 1, bgcolor: "secondary.main" },
                 }}
             />
 
             {/* Right panel */}
-            <Box sx={{ ...rightStyle, minWidth: 420, overflow: "hidden", display: "flex" }}>{right}</Box>
+            <Box
+                sx={{
+                    ...rightStyle,
+                    minWidth: 420,
+                    overflow: "hidden",
+                    display: "flex",
+                    bgcolor: "background.default",
+                }}
+            >
+                {right}
+            </Box>
         </Box>
     );
 }

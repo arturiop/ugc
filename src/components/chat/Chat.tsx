@@ -78,10 +78,10 @@ function ProjectChat2({ projectId, m }: { projectId: string; m: any[] }) {
                         width: "100%",
                         display: "flex",
                         flexDirection: "column",
-                        bgcolor: "background.default",
+                        bgcolor: "background.paper",
                         "--thread-max-width": "100%",
-                        "--accent-color": "#10a37f",
-                        "--accent-foreground": "#ffffff",
+                        "--accent-color": (theme: any) => theme.palette.primary.main,
+                        "--accent-foreground": (theme: any) => theme.palette.primary.contrastText,
                     } as any
                 }>
                 <ProjectChatThread />
@@ -110,7 +110,7 @@ export function ProjectChat() {
     const { data, isLoading, error, isFetching } = useProjectChatHistory(projectId);
     console.log('data, isLoading, error, isFetching', data, isLoading, error, isFetching)
     return (
-        <Box sx={{ height: "100%", minHeight: 0, width: "100%", display: "flex", flexDirection: "column" }}>
+        <Box sx={{ height: "100%", minHeight: 0, width: "100%", display: "flex", flexDirection: "column", bgcolor: "background.paper" }}>
             {(isLoading || !data) ? (
                 <Box sx={{ flex: 1, display: "grid", placeItems: "center" }}>
                     <CircularProgress size={18} />

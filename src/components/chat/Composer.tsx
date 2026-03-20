@@ -14,6 +14,13 @@ export function ProjectChatComposer() {
                     mt: 1,
                     overflow: "hidden",
                     width: "100%",
+                    bgcolor: "background.paper",
+                    borderColor: "divider",
+                    boxShadow: "0 10px 26px rgba(11, 13, 18, 0.08)",
+                    "&:focus-within": {
+                        borderColor: "secondary.main",
+                        boxShadow: "0 0 0 1px rgba(91, 97, 255, 0.4), 0 12px 28px rgba(11, 13, 18, 0.12)",
+                    },
                 }}>
                 <Stack spacing={1}>
                     <ComposerPrimitive.Attachments

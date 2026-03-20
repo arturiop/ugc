@@ -14,6 +14,7 @@ function GeneratedImageItem({ url, title }: { url: string; title: string }) {
                 borderRadius: 2,
                 border: "1px solid",
                 borderColor: "divider",
+                bgcolor: "background.neutral",
                 display: "block",
             }}
         />
