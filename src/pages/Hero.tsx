@@ -4,7 +4,7 @@ import { MessageSquare, Sparkles, Play, ArrowRight, Check, Plus, Image, ArrowUp,
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 import { useCreateProject } from "@/api/projects/hooks";
-import { WatchableLogoText } from "@/components/logoText";
+import { WatchableLogoText } from "@/components/LogoText";
 
 
 const Index = () => {

@@ -6,7 +6,6 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import SettingsDialog from "./SettingsDialog";
 import { useCreateProject } from "@/api/projects/hooks";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { WatchableLogoText } from "./logoText";
 
 const AppHeader = () => {
     const [settingsOpen, setSettingsOpen] = useState(false);

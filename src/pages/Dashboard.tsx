@@ -24,7 +24,7 @@ import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
 import { useProjects } from "@/api/projects/hooks";
 import { useAuthStore } from "@/stores/useAuthStore";
 import AppHeader from "@/components/AppHeader";
-import { WatchableLogoText } from "@/components/logoText";
+import { WatchableLogoText } from "@/components/LogoText";
 
 type ProjectStatus = "active" | "ready" | "drafts";
 
