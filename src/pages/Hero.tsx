@@ -27,7 +27,7 @@ const Index = () => {
     }
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen">
             {/* Nav */}
             <nav className="flex items-center justify-between px-6 md:px-16 py-5">
                 <WatchableLogoText />
