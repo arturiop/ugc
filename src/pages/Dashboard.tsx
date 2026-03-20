@@ -2,22 +2,46 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 
-import { Box, Typography, Card, CardContent, CardMedia, CardActionArea, IconButton, Skeleton, Stack, TextField } from "@mui/material";
+import {
+    Box,
+    Typography,
+    Card,
+    CardContent,
+    CardMedia,
+    CardActionArea,
+    IconButton,
+    Skeleton,
+    Stack,
+    TextField,
+    Button,
+    InputAdornment,
+} from "@mui/material";
 
-import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
 
 import { useProjects } from "@/api/projects/hooks";
 import { useAuthStore } from "@/stores/useAuthStore";
 import AppHeader from "@/components/AppHeader";
 import { WatchableLogoText } from "@/components/logoText";
 
+type ProjectStatus = "active" | "ready" | "drafts";
+
+const STATUS_META: Record<ProjectStatus, { label: string; color: string }> = {
+    active: { label: "Active", color: "success.main" },
+    ready: { label: "Ready", color: "info.main" },
+    drafts: { label: "Drafts", color: "warning.main" },
+};
+
 export default function Dashboard() {
     const navigate = useNavigate();
     const user = useAuthStore((state) => state.user);
     const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+    const [filter, setFilter] = useState<"all" | ProjectStatus>("all");
+    const [query, setQuery] = useState("");
 
     const { data, isLoading } = useProjects();
-
     useEffect(() => {
         setPortalTarget(document.getElementById("app-header-portal"));
     }, []);
@@ -35,6 +59,34 @@ export default function Dashboard() {
         return [...projects].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     }, [projects]);
 
+    const getProjectStatus = (updatedAt: string, thumbnailUrl?: string | null): ProjectStatus => {
+        if (thumbnailUrl) return "ready";
+        const ageDays = (Date.now() - new Date(updatedAt).getTime()) / 86400000;
+        if (ageDays <= 7) return "active";
+        return "drafts";
+    };
+
+    const stats = useMemo(() => {
+        const output = { total: sorted.length, active: 0, ready: 0, drafts: 0 };
+        sorted.forEach((project) => {
+            const status = getProjectStatus(project.updatedAt, project.thumbnailUrl);
+            output[status] += 1;
+        });
+        return output;
+    }, [sorted]);
+
+    const filtered = useMemo(() => {
+        return sorted.filter((project) => {
+            const matchesQuery = query.trim().length
+                ? (project.title || project.name || "Untitled ad").toLowerCase().includes(query.trim().toLowerCase())
+                : true;
+            if (!matchesQuery) return false;
+            if (filter === "all") return true;
+            const status = getProjectStatus(project.updatedAt, project.thumbnailUrl);
+            return status === filter;
+        });
+    }, [sorted, query, filter]);
+
     return (
         <Box sx={{ height: "100dvh", width: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
             <AppHeader />
@@ -45,104 +97,305 @@ export default function Dashboard() {
                     </Box>,
                     portalTarget
                 )}
-            <Box sx={{ width: "100%", mx: "auto", px: 4 }}>
-                {/* HEADER */}
-                <Box
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        mb: 4,
-                        pt: 3,
-                    }}>
-                    <Box>
-                        <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                            Hello, {displayName}
-                        </Typography>
-                        <Typography color="text.secondary">Continue working or start a new idea</Typography>
-                    </Box>
-                </Box>
+            <Box sx={{ flex: 1, overflow: "auto" }}>
+                <Box sx={{ width: "100%", mx: "auto", px: { xs: 2, md: 4 }, pb: 6 }}>
+                    {/* HEADER */}
+                    <Stack
+                        direction={{ xs: "column", md: "row" }}
+                        alignItems={{ xs: "flex-start", md: "center" }}
+                        justifyContent="space-between"
+                        spacing={2}
+                        sx={{ pt: 3, pb: 2 }}>
+                        <Box>
+                            <Typography variant="h4" sx={{ fontWeight: 700, lineHeight: 1.1 }}>
+                                Hello, {displayName}
+                            </Typography>
+                            <Typography color="text.secondary">Pick up where you left off or start a new ad.</Typography>
+                        </Box>
+                        <Box />
+                    </Stack>
 
-                {/* PROJECT GRID */}
-                <Box
-                    sx={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))",
-                        gap: 3,
-                    }}>
-                    {isLoading &&
-                        Array.from({ length: 6 }).map((_, i) => (
-                            <Card key={i} sx={{ borderRadius: 3 }}>
-                                <Skeleton variant="rectangular" height={160} />
-                                <CardContent>
-                                    <Skeleton width="70%" />
-                                    <Skeleton width="40%" />
-                                </CardContent>
-                            </Card>
-                        ))}
-
-                    {!isLoading &&
-                        sorted.map((project) => {
-                            const thumb = project.thumbnailUrl || "";
-
-                            return (
-                                <Card
-                                    key={project.id}
+                    {/* CAMPAIGNS */}
+                    <Box sx={{ mt: 3 }}>
+                        <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
+                            <Box>
+                                <Typography variant="overline" color="text.secondary" sx={{ letterSpacing: 1.1 }}>
+                                    Campaigns
+                                </Typography>
+                                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                                    Organize projects by campaign
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Campaigns will soon hold grouped projects, briefs, and revisions.
+                                </Typography>
+                            </Box>
+                            <Button
+                                variant="outlined"
+                                startIcon={<AddRoundedIcon />}
+                                sx={{ borderRadius: 999, textTransform: "none", fontWeight: 600 }}>
+                                New campaign
+                            </Button>
+                        </Stack>
+                        <Stack
+                            direction="row"
+                            spacing={2}
+                            sx={{
+                                mt: 2,
+                                pb: 1,
+                                overflowX: "auto",
+                                "::-webkit-scrollbar": { height: 6 },
+                                "::-webkit-scrollbar-thumb": {
+                                    bgcolor: "divider",
+                                    borderRadius: 999,
+                                },
+                            }}>
+                            <Box
+                                sx={{
+                                    minWidth: 260,
+                                    borderRadius: 3,
+                                    border: "1px solid",
+                                    borderColor: "divider",
+                                    bgcolor: "background.paper",
+                                    px: 2.5,
+                                    py: 2,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 1,
+                                }}>
+                                <Stack direction="row" alignItems="center" spacing={1}>
+                                    <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "warning.main" }} />
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                                        Unassigned
+                                    </Typography>
+                                </Stack>
+                                <Typography variant="body2" color="text.secondary">
+                                    Projects waiting for a campaign
+                                </Typography>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                                    {stats.total} projects
+                                </Typography>
+                            </Box>
+                            <Box
+                                sx={{
+                                    minWidth: 260,
+                                    borderRadius: 3,
+                                    border: "1.5px dashed",
+                                    borderColor: "divider",
+                                    bgcolor: "background.default",
+                                    px: 2.5,
+                                    py: 2,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 1,
+                                    alignItems: "flex-start",
+                                    justifyContent: "center",
+                                }}>
+                                <Box
                                     sx={{
-                                        borderRadius: 3,
-                                        overflow: "hidden",
-                                        position: "relative",
-                                        transition: "all .15s ease",
-                                        "&:hover": {
-                                            transform: "translateY(-4px)",
-                                            boxShadow: "0 18px 40px rgba(0,0,0,0.08)",
-                                        },
-                                        "&:hover .hover-actions": {
-                                            opacity: 1,
-                                        },
+                                        width: 36,
+                                        height: 36,
+                                        borderRadius: "50%",
+                                        border: "1px solid",
+                                        borderColor: "divider",
+                                        display: "grid",
+                                        placeItems: "center",
+                                        bgcolor: "background.paper",
                                     }}>
-                                    <CardActionArea component="div" onClick={() => navigate(`/projects/${project.id}`)}>
-                                        <Box sx={{ position: "relative", height: 160, overflow: "hidden" }}>
-                                            {thumb ? (
-                                                <CardMedia
-                                                    component="img"
-                                                    image={thumb}
-                                                    sx={{
-                                                        height: "100%",
-                                                        width: "100%",
-                                                        objectFit: "contain",
-                                                        display: "block",
-                                                        bgcolor: "background.default",
-                                                    }}
-                                                    loading="lazy"
-                                                />
-                                            ) : (
-                                                <Box
-                                                    sx={{
-                                                        height: "100%",
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        justifyContent: "center",
-                                                        bgcolor: "action.hover",
-                                                    }}>
-                                                    <ImageOutlinedIcon />
-                                                </Box>
-                                            )}
-                                        </Box>
+                                    <AddRoundedIcon fontSize="small" />
+                                </Box>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                                    Create a campaign
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Group projects by launch, theme, or goal.
+                                </Typography>
+                            </Box>
+                        </Stack>
+                    </Box>
 
-                                        <CardContent>
-                                            <Typography fontWeight={700} noWrap>
-                                                {project.title || "Untitled ad"}
-                                            </Typography>
+                    {/* PROJECTS */}
+                    <Box sx={{ mt: 4 }}>
+                        <Stack
+                            direction={{ xs: "column", md: "row" }}
+                            spacing={2}
+                            alignItems={{ xs: "flex-start", md: "center" }}
+                            justifyContent="space-between">
+                            <Stack direction="row" spacing={1} flexWrap="wrap">
+                                {(["all", "active", "ready", "drafts"] as const).map((value) => {
+                                    const isActive = filter === value;
+                                    return (
+                                        <Button
+                                            key={value}
+                                            size="small"
+                                            onClick={() => setFilter(value)}
+                                            sx={{
+                                                textTransform: "none",
+                                                fontWeight: 600,
+                                                borderRadius: 999,
+                                                border: "1px solid",
+                                                borderColor: isActive ? "primary.main" : "divider",
+                                                bgcolor: isActive ? "primary.main" : "background.paper",
+                                                color: isActive ? "primary.contrastText" : "text.secondary",
+                                                boxShadow: isActive ? "0 10px 22px rgba(255, 106, 26, 0.24)" : "none",
+                                                "&:hover": {
+                                                    bgcolor: isActive ? "primary.dark" : "action.hover",
+                                                },
+                                            }}>
+                                            {value === "all" ? "All" : STATUS_META[value].label}
+                                        </Button>
+                                    );
+                                })}
+                            </Stack>
+                            <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+                                <TextField
+                                    size="small"
+                                    placeholder="Search projects"
+                                    value={query}
+                                    onChange={(event) => setQuery(event.target.value)}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <SearchRoundedIcon fontSize="small" />
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                    sx={{
+                                        minWidth: { xs: "100%", sm: 240 },
+                                        bgcolor: "background.paper",
+                                        borderRadius: 999,
+                                        "& .MuiOutlinedInput-root": {
+                                            borderRadius: 999,
+                                        },
+                                    }}
+                                />
+                            </Stack>
+                        </Stack>
 
-                                            <Typography variant="caption" color="text.secondary">
-                                                Updated {new Date(project.updatedAt).toLocaleDateString()}
-                                            </Typography>
-                                        </CardContent>
-                                    </CardActionArea>
-                                </Card>
-                            );
-                        })}
+                        <Box
+                            sx={{
+                                mt: 3,
+                                p: { xs: 4, md: 5 },
+                                borderRadius: 3,
+                                border: "1px solid",
+                                borderColor: "divider",
+                                bgcolor: "background.paper",
+                            }}>
+                            <Box
+                                sx={{
+                                    display: "grid",
+                                    gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))",
+                                    gap: 3,
+                                }}>
+                                {isLoading &&
+                                    Array.from({ length: 6 }).map((_, i) => (
+                                        <Card key={i} sx={{ borderRadius: 3 }}>
+                                            <Skeleton variant="rectangular" height={180} />
+                                            <CardContent>
+                                                <Skeleton width="70%" />
+                                                <Skeleton width="40%" />
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+
+                                {!isLoading &&
+                                    filtered.map((project) => {
+                                        const thumb = project.thumbnailUrl || "";
+                                        const status = getProjectStatus(project.updatedAt, project.thumbnailUrl);
+                                        const statusMeta = STATUS_META[status];
+
+                                        return (
+                                            <Card
+                                                key={project.id}
+                                                sx={{
+                                                    borderRadius: 3,
+                                                    overflow: "hidden",
+                                                    position: "relative",
+                                                    border: "1px solid",
+                                                    borderColor: "divider",
+                                                    bgcolor: "background.paper",
+                                                    transition: "all .2s ease",
+                                                    "&:hover": {
+                                                        transform: "translateY(-4px)",
+                                                        boxShadow: "0 18px 40px rgba(11, 13, 18, 0.12)",
+                                                    },
+                                                }}>
+                                                <CardActionArea component="div" onClick={() => navigate(`/projects/${project.id}`)}>
+                                                    <Box sx={{ position: "relative", height: 180, overflow: "hidden" }}>
+                                                        <Box
+                                                            sx={{
+                                                                position: "absolute",
+                                                                top: 12,
+                                                                right: 12,
+                                                                zIndex: 1,
+                                                            }}>
+                                                            <IconButton size="small" sx={{ bgcolor: "rgba(255,255,255,0.9)" }}>
+                                                                <MoreHorizRoundedIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </Box>
+                                                        {thumb ? (
+                                                            <CardMedia
+                                                                component="img"
+                                                                image={thumb}
+                                                                sx={{
+                                                                    height: "100%",
+                                                                    width: "100%",
+                                                                    objectFit: "cover",
+                                                                    display: "block",
+                                                                    bgcolor: "background.default",
+                                                                }}
+                                                                loading="lazy"
+                                                            />
+                                                        ) : (
+                                                            <Box
+                                                                sx={{
+                                                                    height: "100%",
+                                                                    display: "flex",
+                                                                    alignItems: "center",
+                                                                    justifyContent: "center",
+                                                                    bgcolor: "action.hover",
+                                                                }}>
+                                                                    <CardMedia
+                                                                        component="img"
+                                                                        image="/logo.png"
+                                                                        sx={{
+                                                                            width: 108,
+                                                                            height: 108,
+                                                                            objectFit: "contain",
+                                                                            opacity: 0.55,
+                                                                        }}
+                                                                    />
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+
+                                                    <CardContent sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                                                        <Typography fontWeight={700} noWrap>
+                                                            {project.title || "Untitled ad"}
+                                                        </Typography>
+                                                        <Stack direction="row" spacing={1} alignItems="center">
+                                                            <Box
+                                                                sx={{
+                                                                    width: 6,
+                                                                    height: 6,
+                                                                    borderRadius: "50%",
+                                                                    bgcolor: statusMeta.color,
+                                                                }}
+                                                            />
+                                                            <Typography variant="caption" color="text.secondary">
+                                                                {statusMeta.label}
+                                                            </Typography>
+                                                            <Typography variant="caption" color="text.secondary">
+                                                                • Updated {new Date(project.updatedAt).toLocaleDateString()}
+                                                            </Typography>
+                                                        </Stack>
+                                                    </CardContent>
+                                                </CardActionArea>
+                                            </Card>
+                                        );
+                                    })}
+                            </Box>
+                        </Box>
+                    </Box>
                 </Box>
             </Box>
         </Box>
