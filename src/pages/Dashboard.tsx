@@ -77,13 +77,9 @@ export default function Dashboard() {
                     mb: 4,
                 }}>
                 <Box>
-                    <Typography variant="subtitle1" color="text.secondary" sx={{ fontWeight: 600 }}>
-                        Hello. {displayName}
+                    <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                        Hello, {displayName}
                     </Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                        My Projects
-                    </Typography>
-
                     <Typography color="text.secondary">Continue working or start a new idea</Typography>
                 </Box>
 
