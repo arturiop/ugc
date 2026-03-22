@@ -4,7 +4,11 @@ export type HistoryMessage = {
     id?: string;
     role: "user" | "assistant";
     content?: string;
-    parts?: Array<{ type: "text"; text: string } | { type: "file"; url: string; mediaType: string; filename?: string }>;
+    parts?: Array<
+        { type: "text"; text: string } |
+        { type: "image"; image: string; filename?: string } |
+        { type: "file"; data: string; mimeType: string; filename?: string }
+    >;
     createdAt?: string;
 };
 

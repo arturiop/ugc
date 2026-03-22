@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { AssistantChatTransport, useChatRuntime } from "@assistant-ui/react-ai-sdk";
 
@@ -11,6 +11,12 @@ import { useProject } from "@/contexts/Project/ProjectContext";
 import { getProjectChatTransportConfig, HistoryMessage } from "@/api/chat";
 import { useProjectChatHistory } from "@/api/chat/hooks";
 import { queryKeys } from "@/api/queryKeys";
+
+type NormalizedMessage = {
+    id?: string;
+    role: "user" | "assistant";
+    parts: HistoryMessage["parts"];
+};
 
 function normalizeHistory(messages: HistoryMessage[]) {
     return messages
@@ -42,15 +48,6 @@ function ProjectChat2({ projectId, m }: { projectId: string; m: any[] }) {
                 apiBaseUrl: import.meta.env.VITE_APP_API_BASE,
                 projectId,
                 onUploadComplete: (asset) => {
-                    runtimeRef.current?.thread.append({
-                        role: "assistant",
-                        content: [
-                            {
-                                type: "text",
-                                text: `Saved "${asset.filename}" to Assets (${formatAssetLabel(asset.label)}).`,
-                            },
-                        ],
-                    });
                     queryClient.invalidateQueries({ queryKey: queryKeys.projects.assets(projectId) });
                 },
             }),
@@ -90,34 +87,31 @@ function ProjectChat2({ projectId, m }: { projectId: string; m: any[] }) {
     );
 }
 
-const formatAssetLabel = (label: string) => {
-    switch (label) {
-        case "product":
-            return "Product";
-        case "logo":
-            return "Logo";
-        case "brandbook":
-            return "Brandbook";
-        case "reference":
-            return "Reference";
-        default:
-            return "Asset";
-    }
-};
-
 export function ProjectChat() {
     const { projectId } = useProject();
     const { data, isLoading, error, isFetching } = useProjectChatHistory(projectId);
-    console.log('data, isLoading, error, isFetching', data, isLoading, error, isFetching)
+    const [initialMessages, setInitialMessages] = useState<NormalizedMessage[] | null>(null);
+
+    useEffect(() => {
+        setInitialMessages(null);
+    }, [projectId]);
+
+    useEffect(() => {
+        if (initialMessages === null && data) {
+            setInitialMessages(normalizeHistory(data.messages || []));
+        }
+    }, [data, initialMessages]);
+
+    console.log("data, isLoading, error, isFetching", data, isLoading, error, isFetching);
     return (
         <Box sx={{ height: "100%", minHeight: 0, width: "100%", display: "flex", flexDirection: "column", bgcolor: "background.paper" }}>
-            {(isLoading || !data) ? (
+            {(isLoading || !data || initialMessages === null) ? (
                 <Box sx={{ flex: 1, display: "grid", placeItems: "center" }}>
                     <CircularProgress size={18} />
                 </Box>
             ) : (
                 <>
-                    <ProjectChat2 projectId={projectId} m={data?.messages || []} />
+                    <ProjectChat2 projectId={projectId} m={initialMessages} />
                     {error && (
                         <Box sx={{ px: 2, pt: 1 }}>
                             <Typography variant="caption" color="error">

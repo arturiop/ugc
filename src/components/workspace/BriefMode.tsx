@@ -14,6 +14,7 @@ import {
     Card,
     CardContent,
     Chip,
+    Collapse,
     FormControl,
     IconButton,
     MenuItem,
@@ -22,7 +23,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { FileText, Users, Clock, Sparkles, Upload, Image as ImageIcon, Monitor, X, Tag, Link as LinkIcon } from "lucide-react";
+import { FileText, Users, Clock, Sparkles, Upload, Image as ImageIcon, Monitor, X, Tag, ChevronDown, Plus, UserRound } from "lucide-react";
 
 type BriefModeProps = {
     storyboard: Storyboard | null;
@@ -43,6 +44,15 @@ const platformOptions = [
     { value: "tiktok", label: "TikTok" },
     { value: "instagram", label: "Instagram" },
     { value: "generic", label: "Generic" },
+];
+
+const avatarLibrary = [
+    { id: "sofia", name: "Sofia", vibe: "Professional", gradient: "linear-gradient(135deg, #F7C7A5 0%, #E58B7A 100%)" },
+    { id: "james", name: "James", vibe: "Casual", gradient: "linear-gradient(135deg, #C6D6FF 0%, #7C8CFF 100%)" },
+    { id: "claire", name: "Claire", vibe: "Corporate", gradient: "linear-gradient(135deg, #FFE2B4 0%, #FFB08A 100%)" },
+    { id: "kevin", name: "Kevin", vibe: "Friendly", gradient: "linear-gradient(135deg, #C5F2D0 0%, #6ED19A 100%)" },
+    { id: "maya", name: "Maya", vibe: "Warm", gradient: "linear-gradient(135deg, #FFD0DC 0%, #FF8DB3 100%)" },
+    { id: "noah", name: "Noah", vibe: "Creator", gradient: "linear-gradient(135deg, #D6D3FF 0%, #8A83FF 100%)" },
 ];
 
 const assetLabels: Array<{ value: AssetLabel; label: string }> = [
@@ -74,6 +84,9 @@ const BriefMode = ({ storyboard }: BriefModeProps) => {
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [referenceInput, setReferenceInput] = useState("");
     const [references, setReferences] = useState<string[]>([]);
+    const [avatarPanelOpen, setAvatarPanelOpen] = useState(false);
+    const [avatarTab, setAvatarTab] = useState<"library" | "my">("library");
+    const [activeAvatarId, setActiveAvatarId] = useState<string | null>(avatarLibrary[0]?.id ?? null);
 
     useEffect(() => {
         if (!storyboard) return;
@@ -365,7 +378,7 @@ const BriefMode = ({ storyboard }: BriefModeProps) => {
 
                 <Box component="section" sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
-                        <CardContent sx={{ py: 2 }}>
+                        <CardContent sx={{ p: 2, "&:last-child": { p: 2 } }}>
                             <Stack spacing={1}>
                                 <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} alignItems={{ md: "center" }}>
                                     <TextField
@@ -401,6 +414,195 @@ const BriefMode = ({ storyboard }: BriefModeProps) => {
                                         ))}
                                     </Stack>
                                 )}
+                            </Stack>
+                        </CardContent>
+                    </Card>
+                </Box>
+
+                <Box component="section" sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
+                    <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
+                        <CardContent sx={{ p: 2, "&:last-child": { p: 2 } }}>
+                            <Stack spacing={1}>
+                                <ButtonBase
+                                    onClick={() => setAvatarPanelOpen((prev) => !prev)}
+                                    sx={{ textAlign: "left", width: "100%", borderRadius: 2 }}
+                                >
+                                    <Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: "100%" }}>
+                                        <Box
+                                            sx={{
+                                                width: 32,
+                                                height: 32,
+                                                borderRadius: 2,
+                                                display: "grid",
+                                                placeItems: "center",
+                                                bgcolor: "background.neutral",
+                                                color: "secondary.main",
+                                            }}
+                                        >
+                                            <UserRound size={18} />
+                                        </Box>
+                                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                                            <Stack direction="row" spacing={1} alignItems="center">
+                                                <Typography variant="subtitle1" fontWeight={700}>
+                                                    AI Actors
+                                                </Typography>
+                                            </Stack>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Optional. Add a narrator or actor to showcase the product.
+                                            </Typography>
+                                        </Box>
+                                        <Box
+                                            sx={{
+                                                width: 28,
+                                                height: 28,
+                                                borderRadius: 2,
+                                                display: "grid",
+                                                placeItems: "center",
+                                                border: "1px solid",
+                                                borderColor: "divider",
+                                                color: "text.secondary",
+                                                transform: avatarPanelOpen ? "rotate(180deg)" : "rotate(0deg)",
+                                                transition: "transform 0.2s ease",
+                                            }}
+                                        >
+                                            <ChevronDown size={16} />
+                                        </Box>
+                                    </Stack>
+                                </ButtonBase>
+                                <Collapse in={avatarPanelOpen} timeout={300} unmountOnExit>
+                                    <Stack spacing={1.25}>
+                                        <Stack direction={{ xs: "column", md: "row" }} spacing={1} alignItems={{ md: "center" }}>
+                                            <Stack direction="row" spacing={0.5} sx={{ bgcolor: "background.neutral", p: 0.5, borderRadius: 2 }}>
+                                                <Button
+                                                    size="small"
+                                                    variant={avatarTab === "library" ? "contained" : "text"}
+                                                    onClick={() => setAvatarTab("library")}
+                                                    sx={{ borderRadius: 1.5, textTransform: "none", minWidth: 86, height: 30 }}
+                                                >
+                                                    Library
+                                                </Button>
+                                                <Button
+                                                    size="small"
+                                                    variant={avatarTab === "my" ? "contained" : "text"}
+                                                    onClick={() => setAvatarTab("my")}
+                                                    sx={{ borderRadius: 1.5, textTransform: "none", minWidth: 86, height: 30 }}
+                                                >
+                                                    My Avatars
+                                                </Button>
+                                            </Stack>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Choose a built-in actor or create your own from photo or text.
+                                            </Typography>
+                                        </Stack>
+                                        <Stack direction="row" spacing={1.25} alignItems="center" sx={{ overflowX: "auto", pb: 0.5 }}>
+                                            <ButtonBase
+                                                sx={{
+                                                    minWidth: 72,
+                                                    width: 72,
+                                                    height: 72,
+                                                    borderRadius: "50%",
+                                                    border: "1px dashed",
+                                                    borderColor: "divider",
+                                                    bgcolor: "background.neutral",
+                                                    display: "grid",
+                                                    placeItems: "center",
+                                                }}
+                                            >
+                                                <Plus size={18} />
+                                            </ButtonBase>
+                                            {(avatarTab === "library" ? avatarLibrary : []).map((avatar) => (
+                                                <ButtonBase
+                                                    key={avatar.id}
+                                                    onClick={() => setActiveAvatarId(avatar.id)}
+                                                    sx={{
+                                                        minWidth: 72,
+                                                        width: 72,
+                                                        height: 72,
+                                                        borderRadius: "50%",
+                                                        border: "2px solid",
+                                                        borderColor: activeAvatarId === avatar.id ? "secondary.main" : "divider",
+                                                        boxShadow: activeAvatarId === avatar.id ? "0 6px 18px rgba(91,97,255,0.25)" : "none",
+                                                        background: avatar.gradient,
+                                                        display: "grid",
+                                                        placeItems: "center",
+                                                        color: "common.white",
+                                                    }}
+                                                >
+                                                    <Typography variant="subtitle1" fontWeight={700}>
+                                                        {avatar.name.split(" ").map((part) => part[0]).join("")}
+                                                    </Typography>
+                                                </ButtonBase>
+                                            ))}
+                                        </Stack>
+                                        <Card
+                                            elevation={0}
+                                            sx={{
+                                                borderRadius: 3,
+                                                border: "1px solid",
+                                                borderColor: "divider",
+                                                bgcolor: "background.neutral",
+                                            }}
+                                        >
+                                            <CardContent sx={{ p: 1.5 }}>
+                                                <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems={{ md: "center" }}>
+                                                    <Box
+                                                        sx={{
+                                                            width: { xs: "100%", md: 180 },
+                                                            height: { xs: 160, md: 180 },
+                                                            borderRadius: 2.5,
+                                                            background: (avatarTab === "library"
+                                                                ? avatarLibrary.find((item) => item.id === activeAvatarId)?.gradient
+                                                                : "linear-gradient(135deg, #E4E7F8 0%, #C6CCF5 100%)") ?? "linear-gradient(135deg, #E4E7F8 0%, #C6CCF5 100%)",
+                                                            display: "grid",
+                                                            placeItems: "center",
+                                                        }}
+                                                    >
+                                                        <Typography variant="h4" color="common.white" fontWeight={700}>
+                                                            {(avatarTab === "library"
+                                                                ? avatarLibrary.find((item) => item.id === activeAvatarId)?.name
+                                                                : "New Avatar")?.slice(0, 2) ?? "AV"}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Stack spacing={0.5} sx={{ flex: 1 }}>
+                                                        <Typography variant="subtitle1" fontWeight={700}>
+                                                            {avatarTab === "library"
+                                                                ? avatarLibrary.find((item) => item.id === activeAvatarId)?.name ?? "Select an avatar"
+                                                                : "Create your avatar"}
+                                                        </Typography>
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            {avatarTab === "library"
+                                                                ? avatarLibrary.find((item) => item.id === activeAvatarId)?.vibe ?? "Pick a style that matches your brand."
+                                                                : "Generate from a photo or a text prompt."}
+                                                        </Typography>
+                                                        <Stack direction="row" spacing={1}>
+                                                            <Button size="small" variant="contained">
+                                                                Use actor
+                                                            </Button>
+                                                            <Button size="small" variant="text">
+                                                                Preview
+                                                            </Button>
+                                                        </Stack>
+                                                    </Stack>
+                                                </Stack>
+                                            </CardContent>
+                                        </Card>
+                                        {avatarTab === "my" && (
+                                            <Box
+                                                sx={{
+                                                    borderRadius: 2.5,
+                                                    border: "1px solid",
+                                                    borderColor: "divider",
+                                                    bgcolor: "background.neutral",
+                                                    p: 1.5,
+                                                }}
+                                            >
+                                                <Typography variant="body2" color="text.secondary">
+                                                    No custom avatars yet. Create one to reuse in future projects.
+                                                </Typography>
+                                            </Box>
+                                        )}
+                                    </Stack>
+                                </Collapse>
                             </Stack>
                         </CardContent>
                     </Card>
