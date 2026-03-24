@@ -29,14 +29,13 @@ const getGridDimensions = (imageWidth: number, imageHeight: number, sceneCount: 
         return { columns: 1, rows: 1 };
     }
 
-    if (isPortrait) {
-        return { columns: 1, rows: sceneCount };
-    }
-
     if (sceneCount === 9) {
         return { columns: 3, rows: 3 };
     }
     if (sceneCount === 6) {
+        return { columns: 3, rows: 2 };
+    }
+    if (sceneCount === 5) {
         return { columns: 3, rows: 2 };
     }
     if (sceneCount === 4) {
@@ -48,6 +47,9 @@ const getGridDimensions = (imageWidth: number, imageHeight: number, sceneCount: 
     if (sceneCount === 2) {
         return { columns: 2, rows: 1 };
     }
+    if (isPortrait) {
+        return { columns: 1, rows: sceneCount };
+    }
 
     const columns = Math.ceil(Math.sqrt(sceneCount));
     const rows = Math.ceil(sceneCount / columns);
@@ -57,6 +59,33 @@ const getGridDimensions = (imageWidth: number, imageHeight: number, sceneCount: 
 const getUniformGridRects = (imageWidth: number, imageHeight: number, sceneCount: number): SceneRect[] => {
     let columns = 1;
     let rows = 1;
+
+    if (sceneCount === 5 && imageWidth >= imageHeight) {
+        const rowHeight = imageHeight / 2;
+        const rects: SceneRect[] = [];
+        const topRowWidth = imageWidth / 3;
+        const bottomRowWidth = imageWidth / 2;
+
+        for (let column = 0; column < 3; column += 1) {
+            rects.push({
+                x: column * topRowWidth,
+                y: 0,
+                width: topRowWidth,
+                height: rowHeight,
+            });
+        }
+
+        for (let column = 0; column < 2; column += 1) {
+            rects.push({
+                x: column * bottomRowWidth,
+                y: rowHeight,
+                width: bottomRowWidth,
+                height: rowHeight,
+            });
+        }
+
+        return rects;
+    }
 
     ({ columns, rows } = getGridDimensions(imageWidth, imageHeight, sceneCount));
 
@@ -211,6 +240,32 @@ const getFallbackGridRects = (imageWidth: number, imageHeight: number, sceneCoun
 
     const rects: SceneRect[] = [];
 
+    if (sceneCount === 5 && imageWidth >= imageHeight) {
+        const rowHeight = (imageHeight - gap * 3) / 2;
+        const topRowWidth = (imageWidth - gap * 4) / 3;
+        const bottomRowWidth = (imageWidth - gap * 3) / 2;
+
+        for (let column = 0; column < 3; column += 1) {
+            rects.push({
+                x: gap + column * (topRowWidth + gap),
+                y: gap,
+                width: topRowWidth,
+                height: rowHeight,
+            });
+        }
+
+        for (let column = 0; column < 2; column += 1) {
+            rects.push({
+                x: gap + column * (bottomRowWidth + gap),
+                y: gap + rowHeight + gap,
+                width: bottomRowWidth,
+                height: rowHeight,
+            });
+        }
+
+        return rects;
+    }
+
     for (let row = 0; row < rows; row += 1) {
         for (let column = 0; column < columns; column += 1) {
             if (rects.length >= sceneCount) {
@@ -345,11 +400,11 @@ const useStoryboardRects = (imageUrl: string | null, expectedSceneCount: number)
                 }
 
                 setImageSize({ width: result.imageWidth, height: result.imageHeight });
-                setRects(
-                    result.scenes.length === expectedSceneCount
-                        ? result.scenes
-                        : getFallbackGridRects(result.imageWidth, result.imageHeight, expectedSceneCount),
-                );
+                if (result.scenes.length >= expectedSceneCount) {
+                    setRects(result.scenes.slice(0, expectedSceneCount));
+                } else {
+                    setRects(getFallbackGridRects(result.imageWidth, result.imageHeight, expectedSceneCount));
+                }
             } catch {
                 if (!cancelled) {
                     const image = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -625,7 +680,6 @@ type StoryboardGridItemProps = {
 };
 
 const StoryboardGridItem = ({ scene, isSelected, onSelect, storyboardImageUrl, imageSize, rect }: StoryboardGridItemProps) => {
-    const isReady = Boolean(scene.generated_image_url);
     return (
         <Card
             elevation={0}
@@ -671,14 +725,6 @@ const StoryboardGridItem = ({ scene, isSelected, onSelect, storyboardImageUrl, i
                 </Box>
                 <CardContent sx={{ py: 1.25 }}>
                     <Stack spacing={0.5}>
-                        <Box
-                            sx={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: "50%",
-                                bgcolor: isReady ? "success.main" : "text.disabled",
-                            }}
-                        />
                         <Typography variant="body2" fontWeight={600}>
                             {scene.title}
                         </Typography>

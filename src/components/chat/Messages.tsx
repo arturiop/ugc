@@ -1,8 +1,11 @@
 import { AuiIf, ErrorPrimitive, MessagePrimitive, ThreadPrimitive, useAuiState } from "@assistant-ui/react";
 import { Box, CircularProgress, Link, Paper, Stack, Typography } from "@mui/material";
+import { useQueryClient } from "@tanstack/react-query";
 import { Bot, FileText } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useGeneratedContent } from "@/contexts/GeneratedContentContext";
+import { useProject } from "@/contexts/Project/ProjectContext";
+import { queryKeys } from "@/api/queryKeys";
 
 function MessageDataImages() {
     const message = useAuiState((s) => s.message);
@@ -33,6 +36,33 @@ function MessageDataImages() {
             ))}
         </Stack>
     );
+}
+
+function ActionDataPart({ data }: { data?: { name?: string; action?: string; actions?: string[] } }) {
+    const queryClient = useQueryClient();
+    const { projectId } = useProject();
+    const firedRef = useRef<Set<string>>(new Set());
+    const actions = useMemo(() => {
+        if (!data) return [];
+        if (Array.isArray(data.actions)) return data.actions;
+        if (typeof data.name === "string") return [data.name];
+        if (typeof data.action === "string") return [data.action];
+        return [];
+    }, [data]);
+
+    useEffect(() => {
+        if (!actions.length || !projectId) return;
+        actions.forEach((action) => {
+            const key = `${projectId}:${action}`;
+            if (firedRef.current.has(key)) return;
+            firedRef.current.add(key);
+            if (action === "refresh_storyboard") {
+                void queryClient.invalidateQueries({ queryKey: queryKeys.projects.storyboard(projectId) });
+            }
+        });
+    }, [actions, projectId, queryClient]);
+
+    return null;
 }
 
 
@@ -110,7 +140,7 @@ function AssistantMessage() {
                             overflowWrap: "anywhere",
                         }}>
                         <MessageDataImages />
-                        <MessagePrimitive.Parts />
+                        <MessagePrimitive.Parts components={{ data: { by_name: { action: ActionDataPart } } }} />
 
                         <MessagePrimitive.Error>
                             <ErrorPrimitive.Root

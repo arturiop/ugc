@@ -1,5 +1,5 @@
-import { Box, Card, CardContent, Chip, Divider, Stack, Tab, Tabs, Typography } from "@mui/material";
-import { useMemo, useState } from "react";
+import { Box, Card, CardContent, Chip, Divider, Popover, Stack, Tab, Tabs, Typography } from "@mui/material";
+import { useMemo, useRef, useState } from "react";
 import type { Storyboard, StoryboardScene } from "@/api/storyboard";
 import type { WorkspaceMode } from "./WorkspaceHeader";
 
@@ -7,12 +7,13 @@ type InspectorPanelProps = {
     mode: WorkspaceMode;
     storyboard: Storyboard | null;
     scene: StoryboardScene | null;
+    isRefreshing?: boolean;
 };
 
 const TABS = ["Visual", "Script", "Motion", "Prompt"] as const;
 type InspectorTab = (typeof TABS)[number];
 
-const InspectorPanel = ({ mode, storyboard, scene }: InspectorPanelProps) => {
+const InspectorPanel = ({ mode, storyboard, scene, isRefreshing = false }: InspectorPanelProps) => {
     const [activeTab, setActiveTab] = useState<InspectorTab>("Visual");
     const statusLabel = useMemo(() => {
         if (!scene?.video_status) return "Draft";
@@ -55,7 +56,9 @@ const InspectorPanel = ({ mode, storyboard, scene }: InspectorPanelProps) => {
                         ))}
                     </Tabs>
                     <Box sx={{ flex: 1, minHeight: 0, overflowY: "auto", p: 2.5 }}>
-                        {activeTab === "Visual" && <VisualTab scene={scene} storyboard={storyboard} />}
+                        {activeTab === "Visual" && (
+                            <VisualTab scene={scene} storyboard={storyboard} isRefreshing={isRefreshing} />
+                        )}
                         {activeTab === "Script" && <ScriptTab scene={scene} />}
                         {activeTab === "Motion" && <MotionTab />}
                         {activeTab === "Prompt" && <PromptTab scene={scene} />}
@@ -97,7 +100,15 @@ const SceneHeader = ({ scene, statusLabel }: { scene: StoryboardScene | null; st
     );
 };
 
-const VisualTab = ({ scene, storyboard }: { scene: StoryboardScene | null; storyboard: Storyboard | null }) => {
+const VisualTab = ({
+    scene,
+    storyboard,
+    isRefreshing,
+}: {
+    scene: StoryboardScene | null;
+    storyboard: Storyboard | null;
+    isRefreshing: boolean;
+}) => {
     if (!scene) {
         return (
             <Typography variant="body2" color="text.secondary">
@@ -105,6 +116,47 @@ const VisualTab = ({ scene, storyboard }: { scene: StoryboardScene | null; story
             </Typography>
         );
     }
+
+    return <VisualTabContent scene={scene} storyboard={storyboard} isRefreshing={isRefreshing} />;
+};
+
+const VisualTabContent = ({
+    scene,
+    storyboard,
+    isRefreshing,
+}: {
+    scene: StoryboardScene;
+    storyboard: Storyboard | null;
+    isRefreshing: boolean;
+}) => {
+    const hasImage = Boolean(storyboard?.storyboard_image_url || scene.generated_image_url);
+    const showShimmer = isRefreshing && !hasImage;
+    const previewSrc = storyboard?.storyboard_image_url ?? scene.generated_image_url ?? null;
+    const [previewAnchorEl, setPreviewAnchorEl] = useState<HTMLElement | null>(null);
+    const closeTimeoutRef = useRef<number | null>(null);
+
+    const handlePreviewOpen = (event?: React.MouseEvent<HTMLElement>) => {
+        if (closeTimeoutRef.current) {
+            window.clearTimeout(closeTimeoutRef.current);
+        }
+        if (event?.currentTarget) {
+            setPreviewAnchorEl(event.currentTarget);
+        }
+    };
+
+    const schedulePreviewClose = () => {
+        closeTimeoutRef.current = window.setTimeout(() => {
+            setPreviewAnchorEl(null);
+        }, 220);
+    };
+
+    const handlePreviewClose = () => {
+        if (closeTimeoutRef.current) {
+            window.clearTimeout(closeTimeoutRef.current);
+        }
+        setPreviewAnchorEl(null);
+    };
+    const isPreviewOpen = Boolean(previewAnchorEl);
 
     return (
         <Stack spacing={2}>
@@ -116,20 +168,35 @@ const VisualTab = ({ scene, storyboard }: { scene: StoryboardScene | null; story
                         display: "grid",
                         placeItems: "center",
                         overflow: "hidden",
+                        position: "relative",
                     }}
+                    onMouseEnter={previewSrc ? handlePreviewOpen : undefined}
+                    onMouseLeave={previewSrc ? schedulePreviewClose : undefined}
                 >
-                    {storyboard?.storyboard_image_url ? (
+                    {showShimmer && (
                         <Box
-                            component="img"
-                            src={storyboard.storyboard_image_url}
-                            alt="Storyboard"
-                            sx={{ width: "350px", height: "170px", objectFit: "contain", display: "block" }}
+                            sx={{
+                                position: "absolute",
+                                inset: 0,
+                                backgroundColor: "rgba(0,0,0,0.03)",
+                                backgroundImage: "linear-gradient(120deg, rgba(255,255,255,0) 35%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0) 65%)",
+                                opacity: 0.75,
+                                backgroundSize: "180% 100%",
+                                animation: "shimmer 1.4s linear infinite",
+                                pointerEvents: "none",
+                                "@keyframes shimmer": {
+                                    "0%": { backgroundPosition: "-150% 0" },
+                                    "100%": { backgroundPosition: "150% 0" },
+                                },
+                            }}
+                            
                         />
-                    ) : scene.generated_image_url ? (
+                    )}
+                    {previewSrc ? (
                         <Box
                             component="img"
-                            src={scene.generated_image_url}
-                            alt={scene.title}
+                            src={previewSrc}
+                            alt={scene.title || "Storyboard"}
                             sx={{ width: "350px", height: "170px", objectFit: "contain", display: "block" }}
                         />
                     ) : (
@@ -139,6 +206,45 @@ const VisualTab = ({ scene, storyboard }: { scene: StoryboardScene | null; story
                     )}
                 </Box>
             </Card>
+            {previewSrc && (
+                <Popover
+                    open={isPreviewOpen}
+                    anchorEl={previewAnchorEl}
+                    onClose={handlePreviewClose}
+                    disableAutoFocus
+                    disableEnforceFocus
+                    disableRestoreFocus
+                    anchorOrigin={{ vertical: "center", horizontal: "right" }}
+                    transformOrigin={{ vertical: "center", horizontal: "left" }}
+                    slotProps={{
+                        paper: {
+                            onMouseEnter: handlePreviewOpen,
+                            onMouseLeave: schedulePreviewClose,
+                            sx: {
+                                mt: 4,
+                                bgcolor: "transparent",
+                                boxShadow: "none",
+                                border: "none",
+                                overflow: "visible",
+                                p: 0,
+                            },
+                        },
+                    }}
+                >
+                    <Box
+                        component="img"
+                        src={previewSrc}
+                        alt={scene.title || "Storyboard preview"}
+                        sx={{
+                            maxWidth: "75vw",
+                            maxHeight: "75vh",
+                            width: "auto",
+                            height: "auto",
+                            display: "block",
+                        }}
+                    />
+                </Popover>
+            )}
             <Box>
                 <Typography variant="caption" color="text.secondary">
                     Frame prompt
