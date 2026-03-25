@@ -1,9 +1,25 @@
 import { AuiIf, ComposerPrimitive, useAuiState } from "@assistant-ui/react";
 import { Box, IconButton, Paper, Stack, Tooltip, Typography } from "@mui/material";
 import { ArrowUp, FileText, ImagePlus, Square } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 
 export function ProjectChatComposer() {
+    const rootRef = useRef<HTMLDivElement | null>(null);
+
+    const handleComposerMouseDown = (event: MouseEvent<HTMLElement>) => {
+        const target = event.target as HTMLElement | null;
+        const isInteractive = target?.closest(
+            "button, a, input, textarea, select, [role='button']"
+        );
+        if (isInteractive) return;
+        requestAnimationFrame(() => {
+            const input = rootRef.current?.querySelector<HTMLTextAreaElement | HTMLInputElement>(
+                "textarea, input"
+            );
+            input?.focus();
+        });
+    };
+
     return (
         <ComposerPrimitive.Root className="w-full">
             <Paper
@@ -21,7 +37,9 @@ export function ProjectChatComposer() {
                         borderColor: "secondary.main",
                         boxShadow: "0 0 0 1px rgba(91, 97, 255, 0.4), 0 12px 28px rgba(11, 13, 18, 0.12)",
                     },
-                }}>
+                }}
+                onMouseDown={handleComposerMouseDown}
+                ref={rootRef}>
                 <Stack spacing={1}>
                     <ComposerPrimitive.Attachments
                         components={{
