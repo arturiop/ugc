@@ -425,7 +425,7 @@ export default function Dashboard() {
                         deleteProject.mutate({ projectId: menuProjectId });
                         handleMenuClose();
                     }}>
-                    Archive project
+                    Delete
                 </MenuItem>
             </Menu>
         </Box>

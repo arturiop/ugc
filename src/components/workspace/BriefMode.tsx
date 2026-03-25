@@ -218,6 +218,11 @@ const BriefMode = ({ storyboard }: BriefModeProps) => {
                             border: "1px dashed",
                             borderColor: "divider",
                             bgcolor: "background.neutral",
+                            transition: "border-color 0.2s ease, background-color 0.2s ease",
+                            "&:hover": {
+                                borderColor: "secondary.main",
+                                bgcolor: "background.paper",
+                            },
                         }}
                         onDragOver={(event) => {
                             event.preventDefault();
@@ -227,8 +232,8 @@ const BriefMode = ({ storyboard }: BriefModeProps) => {
                             void uploadFiles(Array.from(event.dataTransfer.files ?? []));
                         }}
                     >
-                        <CardContent sx={{ py: 2 }}>
-                            <Stack spacing={2}>
+                        <CardContent sx={{ p: 1.5 }}>
+                            <Stack spacing={1.5}>
                                 <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems={{ md: "center" }}>
                                     <Stack direction="row" spacing={1.5} alignItems="center" sx={{ flex: 1 }}>
                                         <Box
@@ -246,11 +251,20 @@ const BriefMode = ({ storyboard }: BriefModeProps) => {
                                         >
                                             <Upload size={16} />
                                         </Box>
-                                        <Typography variant="body2" fontWeight={600} color="text.secondary">
-                                            Drop files to upload
-                                        </Typography>
+                                        <Box sx={{ minWidth: 0 }}>
+                                            <Typography variant="body2" fontWeight={700}>
+                                                Drop assets here
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                                Or use the upload button to browse
+                                            </Typography>
+                                        </Box>
                                     </Stack>
-                                    <Stack spacing={1} alignItems={{ xs: "stretch", md: "flex-end" }}>
+                                    <Stack
+                                        direction={{ xs: "column", md: "row" }}
+                                        spacing={1}
+                                        alignItems={{ xs: "stretch", md: "center" }}
+                                    >
                                         <FormControl size="small" sx={{ minWidth: 180 }}>
                                             <Select
                                                 value={uploadLabel}

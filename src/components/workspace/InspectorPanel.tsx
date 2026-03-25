@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Chip, Divider, Popover, Stack, Tab, Tabs, Typography } from "@mui/material";
+import { Box, Card, CardContent, Chip, Divider, Popover, Portal, Stack, Tab, Tabs, Typography } from "@mui/material";
 import { useMemo, useRef, useState } from "react";
 import type { Storyboard, StoryboardScene } from "@/api/storyboard";
 import type { WorkspaceMode } from "./WorkspaceHeader";
@@ -206,6 +206,21 @@ const VisualTabContent = ({
                     )}
                 </Box>
             </Card>
+            {isPreviewOpen && (
+                <Portal>
+                    <Box
+                        sx={(theme) => ({
+                            position: "fixed",
+                            inset: 0,
+                            backdropFilter: "blur(6px)",
+                            WebkitBackdropFilter: "blur(6px)",
+                            backgroundColor: "rgba(15, 15, 15, 0.08)",
+                            zIndex: theme.zIndex.modal - 1,
+                            pointerEvents: "none",
+                        })}
+                    />
+                </Portal>
+            )}
             {previewSrc && (
                 <Popover
                     open={isPreviewOpen}

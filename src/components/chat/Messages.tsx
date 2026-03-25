@@ -2,7 +2,7 @@ import { AuiIf, ErrorPrimitive, MessagePrimitive, ThreadPrimitive, useAuiState }
 import { Box, CircularProgress, Link, Paper, Stack, Typography } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import { Bot, FileText } from "lucide-react";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useGeneratedContent } from "@/contexts/GeneratedContentContext";
 import { useProject } from "@/contexts/Project/ProjectContext";
 import { queryKeys } from "@/api/queryKeys";
@@ -176,13 +176,26 @@ function ThinkingRow() {
 
 function MessageImageAttachment() {
     const attachment = useAuiState((s) => s.attachment);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const imageUrl = useMemo(() => {
         if (!attachment) return null;
         const imagePart = attachment.content?.find((part) => part.type === "image");
         return imagePart && "image" in imagePart ? imagePart.image : null;
     }, [attachment]);
 
-    if (!imageUrl) return null;
+    useEffect(() => {
+        if (!attachment?.file) {
+            setPreviewUrl(null);
+            return;
+        }
+        const next = URL.createObjectURL(attachment.file);
+        setPreviewUrl(next);
+        return () => URL.revokeObjectURL(next);
+    }, [attachment?.file]);
+
+    const src = imageUrl || previewUrl;
+    if (!src) return null;
+    const isPending = attachment?.status?.type !== "complete";
 
     return (
         <Box
@@ -192,19 +205,69 @@ function MessageImageAttachment() {
                 overflow: "hidden",
                 border: "1px solid",
                 borderColor: "divider",
+                position: "relative",
+                isolation: "isolate",
+                "&:hover .attachment-image": {
+                    transform: "scale(1.02)",
+                },
+                "&:hover .attachment-backdrop": {
+                    opacity: 0.7,
+                },
             }}>
             <Box
-                component="img"
-                src={imageUrl}
-                alt={attachment?.name || "uploaded image"}
+                className="attachment-backdrop"
+                aria-hidden="true"
                 sx={{
+                    position: "absolute",
+                    inset: 0,
+                    zIndex: 0,
+                    opacity: 0,
+                    transition: "opacity 0.2s ease",
+                    backgroundImage: `url(${src})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    filter: "blur(10px)",
+                    transform: "scale(1.06)",
+                }}
+            />
+            <Box
+                component="img"
+                src={src}
+                alt={attachment?.name || "uploaded image"}
+                className="attachment-image"
+                sx={{
+                    position: "relative",
+                    zIndex: 1,
                     display: "block",
                     width: "100%",
                     height: "auto",
                     maxHeight: 280,
                     objectFit: "cover",
+                    filter: isPending ? "grayscale(0.1)" : "none",
+                    opacity: isPending ? 0.7 : 1,
+                    transition: "transform 0.2s ease",
                 }}
             />
+            {isPending && (
+                <Box
+                    sx={{
+                        position: "absolute",
+                        inset: 0,
+                        zIndex: 2,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 1,
+                        bgcolor: "rgba(0, 0, 0, 0.35)",
+                        color: "common.white",
+                    }}
+                >
+                    <CircularProgress size={16} color="inherit" />
+                    <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                        Uploading…
+                    </Typography>
+                </Box>
+            )}
         </Box>
     );
 }
@@ -215,6 +278,7 @@ function MessageFileAttachment() {
 
     const filePart = attachment.content?.find((part) => part.type === "file");
     const fileUrl = filePart && "data" in filePart ? filePart.data : null;
+    const isPending = attachment?.status?.type !== "complete";
     return (
         <Box
             sx={{
@@ -248,6 +312,13 @@ function MessageFileAttachment() {
                     <Link href={fileUrl} target="_blank" rel="noreferrer" variant="caption">
                         Open file
                     </Link>
+                ) : isPending ? (
+                    <Stack direction="row" spacing={1} alignItems="center">
+                        <CircularProgress size={12} />
+                        <Typography variant="caption" color="text.secondary">
+                            Uploading…
+                        </Typography>
+                    </Stack>
                 ) : (
                     <Typography variant="caption" color="text.secondary">
                         File uploaded
