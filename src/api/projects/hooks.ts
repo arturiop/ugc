@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { queryKeys } from "@/api/queryKeys";
-import { createProject, getProject, listProjects } from "./index";
+import { createProject, deleteProject, getProject, listProjects } from "./index";
 
 export function useProjects() {
     return useQuery({
@@ -31,6 +31,18 @@ export function useCreateProject() {
             if (data?.uuid) {
                 queryClient.setQueryData(queryKeys.projects.detail(data.uuid), data);
             }
+        },
+    });
+}
+
+export function useDeleteProject() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ projectId }: { projectId: string }) => deleteProject(projectId),
+        onSuccess: (_data, variables) => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.projects.list() });
+            queryClient.removeQueries({ queryKey: queryKeys.projects.detail(variables.projectId) });
         },
     });
 }

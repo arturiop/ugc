@@ -14,7 +14,7 @@ export function ProjectChatThread() {
 
         <ProjectChatMessages />
 
-        <ThreadPrimitive.ViewportFooter className="sticky bottom-0 mt-auto w-full bg-background pb-3">
+        <ThreadPrimitive.ViewportFooter className="sticky bottom-0 mt-auto w-full pb-3">
           <ProjectChatComposer />
         </ThreadPrimitive.ViewportFooter>
       </ThreadPrimitive.Viewport>

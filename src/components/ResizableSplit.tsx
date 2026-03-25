@@ -81,7 +81,7 @@ function ResizableSplit({ left, right, initialLeftPct = 21, minLeftPct = 20, max
                     document.body.style.userSelect = "none";
                 }}
                 sx={{
-                    width: 8,
+                    width: "0.5px",
                     position: "relative",
                     cursor: "col-resize",
                     flex: "0 0 auto",

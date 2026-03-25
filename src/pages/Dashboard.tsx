@@ -15,23 +15,24 @@ import {
     TextField,
     Button,
     InputAdornment,
+    Menu,
+    MenuItem,
 } from "@mui/material";
 
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
 
-import { useProjects } from "@/api/projects/hooks";
+import { ProjectStatus } from "@/api/projects";
+import { useDeleteProject, useProjects } from "@/api/projects/hooks";
 import { useAuthStore } from "@/stores/useAuthStore";
 import AppHeader from "@/components/AppHeader";
 import { WatchableLogoText } from "@/components/LogoText";
 
-type ProjectStatus = "active" | "ready" | "drafts";
-
 const STATUS_META: Record<ProjectStatus, { label: string; color: string }> = {
-    active: { label: "Active", color: "success.main" },
-    ready: { label: "Ready", color: "info.main" },
-    drafts: { label: "Drafts", color: "warning.main" },
+    [ProjectStatus.Draft]: { label: "Draft", color: "warning.main" },
+    [ProjectStatus.Active]: { label: "Active", color: "success.main" },
+    [ProjectStatus.Archived]: { label: "Archived", color: "text.disabled" },
 };
 
 export default function Dashboard() {
@@ -40,8 +41,11 @@ export default function Dashboard() {
     const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
     const [filter, setFilter] = useState<"all" | ProjectStatus>("all");
     const [query, setQuery] = useState("");
+    const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
+    const [menuProjectId, setMenuProjectId] = useState<string | null>(null);
 
     const { data, isLoading } = useProjects();
+    const deleteProject = useDeleteProject();
     useEffect(() => {
         setPortalTarget(document.getElementById("app-header-portal"));
     }, []);
@@ -59,33 +63,40 @@ export default function Dashboard() {
         return [...projects].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     }, [projects]);
 
-    const getProjectStatus = (updatedAt: string, thumbnailUrl?: string | null): ProjectStatus => {
-        if (thumbnailUrl) return "ready";
-        const ageDays = (Date.now() - new Date(updatedAt).getTime()) / 86400000;
-        if (ageDays <= 7) return "active";
-        return "drafts";
-    };
-
     const stats = useMemo(() => {
-        const output = { total: sorted.length, active: 0, ready: 0, drafts: 0 };
+        const output: Record<ProjectStatus, number> & { total: number } = {
+            total: sorted.length,
+            [ProjectStatus.Draft]: 0,
+            [ProjectStatus.Active]: 0,
+            [ProjectStatus.Archived]: 0,
+        };
         sorted.forEach((project) => {
-            const status = getProjectStatus(project.updatedAt, project.thumbnailUrl);
-            output[status] += 1;
+            output[project.status] += 1;
         });
         return output;
     }, [sorted]);
 
     const filtered = useMemo(() => {
         return sorted.filter((project) => {
-            const matchesQuery = query.trim().length
-                ? (project.title || project.name || "Untitled ad").toLowerCase().includes(query.trim().toLowerCase())
-                : true;
+            const matchesQuery = query.trim().length ? (project.title || project.name || "Untitled ad").toLowerCase().includes(query.trim().toLowerCase()) : true;
             if (!matchesQuery) return false;
             if (filter === "all") return true;
-            const status = getProjectStatus(project.updatedAt, project.thumbnailUrl);
-            return status === filter;
+            return project.status === filter;
         });
     }, [sorted, query, filter]);
+
+    const isMenuOpen = Boolean(menuAnchorEl);
+
+    const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, projectId: string) => {
+        event.stopPropagation();
+        setMenuAnchorEl(event.currentTarget);
+        setMenuProjectId(projectId);
+    };
+
+    const handleMenuClose = () => {
+        setMenuAnchorEl(null);
+        setMenuProjectId(null);
+    };
 
     return (
         <Box sx={{ height: "100dvh", width: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
@@ -129,10 +140,7 @@ export default function Dashboard() {
                                     Campaigns will soon hold grouped projects, briefs, and revisions.
                                 </Typography>
                             </Box>
-                            <Button
-                                variant="outlined"
-                                startIcon={<AddRoundedIcon />}
-                                sx={{ borderRadius: 999, textTransform: "none", fontWeight: 600 }}>
+                            <Button variant="outlined" startIcon={<AddRoundedIcon />} sx={{ borderRadius: 999, textTransform: "none", fontWeight: 600 }}>
                                 New campaign
                             </Button>
                         </Stack>
@@ -215,13 +223,14 @@ export default function Dashboard() {
 
                     {/* PROJECTS */}
                     <Box sx={{ mt: 4 }}>
-                        <Stack
-                            direction={{ xs: "column", md: "row" }}
-                            spacing={2}
-                            alignItems={{ xs: "flex-start", md: "center" }}
-                            justifyContent="space-between">
+                        <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems={{ xs: "flex-start", md: "center" }} justifyContent="space-between">
                             <Stack direction="row" spacing={1} flexWrap="wrap">
-                                {(["all", "active", "ready", "drafts"] as const).map((value) => {
+                                {([
+                                    "all",
+                                    ProjectStatus.Draft,
+                                    ProjectStatus.Active,
+                                    ProjectStatus.Archived,
+                                ] as const).map((value) => {
                                     const isActive = filter === value;
                                     return (
                                         <Button
@@ -300,8 +309,7 @@ export default function Dashboard() {
                                 {!isLoading &&
                                     filtered.map((project) => {
                                         const thumb = project.thumbnailUrl || "";
-                                        const status = getProjectStatus(project.updatedAt, project.thumbnailUrl);
-                                        const statusMeta = STATUS_META[status];
+                                        const statusMeta = STATUS_META[project.status];
 
                                         return (
                                             <Card
@@ -322,13 +330,17 @@ export default function Dashboard() {
                                                 <CardActionArea component="div" onClick={() => navigate(`/projects/${project.id}`)}>
                                                     <Box sx={{ position: "relative", height: 180, overflow: "hidden" }}>
                                                         <Box
+                                                            onClick={(e) => e.stopPropagation()}
                                                             sx={{
                                                                 position: "absolute",
                                                                 top: 12,
                                                                 right: 12,
                                                                 zIndex: 1,
                                                             }}>
-                                                            <IconButton size="small" sx={{ bgcolor: "rgba(255,255,255,0.9)" }}>
+                                                            <IconButton
+                                                                size="small"
+                                                                sx={{ bgcolor: "rgba(255,255,255,0.9)" }}
+                                                                onClick={(event) => handleMenuOpen(event, project.id)}>
                                                                 <MoreHorizRoundedIcon fontSize="small" />
                                                             </IconButton>
                                                         </Box>
@@ -354,16 +366,16 @@ export default function Dashboard() {
                                                                     justifyContent: "center",
                                                                     bgcolor: "action.hover",
                                                                 }}>
-                                                                    <CardMedia
-                                                                        component="img"
-                                                                        image="/logo.png"
-                                                                        sx={{
-                                                                            width: 108,
-                                                                            height: 108,
-                                                                            objectFit: "contain",
-                                                                            opacity: 0.55,
-                                                                        }}
-                                                                    />
+                                                                <CardMedia
+                                                                    component="img"
+                                                                    image="/logo.png"
+                                                                    sx={{
+                                                                        width: 108,
+                                                                        height: 108,
+                                                                        objectFit: "contain",
+                                                                        opacity: 0.55,
+                                                                    }}
+                                                                />
                                                             </Box>
                                                         )}
                                                     </Box>
@@ -398,6 +410,24 @@ export default function Dashboard() {
                     </Box>
                 </Box>
             </Box>
+            <Menu
+                anchorEl={menuAnchorEl}
+                open={isMenuOpen}
+                onClose={handleMenuClose}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "right" }}>
+                <MenuItem
+                    disabled={deleteProject.isPending}
+                    sx={{ backgroundColor: "error.light" }}
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        if (!menuProjectId || deleteProject.isPending) return;
+                        deleteProject.mutate({ projectId: menuProjectId });
+                        handleMenuClose();
+                    }}>
+                    Archive project
+                </MenuItem>
+            </Menu>
         </Box>
     );
 }
