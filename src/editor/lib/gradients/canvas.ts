@@ -354,7 +354,11 @@ const resolveRadialDimensions = ({
 			return { cx, cy, rx, ry };
 		}
 
-		if (radial.style && radial.style.type !== "extent-keyword") {
+		if (
+			radial.style &&
+			radial.style.type !== "extent-keyword" &&
+			radial.style.type !== "position"
+		) {
 			const resolvedRadius = resolveDistanceInPixels({
 				distance: radial.style,
 				axisSize: Math.max(width, height),
