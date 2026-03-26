@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*", "../*"],
+      "next/navigation": ["./shims/next-navigation.ts"],
+      "next/link": ["./shims/next-link.tsx"],
+      "next/image": ["./shims/next-image.tsx"],
+      "next-themes": ["./shims/next-themes.tsx"],
+      "sonner": ["./shims/sonner.tsx"],
+      "@opencut/ui/icons": ["./shims/opencut-icons.tsx"]
+    }
+  },
+  "include": ["./**/*.ts", "./**/*.tsx"],
+  "exclude": [
+    "./lib/auth/**/*",
+    "./lib/db/**/*",
+    "./**/__tests__/**/*",
+    "./**/*.test.ts",
+    "./**/*.test.tsx"
+  ]
+}

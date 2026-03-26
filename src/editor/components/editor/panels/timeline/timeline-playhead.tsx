@@ -1,5 +1,3 @@
-"use client";
-
 import { useRef } from "react";
 import {
 	getCenteredLineLeft,
@@ -78,7 +76,7 @@ export function TimelinePlayhead({
 			aria-valuemax={duration}
 			aria-valuenow={playheadPosition}
 			tabIndex={0}
-			className="pointer-events-none absolute z-5"
+			className="pointer-events-none absolute z-20"
 			style={{
 				left: `${leftPosition}px`,
 				top: 0,
@@ -87,12 +85,12 @@ export function TimelinePlayhead({
 			}}
 			onKeyDown={handlePlayheadKeyDown}
 		>
-			<div className="bg-foreground pointer-events-none absolute left-0 h-full w-0.5" />
+			<div className="bg-foreground pointer-events-none absolute left-0 z-20 h-full w-0.5" />
 
 			<button
 				type="button"
 				aria-label="Drag playhead"
-				className={`pointer-events-auto absolute top-1 left-1/2 size-3 -translate-x-1/2 transform cursor-col-resize rounded-full border-2 shadow-xs ${isSnappingToPlayhead ? "bg-foreground border-foreground" : "bg-foreground border-foreground/50"}`}
+				className={`pointer-events-auto absolute top-1 left-1/2 z-30 size-3 -translate-x-1/2 transform cursor-col-resize rounded-full border-2 shadow-xs ${isSnappingToPlayhead ? "bg-foreground border-foreground" : "bg-foreground border-foreground/50"}`}
 				onMouseDown={handlePlayheadMouseDown}
 			/>
 		</div>

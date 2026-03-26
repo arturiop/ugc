@@ -1,3 +1,4 @@
+import type * as React from "react";
 import { useEditor } from "@/hooks/use-editor";
 import {
 	TooltipProvider,
