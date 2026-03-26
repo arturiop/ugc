@@ -85,7 +85,7 @@ const SceneHeader = ({ scene, statusLabel }: { scene: StoryboardScene | null; st
             <Stack spacing={0.5}>
                 <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
                     <Typography variant="subtitle2" fontWeight={700}>
-                        Scene {scene.scene_index + 1}
+                        Scene {scene.scene_index}
                     </Typography>
                     <Chip size="small" label={statusLabel} />
                 </Stack>

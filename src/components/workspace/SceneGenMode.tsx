@@ -99,7 +99,7 @@ const SceneGenMode = ({ storyboard, selectedSceneIndex, onSelectScene }: SceneGe
                             <Stack spacing={1}>
                                 <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
                                     <Typography variant="subtitle1" fontWeight={700}>
-                                        Scene {selectedScene.scene_index + 1}: {selectedScene.title}
+                                        Scene {selectedScene.scene_index}: {selectedScene.title}
                                     </Typography>
                                     <Chip
                                         size="small"
@@ -218,7 +218,7 @@ const SceneGenMode = ({ storyboard, selectedSceneIndex, onSelectScene }: SceneGe
                                         >
                                             <Stack spacing={0.5} alignItems="flex-start">
                                                 <Typography variant="caption" fontWeight={700} color="text.secondary">
-                                                    Scene {scene.scene_index + 1}
+                                                    Scene {scene.scene_index}
                                                 </Typography>
                                                 <Typography variant="body2" fontWeight={600} noWrap>
                                                     {scene.title}
@@ -246,7 +246,7 @@ const SceneGenMode = ({ storyboard, selectedSceneIndex, onSelectScene }: SceneGe
                                                 ) : (
                                                     <Box sx={{ width: "100%", height: "100%", display: "grid", placeItems: "center" }}>
                                                         <Typography variant="caption" color="text.disabled">
-                                                            {String(scene.scene_index + 1).padStart(2, "0")}
+                                                            {String(scene.scene_index).padStart(2, "0")}
                                                         </Typography>
                                                     </Box>
                                                 )}

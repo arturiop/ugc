@@ -719,7 +719,7 @@ const StoryboardGridItem = ({ scene, isSelected, onSelect, storyboardImageUrl, i
                         />
                     ) : (
                         <Typography variant="h4" color="text.disabled">
-                            {String(scene.scene_index + 1).padStart(2, "0")}
+                            {String(scene.scene_index).padStart(2, "0")}
                         </Typography>
                     )}
                 </Box>

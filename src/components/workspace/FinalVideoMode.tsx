@@ -99,7 +99,7 @@ const FinalVideoMode = ({ storyboard }: FinalVideoModeProps) => {
                             >
                                 <CardContent>
                                     <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                                        Scene {scene.scene_index + 1}: {scene.title}
+                                        Scene {scene.scene_index}: {scene.title}
                                     </Typography>
                                     {scene.generated_video_url ? (
                                         <Box
