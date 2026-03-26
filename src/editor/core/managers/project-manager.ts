@@ -20,13 +20,6 @@ import { loadFonts } from "@/editor/lib/fonts/google-fonts";
 import { collectFontFamilies } from "@/editor/lib/timeline/element-utils";
 import { createMockDemoVideoAsset, createMockProject } from "@/editor/lib/mock-project";
 
-export interface MigrationState {
-	isMigrating: boolean;
-	fromVersion: number | null;
-	toVersion: number | null;
-	projectName: string | null;
-}
-
 export class ProjectManager {
 	private active: TProject | null = null;
 	private savedProjects: TProjectMetadata[] = [];
@@ -34,12 +27,6 @@ export class ProjectManager {
 	private isInitialized = false;
 	private invalidProjectIds = new Set<string>();
 	private listeners = new Set<() => void>();
-	private migrationState: MigrationState = {
-		isMigrating: false,
-		fromVersion: null,
-		toVersion: null,
-		projectName: null,
-	};
 	private exportState: ExportState = {
 		isExporting: false,
 		progress: 0,
@@ -567,10 +554,6 @@ export class ProjectManager {
 
 	getIsInitialized(): boolean {
 		return this.isInitialized;
-	}
-
-	getMigrationState(): MigrationState {
-		return this.migrationState;
 	}
 
 	setActiveProject({ project }: { project: TProject }): void {

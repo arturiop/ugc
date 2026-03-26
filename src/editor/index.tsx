@@ -5,7 +5,6 @@ import { TooltipProvider } from "@/editor/ui/tooltip";
 import { Toaster } from "@/editor/shims/sonner";
 import { EditorProvider } from "@/editor/providers/editor-provider";
 import { Onboarding } from "@/editor/editor/onboarding";
-import { MigrationDialog } from "@/editor/editor/dialogs/migration-dialog";
 import { AssetsPanel } from "@/editor/editor/panels/assets";
 import { PropertiesPanel } from "@/editor/editor/panels/properties";
 import { Timeline } from "@/editor/editor/panels/timeline";
@@ -29,7 +28,6 @@ export default function Editor() {
                                 <EditorLayout />
                             </div>
                             <Onboarding />
-                            <MigrationDialog />
                         </div>
                     </EditorProvider>
             </TooltipProvider>
