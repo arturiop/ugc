@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
-        "target": "ES2020",
+        "target": "ES2022",
         "useDefineForClassFields": true,
-        "lib": ["ES2020", "DOM", "DOM.Iterable"],
+        "lib": ["ES2022", "DOM", "DOM.Iterable"],
         "module": "ESNext",
         "skipLibCheck": true,
 
@@ -23,8 +23,22 @@
 
         "baseUrl": ".",
         "paths": {
-            "@/*": ["./src/*"]
+            "@/*": ["./src/*"],
+            "next/navigation": ["./src/editor/shims/next-navigation.ts"],
+            "next/link": ["./src/editor/shims/next-link.tsx"],
+            "next/image": ["./src/editor/shims/next-image.tsx"],
+            "next-themes": ["./src/editor/shims/next-themes.tsx"],
+            "sonner": ["./src/editor/shims/sonner.tsx"],
+            "@opencut/ui/icons": ["./src/editor/shims/opencut-icons.tsx"]
         }
     },
-    "include": ["src"]
+    "include": ["src"],
+    "exclude": [
+        "src/editor/lib/auth/**/*",
+        "src/editor/lib/db/**/*",
+        "src/editor/components/**/*",
+        "src/editor/**/__tests__/**/*",
+        "src/editor/**/*.test.ts",
+        "src/editor/**/*.test.tsx"
+    ]
 }

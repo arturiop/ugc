@@ -2,25 +2,45 @@ import { Box, Button, Card, CardContent, Divider, Stack, Typography } from "@mui
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import LaunchRoundedIcon from "@mui/icons-material/LaunchRounded";
 import type { Storyboard } from "@/api/storyboard";
+import Editor from "@/editor";
 
 type FinalVideoModeProps = {
     storyboard: Storyboard | null;
 };
 
 const FinalVideoMode = ({ storyboard }: FinalVideoModeProps) => {
-    if (!storyboard) {
+    if (true) {
         return (
-            <Box sx={{ p: { xs: 2.5, md: 4 }, height: "100%", overflowY: "auto" }}>
-                <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
-                    <CardContent>
-                        <Typography variant="h6" fontWeight={700}>
-                            No final video yet
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            Finish generating and approving scenes to move toward a final cut.
-                        </Typography>
-                    </CardContent>
-                </Card>
+            <Box
+                sx={{
+                    flex: 1,
+                    width: "100%",
+                    height: "100%",
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    minHeight: 0,
+                    minWidth: 0,
+                    overflow: "hidden",
+                    display: "flex",
+                    position: "relative",
+                    contain: "layout size",
+                }}
+            >
+                <Box
+                    sx={{
+                        flex: 1,
+                        width: "100%",
+                        height: "100%",
+                        minHeight: 0,
+                        minWidth: 0,
+                        maxWidth: "100%",
+                        maxHeight: "100%",
+                        overflow: "hidden",
+                        display: "flex",
+                    }}
+                >
+                    <Editor />
+                </Box>
             </Box>
         );
     }

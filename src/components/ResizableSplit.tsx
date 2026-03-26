@@ -61,6 +61,7 @@ function ResizableSplit({ left, right, initialLeftPct = 21, minLeftPct = 20, max
                 sx={{
                     ...leftStyle,
                     minWidth: 320,
+                    minHeight: 0,
                     overflow: "hidden",
                     display: "flex",
                     bgcolor: "background.paper",
@@ -104,7 +105,9 @@ function ResizableSplit({ left, right, initialLeftPct = 21, minLeftPct = 20, max
             <Box
                 sx={{
                     ...rightStyle,
-                    minWidth: 420,
+                    minWidth: 0,
+                    minHeight: 0,
+                    maxWidth: "100%",
                     overflow: "hidden",
                     display: "flex",
                     bgcolor: "background.default",

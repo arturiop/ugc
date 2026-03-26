@@ -1,0 +1,212 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--radius: 0.82rem;
+
+	--background-raw: 0 0% 100%;
+	--foreground-raw: 0 0% 11%;
+	--card-raw: 0 0% 100%;
+	--card-foreground-raw: 0 0% 11%;
+	--popover-raw: 0 0% 100%;
+	--popover-foreground-raw: 0 0% 2%;
+	--popover-hover-raw: 0 0% 96%;
+	--primary-raw: 203 100% 50%;
+	--primary-foreground-raw: 0 0% 100%;
+	--secondary-raw: 204 100% 97%;
+	--secondary-border-raw: 204 100% 94%;
+	--secondary-foreground-raw: 200 98% 39%;
+	--muted-raw: 0 0% 85.1%;
+	--muted-foreground-raw: 0 0% 50%;
+	--accent-raw: 0 0% 96%;
+	--accent-foreground-raw: 0 0% 2%;
+	--destructive-raw: 0 83% 50%;
+	--destructive-foreground-raw: 0 0% 100%;
+	--constructive-raw: 141 71% 48%;
+	--constructive-foreground-raw: 0 0% 100%;
+	--border-raw: 0 0% 91%;
+	--input-raw: 0 0% 100%;
+	--ring-raw: 0 0% 55%;
+	--chart-1-raw: 220 70% 50%;
+	--chart-2-raw: 160 60% 45%;
+	--chart-3-raw: 30 80% 55%;
+	--chart-4-raw: 280 65% 60%;
+	--chart-5-raw: 340 75% 55%;
+	--sidebar-background-raw: 0 0% 96.1%;
+	--sidebar-foreground-raw: 0 0% 2%;
+	--sidebar-primary-raw: 0 0% 2%;
+	--sidebar-primary-foreground-raw: 0 0% 91%;
+	--sidebar-accent-raw: 0 0% 85.1%;
+	--sidebar-accent-foreground-raw: 0 0% 2%;
+	--sidebar-border-raw: 0 0% 85.1%;
+	--sidebar-ring-raw: 0 0% 16.9%;
+	--sidebar-raw: 0 0% 98%;
+
+	--background: hsl(var(--background-raw));
+	--foreground: hsl(var(--foreground-raw));
+	--card: hsl(var(--card-raw));
+	--card-foreground: hsl(var(--card-foreground-raw));
+	--popover: hsl(var(--popover-raw));
+	--popover-foreground: hsl(var(--popover-foreground-raw));
+	--popover-hover: hsl(var(--popover-hover-raw));
+	--primary: hsl(var(--primary-raw));
+	--primary-foreground: hsl(var(--primary-foreground-raw));
+	--secondary: hsl(var(--secondary-raw));
+	--secondary-border: hsl(var(--secondary-border-raw));
+	--secondary-foreground: hsl(var(--secondary-foreground-raw));
+	--muted: hsl(var(--muted-raw));
+	--muted-foreground: hsl(var(--muted-foreground-raw));
+	--accent: hsl(var(--accent-raw));
+	--accent-foreground: hsl(var(--accent-foreground-raw));
+	--destructive: hsl(var(--destructive-raw));
+	--destructive-foreground: hsl(var(--destructive-foreground-raw));
+	--constructive: hsl(var(--constructive-raw));
+	--constructive-foreground: hsl(var(--constructive-foreground-raw));
+	--border: hsl(var(--border-raw));
+	--input: hsl(var(--input-raw));
+	--ring: hsl(var(--ring-raw));
+	--chart-1: hsl(var(--chart-1-raw));
+	--chart-2: hsl(var(--chart-2-raw));
+	--chart-3: hsl(var(--chart-3-raw));
+	--chart-4: hsl(var(--chart-4-raw));
+	--chart-5: hsl(var(--chart-5-raw));
+	--sidebar-background: hsl(var(--sidebar-background-raw));
+	--sidebar-foreground: hsl(var(--sidebar-foreground-raw));
+	--sidebar-primary: hsl(var(--sidebar-primary-raw));
+	--sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground-raw));
+	--sidebar-accent: hsl(var(--sidebar-accent-raw));
+	--sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground-raw));
+	--sidebar-border: hsl(var(--sidebar-border-raw));
+	--sidebar-ring: hsl(var(--sidebar-ring-raw));
+	--sidebar: hsl(var(--sidebar-raw));
+}
+
+.panel {
+	--background-raw: 216 13% 98%;
+	--foreground-raw: 0 0% 13%;
+	--card-raw: 0 0% 98%;
+	--card-foreground-raw: 0 0% 13%;
+	--primary-foreground-raw: 0 0% 98%;
+	--secondary-raw: 204 100% 95%;
+	--secondary-border-raw: 204 100% 92%;
+	--secondary-foreground-raw: 200 98% 37%;
+	--muted-raw: 0 0% 83.1%;
+	--muted-foreground-raw: 0 0% 48%;
+	--accent-raw: 0 0% 93%;
+	--accent-foreground-raw: 0 0% 5%;
+	--destructive-foreground-raw: 0 0% 98%;
+	--constructive-foreground-raw: 0 0% 98%;
+	--border-raw: 0 0% 89%;
+	--input-raw: 0 0% 93%;
+	--ring-raw: 0 0% 53%;
+}
+
+.dark {
+	--background-raw: 0 0% 5%;
+	--foreground-raw: 0 0% 87%;
+	--card-raw: 0 0% 5%;
+	--card-foreground-raw: 0 0% 87%;
+	--popover-raw: 0 0% 5%;
+	--popover-foreground-raw: 0 0% 95%;
+	--popover-hover-raw: 0 0% 22%;
+	--secondary-raw: 204 100% 12%;
+	--secondary-border-raw: 204 100% 15%;
+	--secondary-foreground-raw: 200 98% 61%;
+	--muted-raw: 0 0% 20%;
+	--accent-raw: 0 0% 14%;
+	--accent-foreground-raw: 0 0% 95%;
+	--border-raw: 0 0% 16%;
+	--input-raw: 0 0% 5%;
+	--ring-raw: 0 0% 50%;
+	--sidebar-background-raw: 0 0% 8%;
+	--sidebar-foreground-raw: 0 0% 95%;
+	--sidebar-primary-raw: 0 0% 95%;
+	--sidebar-primary-foreground-raw: 0 0% 15%;
+	--sidebar-accent-raw: 0 0% 20%;
+	--sidebar-accent-foreground-raw: 0 0% 95%;
+	--sidebar-border-raw: 0 0% 20%;
+	--sidebar-ring-raw: 0 0% 83.1%;
+	--sidebar-raw: 0 0% 6%;
+}
+
+.dark .panel {
+	--background-raw: 0 0% 10%;
+	--foreground-raw: 0 0% 85%;
+	--card-raw: 0 0% 10%;
+	--card-foreground-raw: 0 0% 85%;
+	--secondary-raw: 204 67% 9%;
+	--secondary-border-raw: 204 100% 14%;
+	--secondary-foreground-raw: 200 98% 63%;
+	--muted-raw: 0 0% 22%;
+	--accent-raw: 0 0% 15%;
+	--accent-foreground-raw: 0 0% 93%;
+	--border-raw: 0 0% 18%;
+	--input-raw: 0 0% 22%;
+	--ring-raw: 0 0% 52%;
+}
+
+@layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+
+	body {
+		@apply bg-background text-foreground;
+		font-family: "Inter", system-ui, sans-serif;
+		overscroll-behavior-x: contain;
+	}
+
+	::selection {
+		@apply bg-primary/35 text-primary-foreground;
+	}
+}
+
+@layer utilities {
+	.scrollbar-hidden {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	.scrollbar-hidden::-webkit-scrollbar {
+		display: none;
+	}
+
+	.scrollbar-x-hidden {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	.scrollbar-x-hidden::-webkit-scrollbar:horizontal {
+		display: none;
+	}
+
+	.scrollbar-y-hidden {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	.scrollbar-y-hidden::-webkit-scrollbar:vertical {
+		display: none;
+	}
+
+	.scrollbar-thin::-webkit-scrollbar {
+		width: 6px;
+		height: 8px;
+	}
+
+	.scrollbar-thin::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.scrollbar-thin::-webkit-scrollbar-thumb {
+		background: hsl(var(--border-raw));
+		border-radius: 4px;
+	}
+
+	.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+		background: hsl(var(--muted-foreground-raw));
+	}
+}

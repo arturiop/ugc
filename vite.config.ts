@@ -10,6 +10,12 @@ export default defineConfig(({ command, mode }) => {
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
+        "next/navigation": path.resolve(__dirname, "./src/editor/shims/next-navigation.ts"),
+        "next/link": path.resolve(__dirname, "./src/editor/shims/next-link.tsx"),
+        "next/image": path.resolve(__dirname, "./src/editor/shims/next-image.tsx"),
+        "next-themes": path.resolve(__dirname, "./src/editor/shims/next-themes.tsx"),
+        "sonner": path.resolve(__dirname, "./src/editor/shims/sonner.tsx"),
+        "@opencut/ui/icons": path.resolve(__dirname, "./src/editor/shims/opencut-icons.tsx"),
       },
     },
     ...(isDev && {
