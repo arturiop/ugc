@@ -7,7 +7,6 @@ import { useProject } from "@/contexts/Project/ProjectContext";
 import { GeneratedContentProvider } from "@/contexts/GeneratedContentContext";
 import AppHeader from "@/components/AppHeader";
 
-
 function ProjectLayout() {
     const { projectId } = useProject();
 
@@ -35,13 +34,12 @@ function ProjectLayout() {
     );
 }
 
-
 function ProjectPage() {
-  return (
-    <ProjectProvider>
-      <ProjectLayout />
-    </ProjectProvider>
-  );
+    return (
+        <ProjectProvider>
+            <ProjectLayout />
+        </ProjectProvider>
+    );
 }
 
 export default ProjectPage;

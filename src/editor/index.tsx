@@ -42,47 +42,32 @@ function EditorLayout() {
     return (
         <ResizablePanelGroup
             id="editor-root-group"
-            orientation="vertical"
+            orientation="horizontal"
             defaultLayout={{
                 mainContent: panels.mainContent,
-                timeline: panels.timeline,
+                tools: panels.tools,
             }}
             className="size-full gap-[0.18rem]"
             onLayoutChanged={(sizes) => {
                 setPanel("mainContent", sizes.mainContent ?? panels.mainContent);
-                setPanel("timeline", sizes.timeline ?? panels.timeline);
+                setPanel("tools", sizes.tools ?? panels.tools);
             }}>
-            <ResizablePanel
-                id="mainContent"
-                minSize="50%"
-                maxSize="85%"
-                className="min-h-0">
+                <ResizablePanel
+                    id="mainContent"
+                    minSize="50%"
+                    className="min-h-0 min-w-0 pt-3">
                 <ResizablePanelGroup
-                    id="editor-main-group"
-                    orientation="horizontal"
+                    id="editor-preview-group"
+                    orientation="vertical"
                     defaultLayout={{
-                        tools: panels.tools,
                         preview: panels.preview,
-                        properties: panels.properties,
+                        timeline: panels.timeline,
                     }}
-                    className="size-full gap-[0.19rem] px-3"
+                    className="size-full gap-[0.19rem] pl-1"
                     onLayoutChanged={(sizes) => {
-                        setPanel("tools", sizes.tools ?? panels.tools);
                         setPanel("preview", sizes.preview ?? panels.preview);
-                        setPanel("properties", sizes.properties ?? panels.properties);
+                        setPanel("timeline", sizes.timeline ?? panels.timeline);
                     }}>
-                    <ResizablePanel
-                        id="tools"
-                        minSize="15%"
-                        maxSize="40%"
-                        className="min-w-0">
-                        <div className="size-full min-h-0 min-w-0">
-                            <AssetsPanel />
-                        </div>
-                    </ResizablePanel>
-
-                    <ResizableHandle withHandle />
-
                     <ResizablePanel
                         id="preview"
                         minSize="30%"
@@ -95,12 +80,12 @@ function EditorLayout() {
                     <ResizableHandle withHandle />
 
                     <ResizablePanel
-                        id="properties"
+                        id="timeline"
                         minSize="15%"
-                        maxSize="40%"
-                        className="min-w-0">
+                        maxSize="70%"
+                        className="min-h-0 min-w-0 border-l border-border pb-3">
                         <div className="size-full min-h-0 min-w-0">
-                            <PropertiesPanel />
+                            <Timeline />
                         </div>
                     </ResizablePanel>
                 </ResizablePanelGroup>
@@ -109,12 +94,18 @@ function EditorLayout() {
             <ResizableHandle withHandle />
 
             <ResizablePanel
-                id="timeline"
+                id="tools"
                 minSize="15%"
-                maxSize="70%"
-                className="min-h-0 px-3 pb-3">
-                <div className="size-full min-h-0 min-w-0">
-                    <Timeline />
+                maxSize="40%"
+                className="min-h-0 min-w-0">
+                <div className="flex size-full min-h-0 min-w-0 flex-col pr-3 pb-3">
+                    <div className="min-h-0 flex-1">
+                        <AssetsPanel />
+                    </div>
+                    <div className="mx-1 h-px shrink-0 bg-border" aria-hidden="true" />
+                    <div className="min-h-0 flex-1">
+                        <PropertiesPanel />
+                    </div>
                 </div>
             </ResizablePanel>
         </ResizablePanelGroup>

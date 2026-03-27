@@ -17,15 +17,15 @@ import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 
 export const TAB_KEYS = [
 	"media",
-	"sounds",
+	// "sounds",
 	"text",
-	"stickers",
+	// "stickers",
 	"effects",
-	"transitions",
+	// "transitions",
 	"captions",
-	"filters",
-	"adjustment",
-	"settings",
+	// "filters",
+	// "adjustment",
+	// "settings",
 ] as const;
 
 export type Tab = (typeof TAB_KEYS)[number];
@@ -41,42 +41,42 @@ export const tabs = {
 		icon: createHugeiconsIcon({ icon: Folder03Icon }),
 		label: "Media",
 	},
-	sounds: {
-		icon: createHugeiconsIcon({ icon: HeadphonesIcon }),
-		label: "Sounds",
-	},
+	// sounds: {
+	// 	icon: createHugeiconsIcon({ icon: HeadphonesIcon }),
+	// 	label: "Sounds",
+	// },
 	text: {
 		icon: createHugeiconsIcon({ icon: TextIcon }),
 		label: "Text",
 	},
-	stickers: {
-		icon: createHugeiconsIcon({ icon: Happy01Icon }),
-		label: "Stickers",
-	},
+	// stickers: {
+	// 	icon: createHugeiconsIcon({ icon: Happy01Icon }),
+	// 	label: "Stickers",
+	// },
 	effects: {
 		icon: createHugeiconsIcon({ icon: MagicWand05Icon }),
 		label: "Effects",
 	},
-	transitions: {
-		icon: createHugeiconsIcon({ icon: ArrowRightDoubleIcon }),
-		label: "Transitions",
-	},
+	// transitions: {
+	// 	icon: createHugeiconsIcon({ icon: ArrowRightDoubleIcon }),
+	// 	label: "Transitions",
+	// },
 	captions: {
 		icon: createHugeiconsIcon({ icon: ClosedCaptionIcon }),
 		label: "Captions",
 	},
-	filters: {
-		icon: createHugeiconsIcon({ icon: ColorsIcon }),
-		label: "Filters",
-	},
-	adjustment: {
-		icon: createHugeiconsIcon({ icon: SlidersHorizontalIcon }),
-		label: "Adjustment",
-	},
-	settings: {
-		icon: createHugeiconsIcon({ icon: Settings01Icon }),
-		label: "Settings",
-	},
+	// filters: {
+	// 	icon: createHugeiconsIcon({ icon: ColorsIcon }),
+	// 	label: "Filters",
+	// },
+	// adjustment: {
+	// 	icon: createHugeiconsIcon({ icon: SlidersHorizontalIcon }),
+	// 	label: "Adjustment",
+	// },
+	// settings: {
+	// 	icon: createHugeiconsIcon({ icon: Settings01Icon }),
+	// 	label: "Settings",
+	// },
 } satisfies Record<
 	Tab,
 	{ icon: ElementType<{ className?: string }>; label: string }

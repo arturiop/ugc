@@ -62,7 +62,7 @@ export function PropertiesPanel() {
 	});
 
 	return (
-		<div className="panel bg-background h-full rounded-sm border overflow-hidden">
+		<div className="panel bg-background h-full overflow-hidden">
 			{isShowingClipEffects ? (
 				<ClipEffectsProperties
 					element={clipEffectsElement}

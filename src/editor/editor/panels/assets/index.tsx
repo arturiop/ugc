@@ -16,34 +16,33 @@ export function AssetsPanel() {
 
 	const viewMap: Record<Tab, React.ReactNode> = {
 		media: <MediaView />,
-		sounds: <SoundsView />,
+		// sounds: <SoundsView />,
 		text: <TextView />,
-		stickers: <StickersView />,
+		// stickers: <StickersView />,
 		effects: <EffectsView />,
-		transitions: (
-			<div className="text-muted-foreground p-4">
-				Transitions view coming soon...
-			</div>
-		),
+		// transitions: (
+		// 	<div className="text-muted-foreground p-4">
+		// 		Transitions view coming soon...
+		// 	</div>
+		// ),
 		captions: <Captions />,
-		filters: (
-			<div className="text-muted-foreground p-4">
-				Filters view coming soon...
-			</div>
-		),
-		adjustment: (
-			<div className="text-muted-foreground p-4">
-				Adjustment view coming soon...
-			</div>
-		),
-		settings: <SettingsView />,
+		// filters: (
+		// 	<div className="text-muted-foreground p-4">
+		// 		Filters view coming soon...
+		// 	</div>
+		// ),
+		// adjustment: (
+		// 	<div className="text-muted-foreground p-4">
+		// 		Adjustment view coming soon...
+		// 	</div>
+		// ),
+		// settings: <SettingsView />,
 	};
 
 	return (
-		<div className="panel bg-background flex h-full rounded-sm border overflow-hidden">
-			<TabBar />
-			<Separator orientation="vertical" />
+		<div className="panel bg-background flex h-full overflow-hidden">
 			<div className="flex-1 overflow-hidden">{viewMap[activeTab]}</div>
+			<TabBar />
 		</div>
 	);
 }

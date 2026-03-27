@@ -37,11 +37,14 @@ export const usePanelStore = create<PanelState>()(
 						...sizes,
 					},
 				})),
-			resetPanels: () => set({ ...PANEL_CONFIG }),
+			resetPanels: () =>
+				set({
+					panels: { ...PANEL_CONFIG.panels },
+				}),
 		}),
 		{
 			name: "panel-sizes",
-			version: 2,
+			version: 3,
 			migrate: (persistedState) => {
 				const state = persistedState as
 					| {
