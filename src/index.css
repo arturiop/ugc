@@ -100,3 +100,104 @@
     font-family: 'Space Grotesk', sans-serif;
   }
 }
+
+@layer components {
+  .landing-hero-shell,
+  .landing-hero-shell *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6),
+  .landing-hero-shell button,
+  .landing-hero-shell input,
+  .landing-hero-shell textarea,
+  .landing-hero-shell select {
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .landing-hero-shell h1,
+  .landing-hero-shell h2,
+  .landing-hero-shell h3,
+  .landing-hero-shell h4,
+  .landing-hero-shell h5,
+  .landing-hero-shell h6 {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .landing-hero-shell .text-xs {
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+
+  .landing-hero-shell .text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  .landing-hero-shell .text-base {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+
+  .landing-hero-shell .text-lg {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+
+  .landing-hero-shell .text-3xl {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+
+  .landing-hero-shell .text-4xl {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+  }
+
+  .landing-hero-shell .text-5xl {
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .landing-hero-shell .text-6xl {
+    font-size: 3.75rem;
+    line-height: 1;
+  }
+
+  .landing-hero-shell .text-7xl {
+    font-size: 4.5rem;
+    line-height: 1;
+  }
+
+  @media (min-width: 640px) {
+    .landing-hero-shell .sm\:text-lg {
+      font-size: 1.125rem;
+      line-height: 1.75rem;
+    }
+
+    .landing-hero-shell .sm\:text-4xl {
+      font-size: 2.25rem;
+      line-height: 2.5rem;
+    }
+
+    .landing-hero-shell .sm\:text-5xl {
+      font-size: 3rem;
+      line-height: 1;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .landing-hero-shell .md\:text-5xl {
+      font-size: 3rem;
+      line-height: 1;
+    }
+
+    .landing-hero-shell .md\:text-6xl {
+      font-size: 3.75rem;
+      line-height: 1;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .landing-hero-shell .xl\:text-6xl {
+      font-size: 3.75rem;
+      line-height: 1;
+    }
+  }
+}

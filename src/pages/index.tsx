@@ -56,13 +56,12 @@ const RootContainer = () => {
 const router = [
     {
         path: "/",
+        element: <Hero />,
+    },
+    {
+        path: "/",
         element: <RootContainer />,
         children: [
-            {
-                index: true,
-                element: <Hero />,
-            },
-
             {
                 element: <GuestRoute />,
                 children: [

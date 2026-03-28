@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type CSSProperties } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Sparkles, Play, ArrowRight, Check, Plus, Image, ArrowUp, Zap } from "lucide-react";
 import Button from "@mui/material/Button";
@@ -6,6 +6,58 @@ import { useNavigate } from "react-router-dom";
 import { useCreateProject } from "@/api/projects/hooks";
 import { WatchableLogoText } from "@/components/LogoText";
 
+const landingThemeVars = {
+    "--background-raw": "40 20% 98%",
+    "--foreground-raw": "240 10% 8%",
+    "--card-raw": "40 15% 96%",
+    "--card-foreground-raw": "240 10% 8%",
+    "--popover-raw": "40 20% 98%",
+    "--popover-foreground-raw": "240 10% 8%",
+    "--primary-raw": "240 10% 8%",
+    "--primary-foreground-raw": "40 20% 98%",
+    "--secondary-raw": "35 30% 92%",
+    "--secondary-foreground-raw": "240 10% 8%",
+    "--muted-raw": "35 15% 93%",
+    "--muted-foreground-raw": "240 5% 45%",
+    "--accent-raw": "25 95% 55%",
+    "--accent-foreground-raw": "0 0% 100%",
+    "--destructive-raw": "0 84.2% 60.2%",
+    "--destructive-foreground-raw": "210 40% 98%",
+    "--border-raw": "35 15% 88%",
+    "--input-raw": "35 15% 88%",
+    "--ring-raw": "25 95% 55%",
+    "--sidebar-background-raw": "0 0% 98%",
+    "--sidebar-foreground-raw": "240 5.3% 26.1%",
+    "--sidebar-primary-raw": "240 5.9% 10%",
+    "--sidebar-primary-foreground-raw": "0 0% 98%",
+    "--sidebar-accent-raw": "240 4.8% 95.9%",
+    "--sidebar-accent-foreground-raw": "240 5.9% 10%",
+    "--sidebar-border-raw": "220 13% 91%",
+    "--sidebar-ring-raw": "217.2 91.2% 59.8%",
+    "--background": "hsl(40 20% 98%)",
+    "--foreground": "hsl(240 10% 8%)",
+    "--card": "hsl(40 15% 96%)",
+    "--card-foreground": "hsl(240 10% 8%)",
+    "--popover": "hsl(40 20% 98%)",
+    "--popover-foreground": "hsl(240 10% 8%)",
+    "--primary": "hsl(240 10% 8%)",
+    "--primary-foreground": "hsl(40 20% 98%)",
+    "--secondary": "hsl(35 30% 92%)",
+    "--secondary-foreground": "hsl(240 10% 8%)",
+    "--muted": "hsl(35 15% 93%)",
+    "--muted-foreground": "hsl(240 5% 45%)",
+    "--accent": "hsl(25 95% 55%)",
+    "--accent-foreground": "hsl(0 0% 100%)",
+    "--destructive": "hsl(0 84.2% 60.2%)",
+    "--destructive-foreground": "hsl(210 40% 98%)",
+    "--border": "hsl(35 15% 88%)",
+    "--input": "hsl(35 15% 88%)",
+    "--ring": "hsl(25 95% 55%)",
+    "--radius": "0.75rem",
+    fontFamily: "'DM Sans', sans-serif",
+    backgroundColor: "hsl(var(--background-raw))",
+    color: "hsl(var(--foreground-raw))",
+} as CSSProperties;
 
 const Index = () => {
     const navigate = useNavigate();
@@ -27,7 +79,7 @@ const Index = () => {
     }
 
     return (
-        <div className="min-h-screen">
+        <div className="landing-hero-shell min-h-screen bg-background text-foreground" style={landingThemeVars}>
             {/* Nav */}
             <nav className="flex items-center justify-between px-6 md:px-16 py-5">
                 <WatchableLogoText />
@@ -45,7 +97,7 @@ const Index = () => {
                     <div className="flex flex-col gap-8 lg:hidden">
                         <div>
                             <p className="uppercase tracking-[0.25em] text-[11px] font-semibold text-accent mb-6">AI-Powered Production</p>
-                            <h1 className="text-4xl sm:text-5xl font-bold leading-[1.08] tracking-tight text-foreground mb-6">
+                            <h1 className="mb-6 font-['Space_Grotesk'] text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-5xl">
                                 The easiest way to make <span className="inline-block bg-accent/15 text-accent px-3 py-0.5 rounded-lg">video ads</span> people{" "}
                                 <span className="font-black italic">actually watch</span>
                                 <span className="text-accent font-black text-5xl leading-none">.</span>
@@ -80,7 +132,7 @@ const Index = () => {
                                     WebkitBackdropFilter: "blur(24px)",
                                 }}>
                                 <p className="uppercase tracking-[0.25em] text-[11px] font-semibold text-accent mb-6">AI-Powered Production</p>
-                                <h1 className="text-5xl xl:text-6xl font-bold leading-[1.08] tracking-tight text-foreground mb-8">
+                                <h1 className="mb-8 font-['Space_Grotesk'] text-5xl font-bold leading-[1.08] tracking-tight text-foreground xl:text-6xl">
                                     The easiest way to make
                                     <br />
                                     <span className="inline-block bg-accent/15 text-accent px-3 py-0.5 rounded-lg mt-1">video ads</span> people
@@ -104,15 +156,6 @@ const Index = () => {
 };
 
 export default Index;
-
-const builderSteps = ["Idea", "Script", "Storyboard", "Ready"] as const;
-
-const scenes = [
-    { number: "01", title: "Opening hook", description: "Close-up product reveal with text overlay" },
-    { number: "02", title: "Problem setup", description: "Relatable moment your audience knows" },
-    { number: "03", title: "Product in action", description: "Natural, authentic usage footage" },
-    { number: "04", title: "Social proof + CTA", description: "Reaction shot with clear next step" },
-];
 
 const stages = [
     {
@@ -164,7 +207,7 @@ const ProductJourney = () => {
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
                     className="text-center mb-14 lg:mb-20">
-                    <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
+                    <h2 className="font-['Space_Grotesk'] text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl md:text-6xl">
                         Just clip, and your{" "}
                         <span className="relative inline-block">
                             <span className="relative z-10 bg-accent/15 text-accent px-4 py-1 rounded-xl">ad</span>
