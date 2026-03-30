@@ -7,6 +7,11 @@ export const queryKeys = {
         chatMessages: (projectId: string) => [...queryKeys.projects.all, "chat", projectId] as const,
         storyboard: (projectId: string) => [...queryKeys.projects.all, "storyboard", projectId] as const,
     },
+    viralKnowledge: {
+        all: ["viral-knowledge"] as const,
+        preview: () => [...queryKeys.viralKnowledge.all, "preview"] as const,
+        entries: () => [...queryKeys.viralKnowledge.all, "entries"] as const,
+    },
     settings: {
         all: ["settings"] as const,
         list: () => [...queryKeys.settings.all, "list"] as const,

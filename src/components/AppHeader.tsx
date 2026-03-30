@@ -173,6 +173,13 @@ const AppHeader = () => {
                 onClose={handleAvatarClose}
                 anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                 transformOrigin={{ vertical: "top", horizontal: "right" }}>
+                <MenuItem
+                    onClick={() => {
+                        handleAvatarClose();
+                        navigate("/admin/viral-kb");
+                    }}>
+                    Viral knowledge
+                </MenuItem>
                 <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
             </Menu>
             <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />

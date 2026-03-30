@@ -26,6 +26,7 @@ import {
 import AppHeader from "@/components/AppHeader";
 import { useDeleteGlobalSetting, useGlobalSettings, useUpsertGlobalSetting } from "@/api/settings/hooks";
 import { GlobalSettingItem } from "@/api/settings";
+import { useNavigate } from "react-router-dom";
 
 type SettingDraft = {
     key: string;
@@ -100,6 +101,7 @@ function normalizeValueForType(value: string, valueType: SettingDraft["valueType
 }
 
 export default function Settings() {
+    const navigate = useNavigate();
     const { data, isLoading, error } = useGlobalSettings();
     const upsertSetting = useUpsertGlobalSetting();
     const deleteSetting = useDeleteGlobalSetting();
@@ -194,9 +196,14 @@ export default function Settings() {
                             Manage runtime configuration values for the server.
                         </Typography>
                     </Box>
-                    <Button variant="contained" onClick={handleOpenCreate}>
-                        Add setting
-                    </Button>
+                    <Stack direction="row" spacing={1.5}>
+                        <Button variant="outlined" onClick={() => navigate("/admin/viral-kb")}>
+                            Viral knowledge
+                        </Button>
+                        <Button variant="contained" onClick={handleOpenCreate}>
+                            Add setting
+                        </Button>
+                    </Stack>
                 </Stack>
 
                 {error && (

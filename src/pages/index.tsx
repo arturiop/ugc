@@ -12,6 +12,7 @@ const ProjectPage = Loadable(lazy(() => import("./Project")));
 const EditorPage = Loadable(lazy(() => import("../editor")));
 const Dashboard = Loadable(lazy(() => import("./Dashboard")));
 const SettingsPage = Loadable(lazy(() => import("./Settings")));
+const ViralKnowledgePage = Loadable(lazy(() => import("./ViralKnowledge")));
 const Login = Loadable(lazy(() => import("./Login")));
 const Signup = Loadable(lazy(() => import("./Signup")));
 
@@ -78,6 +79,7 @@ const router = [
                     { path: "editor", element: <EditorPage /> },
                     { path: "editor/:projectId", element: <EditorPage /> },
                     { path: "settings", element: <SettingsPage /> },
+                    { path: "admin/viral-kb", element: <ViralKnowledgePage /> },
                 ],
             },
         ],
