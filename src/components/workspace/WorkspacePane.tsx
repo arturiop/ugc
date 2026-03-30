@@ -77,6 +77,16 @@ const WorkspacePane = () => {
         setCenterPortalTarget(document.getElementById("app-header-center-portal"));
     }, []);
 
+    useEffect(() => {
+        const handleRefreshStoryboard = () => {
+            setViewMode("studio");
+            setMode("storyboard");
+        };
+
+        window.addEventListener("refresh_storyboard", handleRefreshStoryboard);
+        return () => window.removeEventListener("refresh_storyboard", handleRefreshStoryboard);
+    }, [searchParams, setSearchParams]);
+
     const handleRefresh = () => {
         if (projectId) {
             void refetch();

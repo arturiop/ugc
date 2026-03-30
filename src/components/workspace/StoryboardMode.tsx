@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Chip, Skeleton, Stack, Typography } from "@mui/material";
+import { Box, Card, CardContent, Chip, CircularProgress, Skeleton, Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import type { Storyboard } from "@/api/storyboard";
 
@@ -680,6 +680,8 @@ type StoryboardGridItemProps = {
 };
 
 const StoryboardGridItem = ({ scene, isSelected, onSelect, storyboardImageUrl, imageSize, rect }: StoryboardGridItemProps) => {
+    const isGeneratingPreview = !storyboardImageUrl && !scene.generated_image_url;
+
     return (
         <Card
             elevation={0}
@@ -718,9 +720,12 @@ const StoryboardGridItem = ({ scene, isSelected, onSelect, storyboardImageUrl, i
                             sx={{ width: "100%", height: "100%", objectFit: "cover" }}
                         />
                     ) : (
-                        <Typography variant="h4" color="text.disabled">
-                            {String(scene.scene_index).padStart(2, "0")}
-                        </Typography>
+                        <Stack spacing={1} alignItems="center" sx={{ width: "100%", px: 2 }}>
+                            {isGeneratingPreview && <CircularProgress size={20} />}
+                            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700 }}>
+                                {isGeneratingPreview ? "Generating scene preview..." : String(scene.scene_index).padStart(2, "0")}
+                            </Typography>
+                        </Stack>
                     )}
                 </Box>
                 <CardContent sx={{ py: 1.25 }}>

@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Chip, Divider, Popover, Portal, Stack, Tab, Tabs, Typography } from "@mui/material";
+import { Box, Card, CardContent, Chip, CircularProgress, Divider, Popover, Portal, Stack, Tab, Tabs, Typography } from "@mui/material";
 import { useMemo, useRef, useState } from "react";
 import type { Storyboard, StoryboardScene } from "@/api/storyboard";
 import type { WorkspaceMode } from "./WorkspaceHeader";
@@ -130,7 +130,8 @@ const VisualTabContent = ({
     isRefreshing: boolean;
 }) => {
     const hasImage = Boolean(storyboard?.storyboard_image_url || scene.generated_image_url);
-    const showShimmer = isRefreshing && !hasImage;
+    const isPreviewGenerating = !hasImage && Boolean(scene.title || scene.objective || scene.description || storyboard);
+    const showShimmer = !hasImage && (isRefreshing || isPreviewGenerating);
     const previewSrc = storyboard?.storyboard_image_url ?? scene.generated_image_url ?? null;
     const [previewAnchorEl, setPreviewAnchorEl] = useState<HTMLElement | null>(null);
     const closeTimeoutRef = useRef<number | null>(null);
@@ -200,9 +201,12 @@ const VisualTabContent = ({
                             sx={{ width: "350px", height: "170px", objectFit: "contain", display: "block" }}
                         />
                     ) : (
-                        <Typography variant="caption" color="text.secondary">
-                            No preview available
-                        </Typography>
+                        <Stack spacing={1} alignItems="center" sx={{ color: "text.secondary" }}>
+                            {showShimmer && <CircularProgress size={18} />}
+                            <Typography variant="caption" color="text.secondary">
+                                {showShimmer ? "Generating preview..." : "No preview available"}
+                            </Typography>
+                        </Stack>
                     )}
                 </Box>
             </Card>

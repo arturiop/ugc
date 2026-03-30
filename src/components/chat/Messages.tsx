@@ -57,6 +57,7 @@ function ActionDataPart({ data }: { data?: { name?: string; action?: string; act
             if (firedRef.current.has(key)) return;
             firedRef.current.add(key);
             if (action === "refresh_storyboard") {
+                window.dispatchEvent(new Event("refresh_storyboard"));
                 void queryClient.invalidateQueries({ queryKey: queryKeys.projects.storyboard(projectId) });
             }
         });
