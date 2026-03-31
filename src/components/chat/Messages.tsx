@@ -60,6 +60,9 @@ function ActionDataPart({ data }: { data?: { name?: string; action?: string; act
                 window.dispatchEvent(new Event("refresh_storyboard"));
                 void queryClient.invalidateQueries({ queryKey: queryKeys.projects.storyboard(projectId) });
             }
+            if (action === "refresh_storyboard_data") {
+                void queryClient.invalidateQueries({ queryKey: queryKeys.projects.storyboard(projectId) });
+            }
         });
     }, [actions, projectId, queryClient]);
 
