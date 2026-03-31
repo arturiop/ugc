@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { lazy, useEffect } from "react";
-import { Outlet, useLocation, useNavigate, useRoutes } from "react-router-dom";
+import { Navigate, Outlet, useLocation, useNavigate, useRoutes } from "react-router-dom";
 import { Loadable } from "@/components/Loadable";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import GuestRoute from "@/components/GuestRoute";
@@ -12,6 +12,8 @@ const ProjectPage = Loadable(lazy(() => import("./Project")));
 const EditorPage = Loadable(lazy(() => import("../editor")));
 const Dashboard = Loadable(lazy(() => import("./Dashboard")));
 const SettingsPage = Loadable(lazy(() => import("./Settings")));
+const GlobalSettingsPage = Loadable(lazy(() => import("./settings/GlobalSettingsPage")));
+const PromptSettingsPage = Loadable(lazy(() => import("./settings/PromptsPage")));
 const ViralKnowledgePage = Loadable(lazy(() => import("./ViralKnowledge")));
 const Login = Loadable(lazy(() => import("./Login")));
 const Signup = Loadable(lazy(() => import("./Signup")));
@@ -78,7 +80,15 @@ const router = [
                     { path: "projects/:projectId", element: <ProjectPage /> },
                     { path: "editor", element: <EditorPage /> },
                     { path: "editor/:projectId", element: <EditorPage /> },
-                    { path: "settings", element: <SettingsPage /> },
+                    {
+                        path: "settings",
+                        element: <SettingsPage />,
+                        children: [
+                            { index: true, element: <Navigate to="global" replace /> },
+                            { path: "global", element: <GlobalSettingsPage /> },
+                            { path: "prompts", element: <PromptSettingsPage /> },
+                        ],
+                    },
                     { path: "admin/viral-kb", element: <ViralKnowledgePage /> },
                 ],
             },

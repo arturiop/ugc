@@ -25,6 +25,7 @@ import {
 import BrushOutlinedIcon from "@mui/icons-material/BrushOutlined";
 import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
 import TuneOutlinedIcon from "@mui/icons-material/TuneOutlined";
+import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import { useThemeMode } from "@/theme";
 import { createShareToken } from "@/api/auth/auth";
 
@@ -81,12 +82,23 @@ const SettingsDialog = ({ open, onClose }: SettingsDialogProps) => {
                                 sx={{ borderRadius: 1 }}
                                 onClick={() => {
                                     onClose();
-                                    navigate("/settings");
+                                    navigate("/settings/global");
                                 }}>
                                 <ListItemIcon sx={{ minWidth: 36 }}>
                                     <TuneOutlinedIcon fontSize="small" />
                                 </ListItemIcon>
                                 <ListItemText primary="Global settings" />
+                            </ListItemButton>
+                            <ListItemButton
+                                sx={{ borderRadius: 1 }}
+                                onClick={() => {
+                                    onClose();
+                                    navigate("/settings/prompts");
+                                }}>
+                                <ListItemIcon sx={{ minWidth: 36 }}>
+                                    <AutoAwesomeOutlinedIcon fontSize="small" />
+                                </ListItemIcon>
+                                <ListItemText primary="Prompts" />
                             </ListItemButton>
                         </List>
                     </Paper>

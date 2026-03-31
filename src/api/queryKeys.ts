@@ -17,4 +17,9 @@ export const queryKeys = {
         list: () => [...queryKeys.settings.all, "list"] as const,
         detail: (key: string) => [...queryKeys.settings.all, "detail", key] as const,
     },
+    prompts: {
+        all: ["prompts"] as const,
+        list: () => [...queryKeys.prompts.all, "list"] as const,
+        detail: (key: string) => [...queryKeys.prompts.all, "detail", key] as const,
+    },
 };
