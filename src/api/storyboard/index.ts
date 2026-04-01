@@ -8,6 +8,8 @@ export type StoryboardScene = {
     script: string;
     visual_prompt: string;
     frame_prompt: string;
+    video_prompt: string;
+    transition_prompt?: string | null;
     generated_image_url?: string | null;
     generated_video_url?: string | null;
     video_status?: "not_started" | "generating" | "ready" | "approved" | "failed" | null;

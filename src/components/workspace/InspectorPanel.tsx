@@ -60,7 +60,7 @@ const InspectorPanel = ({ mode, storyboard, scene, isRefreshing = false }: Inspe
                             <VisualTab scene={scene} storyboard={storyboard} isRefreshing={isRefreshing} />
                         )}
                         {activeTab === "Script" && <ScriptTab scene={scene} />}
-                        {activeTab === "Motion" && <MotionTab />}
+                        {activeTab === "Motion" && <MotionTab scene={scene} />}
                         {activeTab === "Prompt" && <PromptTab scene={scene} />}
                     </Box>
                 </Box>
@@ -297,32 +297,35 @@ const ScriptTab = ({ scene }: { scene: StoryboardScene | null }) => {
     );
 };
 
-const MotionTab = () => {
+const MotionTab = ({ scene }: { scene: StoryboardScene | null }) => {
+    if (!scene) {
+        return (
+            <Typography variant="body2" color="text.secondary">
+                No scene selected.
+            </Typography>
+        );
+    }
+
     return (
         <Stack spacing={1.5}>
             <Typography variant="caption" color="text.secondary">
-                Motion settings
+                Motion prompt
             </Typography>
-            <Stack spacing={1}>
-                {["Pacing", "Transitions", "Camera"].map((label) => (
-                    <Card
-                        key={label}
-                        elevation={0}
-                        sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}
-                    >
-                        <CardContent sx={{ py: 1.5 }}>
-                            <Stack direction="row" alignItems="center" justifyContent="space-between">
-                                <Typography variant="body2" color="text.secondary">
-                                    {label}
-                                </Typography>
-                                <Typography variant="body2" fontWeight={600}>
-                                    Auto
-                                </Typography>
-                            </Stack>
-                        </CardContent>
-                    </Card>
-                ))}
-            </Stack>
+            <Card elevation={0} sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
+                <CardContent>
+                    <Typography variant="body2">
+                        {scene.video_prompt || "No video prompt available yet."}
+                    </Typography>
+                </CardContent>
+            </Card>
+            <Box>
+                <Typography variant="caption" color="text.secondary">
+                    Transition prompt
+                </Typography>
+                <Typography variant="body2">
+                    {scene.transition_prompt || "No transition guidance for this scene yet."}
+                </Typography>
+            </Box>
         </Stack>
     );
 };
@@ -346,15 +349,12 @@ const PromptTab = ({ scene }: { scene: StoryboardScene | null }) => {
                     <Typography variant="body2">{scene.visual_prompt}</Typography>
                 </CardContent>
             </Card>
-            <Divider />
-            <Typography variant="caption" color="text.secondary">
-                Frame prompt
-            </Typography>
-            <Card elevation={0} sx={{ borderRadius: 2.5, border: "1px solid", borderColor: "divider", bgcolor: "background.paper" }}>
-                <CardContent>
-                    <Typography variant="body2">{scene.frame_prompt}</Typography>
-                </CardContent>
-            </Card>
+            <Box>
+                <Typography variant="caption" color="text.secondary">
+                    Frame prompt
+                </Typography>
+                <Typography variant="body2">{scene.frame_prompt}</Typography>
+            </Box>
         </Stack>
     );
 };

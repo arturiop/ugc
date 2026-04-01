@@ -145,30 +145,28 @@ const SceneGenMode = ({ storyboard, selectedSceneIndex, onSelectScene }: SceneGe
                             <Stack direction="row" spacing={1.5}>
                                 <Button
                                     variant="contained"
-                                    // onClick={() =>
-                                    //     generateMutation.mutate({
-                                    //         sceneIndex: selectedScene.scene_index,
-                                    //         force: Boolean(selectedScene.generated_video_url),
-                                    //     })
-                                    // }
-                                    // disabled={
-                                    //     true ||
-                                    //     !projectId ||
-                                    //     (generateMutation.isPending && generateMutation.variables?.sceneIndex === selectedScene.scene_index) ||
-                                    //     resolveStatus(selectedScene).statusKey === "generating"
-                                    // }
+                                    onClick={() =>
+                                        generateMutation.mutate({
+                                            sceneIndex: selectedScene.scene_index,
+                                            force: Boolean(selectedScene.generated_video_url),
+                                        })
+                                    }
+                                    disabled={
+                                        !projectId ||
+                                        (generateMutation.isPending && generateMutation.variables?.sceneIndex === selectedScene.scene_index) ||
+                                        resolveStatus(selectedScene).statusKey === "generating"
+                                    }
                                 >
                                     {selectedScene.generated_video_url ? "Regenerate" : "Generate"}
                                 </Button>
                                 <Button
                                     variant="outlined"
-                                    // disabled={
-                                    //     true ||
-                                    //     !projectId ||
-                                    //     resolveStatus(selectedScene).statusKey !== "ready" ||
-                                    //     (approveMutation.isPending && approveMutation.variables?.sceneIndex === selectedScene.scene_index)
-                                    // }
-                                    // onClick={() => approveMutation.mutate({ sceneIndex: selectedScene.scene_index })}
+                                    disabled={
+                                        !projectId ||
+                                        resolveStatus(selectedScene).statusKey !== "ready" ||
+                                        (approveMutation.isPending && approveMutation.variables?.sceneIndex === selectedScene.scene_index)
+                                    }
+                                    onClick={() => approveMutation.mutate({ sceneIndex: selectedScene.scene_index })}
                                 >
                                     Approve
                                 </Button>
