@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useGeneratedContent } from "@/contexts/GeneratedContentContext";
 import { useProject } from "@/contexts/Project/ProjectContext";
 import { queryKeys } from "@/api/queryKeys";
+import ChatImagePreview from "./ChatImagePreview";
 
 function MessageDataImages() {
     const message = useAuiState((s) => s.message);
@@ -115,7 +116,7 @@ function UserMessage() {
 function AssistantMessage() {
     return (
         <MessagePrimitive.Root className="w-full" style={{ padding: "10px 0" }} data-role="assistant">
-            <Stack direction="row" spacing={1.5} sx={{ px: 1, width: "100%" }}>
+            <Stack direction="row" spacing={1.5} sx={{ width: "100%" }}>
                 <Box
                     sx={{
                         width: 32,
@@ -202,77 +203,36 @@ function MessageImageAttachment() {
     const isPending = attachment?.status?.type !== "complete";
 
     return (
-        <Box
-            sx={{
-                mb: 1,
-                borderRadius: 2,
-                overflow: "hidden",
-                border: "1px solid",
-                borderColor: "divider",
-                position: "relative",
-                isolation: "isolate",
-                "&:hover .attachment-image": {
-                    transform: "scale(1.02)",
-                },
-                "&:hover .attachment-backdrop": {
-                    opacity: 0.7,
-                },
-            }}>
-            <Box
-                className="attachment-backdrop"
-                aria-hidden="true"
-                sx={{
-                    position: "absolute",
-                    inset: 0,
-                    zIndex: 0,
-                    opacity: 0,
-                    transition: "opacity 0.2s ease",
-                    backgroundImage: `url(${src})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                    filter: "blur(10px)",
-                    transform: "scale(1.06)",
-                }}
-            />
-            <Box
-                component="img"
-                src={src}
-                alt={attachment?.name || "uploaded image"}
-                className="attachment-image"
-                sx={{
-                    position: "relative",
-                    zIndex: 1,
-                    display: "block",
-                    width: "100%",
-                    height: "auto",
-                    maxHeight: 280,
-                    objectFit: "cover",
-                    filter: isPending ? "grayscale(0.1)" : "none",
-                    opacity: isPending ? 0.7 : 1,
-                    transition: "transform 0.2s ease",
-                }}
-            />
-            {isPending && (
-                <Box
-                    sx={{
-                        position: "absolute",
-                        inset: 0,
-                        zIndex: 2,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 1,
-                        bgcolor: "rgba(0, 0, 0, 0.35)",
-                        color: "common.white",
-                    }}
-                >
-                    <CircularProgress size={16} color="inherit" />
-                    <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                        Uploading…
-                    </Typography>
-                </Box>
-            )}
-        </Box>
+        <ChatImagePreview
+            src={src}
+            alt={attachment?.name || "uploaded image"}
+            pendingOverlay={
+                isPending ? (
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            inset: 0,
+                            zIndex: 2,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 1,
+                            bgcolor: "rgba(0, 0, 0, 0.35)",
+                            color: "common.white",
+                        }}
+                    >
+                        <CircularProgress size={16} color="inherit" />
+                        <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                            Uploading…
+                        </Typography>
+                    </Box>
+                ) : null
+            }
+            imageSx={{
+                filter: isPending ? "grayscale(0.1)" : "none",
+                opacity: isPending ? 0.7 : 1,
+            }}
+        />
     );
 }
 
@@ -334,26 +294,5 @@ function MessageFileAttachment() {
 }
 
 function MessageDataImageItem({ name, url }: { name: string; url: string }) {
-    return (
-        <Box
-            sx={{
-                borderRadius: 2,
-                overflow: "hidden",
-                border: "1px solid",
-                borderColor: "divider",
-            }}>
-            <Box
-                component="img"
-                src={url}
-                alt={name}
-                sx={{
-                    display: "block",
-                    width: "100%",
-                    height: "auto",
-                    maxHeight: 280,
-                    objectFit: "cover",
-                }}
-            />
-        </Box>
-    );
+    return <ChatImagePreview src={url} alt={name} />;
 }

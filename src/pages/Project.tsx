@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, useMediaQuery, useTheme } from "@mui/material";
 import WorkspacePane from "../components/workspace/WorkspacePane";
 import { ProjectChat } from "@/components/chat/Chat";
 import { ProjectProvider } from "@/contexts/Project/ProjectProvider";
@@ -9,6 +9,8 @@ import AppHeader from "@/components/AppHeader";
 
 function ProjectLayout() {
     const { projectId } = useProject();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
     return (
         <Box
@@ -27,7 +29,13 @@ function ProjectLayout() {
             <AppHeader />
             <Box sx={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
                 <GeneratedContentProvider>
-                    <ResizableSplit left={projectId && <ProjectChat />} right={<WorkspacePane />} />
+                    {isMobile ? (
+                        <Box sx={{ height: "100%", width: "100%", minHeight: 0 }}>
+                            {projectId && <ProjectChat />}
+                        </Box>
+                    ) : (
+                        <ResizableSplit left={projectId && <ProjectChat />} right={<WorkspacePane />} />
+                    )}
                 </GeneratedContentProvider>
             </Box>
         </Box>
