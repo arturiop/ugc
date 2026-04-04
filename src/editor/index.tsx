@@ -4,7 +4,6 @@ import { ThemeProvider } from "@/editor/shims/next-themes";
 import { TooltipProvider } from "@/editor/ui/tooltip";
 import { Toaster } from "@/editor/shims/sonner";
 import { EditorProvider } from "@/editor/providers/editor-provider";
-import { Onboarding } from "@/editor/editor/onboarding";
 import { AssetsPanel } from "@/editor/editor/panels/assets";
 import { PropertiesPanel } from "@/editor/editor/panels/properties";
 import { Timeline } from "@/editor/editor/panels/timeline";
@@ -27,7 +26,6 @@ export default function Editor() {
                             <div className="min-h-0 min-w-0 flex-1">
                                 <EditorLayout />
                             </div>
-                            <Onboarding />
                         </div>
                     </EditorProvider>
             </TooltipProvider>

@@ -20,13 +20,13 @@ export function ThemeProvider({ children }: PropsWithChildren) {
     const [theme, setThemeState] = useState<Theme>(() => {
         if (typeof window === "undefined") return "dark";
 
-        const storedTheme = window.localStorage.getItem("opencut-theme");
+        const storedTheme = window.localStorage.getItem("w-editor-theme");
         return storedTheme === "light" ? "light" : "dark";
     });
 
     useEffect(() => {
         document.documentElement.classList.toggle("dark", theme === "dark");
-        window.localStorage.setItem("opencut-theme", theme);
+        window.localStorage.setItem("w-editor-theme", theme);
     }, [theme]);
 
     const value = useMemo(
