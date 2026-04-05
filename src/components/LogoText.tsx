@@ -1,12 +1,18 @@
+import { useNavigate } from "react-router-dom";
+
 export function WatchableLogoText() {
+    const navigate = useNavigate();
+
   return (
     <div
+      onClick={() => navigate('/dashboard')}
       className="!text-[32px] md:!text-[32px]"
       style={{
         fontFamily: 'Inter, "SF Pro Display", "Segoe UI", Arial, sans-serif',
         fontWeight: 700,
         letterSpacing: '-0.03em',
         lineHeight: 1,
+        cursor: "pointer"
       }}
     >
       <span

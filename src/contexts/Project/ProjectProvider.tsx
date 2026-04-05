@@ -7,6 +7,7 @@ export function ProjectProvider({ children }: PropsWithChildren) {
   const { projectId } = useParams();
   const { data } = useProject(projectId ?? null);
   const projectName = data?.title || null;
+  const projectType = data?.project_type || null;
   const currentStage = data?.current_stage ?? null;
 
   return (
@@ -14,6 +15,7 @@ export function ProjectProvider({ children }: PropsWithChildren) {
       value={{
         projectId,
         projectName,
+        projectType,
         currentStage,
       }}
     >

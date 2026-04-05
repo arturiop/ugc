@@ -13,6 +13,7 @@ export type ProjectResponse = {
     created_by: number;
     title: string;
     name: string;
+    project_type: ProjectType;
     status: ProjectStatus;
     current_stage: string;
     created_at: string;
@@ -30,10 +31,16 @@ export type ProjectSummary = {
     id: string;
     title?: string;
     name?: string;
+    project_type: ProjectType;
     status: ProjectStatus;
     updatedAt: string;
     thumbnailUrl?: string | null;
 };
+
+export enum ProjectType {
+    Storyboard = "storyboard",
+    SatisfactionVideo = "satisfaction_video",
+}
 
 export type ProjectListResponse = {
     items: ProjectSummary[];
@@ -46,11 +53,11 @@ export async function listProjects(signal?: AbortSignal) {
     });
 }
 
-export async function createProject() {
+export async function createProject(projectType: ProjectType = ProjectType.Storyboard) {
     return requestJson<ProjectResponse>({
         path: "/api/v1/projects",
         method: "POST",
-        body: {},
+        body: { project_type: projectType },
     });
 }
 

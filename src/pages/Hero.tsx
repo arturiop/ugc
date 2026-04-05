@@ -1,9 +1,8 @@
 import { useState, useEffect, type CSSProperties } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Sparkles, Play, ArrowRight, Check, Plus, Image, ArrowUp, Zap } from "lucide-react";
+import { MessageSquare, Sparkles, Play, Plus, Image, ArrowUp } from "lucide-react";
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
-import { useCreateProject } from "@/api/projects/hooks";
 import { WatchableLogoText } from "@/components/LogoText";
 
 const landingThemeVars = {
@@ -61,22 +60,6 @@ const landingThemeVars = {
 
 const Index = () => {
     const navigate = useNavigate();
-    const createProject = useCreateProject();
-
-    async function handleCreateProject() {
-        try {
-            const data = await createProject.mutateAsync();
-            const id = data?.short_id || data?.uuid;
-
-            if (id) {
-                navigate(`/projects/${id}`);
-            } else {
-                console.error("Project created but id missing", data);
-            }
-        } catch (err) {
-            console.error("Failed to create project", err);
-        }
-    }
 
     return (
         <div className="landing-hero-shell min-h-screen bg-background text-foreground" style={landingThemeVars}>
@@ -85,7 +68,7 @@ const Index = () => {
                 <WatchableLogoText />
                 <div className="flex items-center gap-3">
                     <Button size="small" onClick={() => navigate("/login")}>
-                        Log in
+                        Get started
                     </Button>
                 </div>
             </nav>
