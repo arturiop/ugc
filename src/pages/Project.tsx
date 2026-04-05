@@ -6,11 +6,13 @@ import ResizableSplit from "@/components/ResizableSplit";
 import { useProject } from "@/contexts/Project/ProjectContext";
 import { GeneratedContentProvider } from "@/contexts/GeneratedContentContext";
 import AppHeader from "@/components/AppHeader";
+import { ProjectType } from "@/api/projects";
 
 function ProjectLayout() {
-    const { projectId } = useProject();
+    const { projectId, projectType } = useProject();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+    const shouldHideWorkspace = projectType === ProjectType.SatisfactionVideo;
 
     return (
         <Box
@@ -29,8 +31,14 @@ function ProjectLayout() {
             <AppHeader />
             <Box sx={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
                 <GeneratedContentProvider>
-                    {isMobile ? (
-                        <Box sx={{ height: "100%", width: "100%", minHeight: 0 }}>
+                    {isMobile || shouldHideWorkspace ? (
+                        <Box
+                            sx={{
+                                height: "100%",
+                                width: "100%",
+                                minHeight: 0,
+                            }}
+                        >
                             {projectId && <ProjectChat />}
                         </Box>
                     ) : (
