@@ -26,10 +26,12 @@ type LiquidLayer = {
 
 function buildLiquidLayers(count: number, compact: boolean): LiquidLayer[] {
     return Array.from({ length: count }, (_, index) => {
-        const width = (compact ? 38 : 42) + Math.round(Math.random() * (compact ? 16 : 22));
-        const height = (compact ? 50 : 58) + Math.round(Math.random() * (compact ? 24 : 34));
-        const left = -8 + Math.round(Math.random() * (compact ? 48 : 58));
-        const top = -14 + Math.round(Math.random() * (compact ? 42 : 52));
+        const width = (compact ? 30 : 42) + Math.round(Math.random() * (compact ? 12 : 22));
+        const height = (compact ? 40 : 58) + Math.round(Math.random() * (compact ? 18 : 34));
+        const mobileLeftSlots = [4, 28, 54];
+        const mobileTopSlots = [8, 30, 52];
+        const left = compact ? mobileLeftSlots[index % mobileLeftSlots.length] : -8 + Math.round(Math.random() * 58);
+        const top = compact ? mobileTopSlots[index % mobileTopSlots.length] : -14 + Math.round(Math.random() * 52);
         const x1 = -24 + Math.round(Math.random() * 18);
         const x2 = -6 + Math.round(Math.random() * 20);
         const x3 = 12 + Math.round(Math.random() * 20);
@@ -79,7 +81,7 @@ function buildLiquidLayers(count: number, compact: boolean): LiquidLayer[] {
 export function LiquidPlaceholder() {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-    const liquidLayers = useMemo(() => buildLiquidLayers(isMobile ? 3 : 5, isMobile), [isMobile]);
+    const liquidLayers = useMemo(() => buildLiquidLayers(isMobile ? 2 : 5, isMobile), [isMobile]);
     const gooBlur = isMobile ? 20 : 28;
     const gooStrength = isMobile ? "18 -7" : "22 -8";
     const surfaceBlur = isMobile ? 12 : 18;
@@ -141,10 +143,10 @@ export function LiquidPlaceholder() {
                 transition={{ duration: isMobile ? 4.2 : 4.8, repeat: Infinity, ease: "easeInOut" }}
                 style={{
                     position: "absolute",
-                    left: isMobile ? "22%" : "28%",
-                    top: isMobile ? "24%" : "18%",
-                    width: isMobile ? "56%" : "42%",
-                    height: isMobile ? "44%" : "56%",
+                    left: isMobile ? "18%" : "28%",
+                    top: isMobile ? "28%" : "18%",
+                    width: isMobile ? "46%" : "42%",
+                    height: isMobile ? "34%" : "56%",
                     borderRadius: "50%",
                     background:
                         "radial-gradient(circle at 50% 50%, rgba(242,244,248,0.7) 0%, rgba(224,228,236,0.26) 20%, rgba(255,214,193,0.1) 30%, rgba(214,219,255,0.1) 42%, rgba(80,86,96,0.04) 56%, transparent 72%)",
