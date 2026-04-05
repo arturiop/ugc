@@ -19,14 +19,14 @@ export default function ChatImagePreview({ src, alt, pendingOverlay, imageSx }: 
                 onClick={() => setOpen(true)}
                 sx={{
                     position: "relative",
-                    display: "block",
-                    width: "100%",
+                    display: "inline-block",
+                    width: "auto",
                     maxWidth: 420,
                     p: 0,
                     border: 0,
                     borderRadius: 3,
                     overflow: "hidden",
-                    bgcolor: "transparent",
+                    background: "transparent",
                     cursor: "zoom-in",
                     textAlign: "inherit",
                     WebkitTapHighlightColor: "transparent",
@@ -39,9 +39,11 @@ export default function ChatImagePreview({ src, alt, pendingOverlay, imageSx }: 
                     alt={alt}
                     sx={{
                         display: "block",
-                        width: "100%",
-                        maxHeight: 320,
-                        objectFit: "cover",
+                        width: "auto",
+                        maxWidth: "100%",
+                        height: "auto",
+                        maxHeight: 420,
+                        objectFit: "contain",
                         bgcolor: "background.default",
                         ...imageSx,
                     }}

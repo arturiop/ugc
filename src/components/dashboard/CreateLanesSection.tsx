@@ -146,7 +146,7 @@ export function CreateLanesSection() {
                                         />
                                         <Typography
                                             sx={{
-                                                fontSize: { xs: "0.95rem", sm: "1.08rem" },
+                                                fontSize: { xs: "1rem", sm: "1.08rem" },
                                                 fontWeight: 800,
                                                 color: "rgba(255,255,255,0.98)",
                                                 letterSpacing: "-0.01em",

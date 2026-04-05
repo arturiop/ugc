@@ -128,13 +128,21 @@ export function DashboardProjectsSection() {
                 <Box
                     sx={{
                         display: "grid",
-                        gridTemplateColumns: "repeat(auto-fill,minmax(340px,1fr))",
+                        gridTemplateColumns: {
+                            xs: "1fr",
+                            sm: "repeat(auto-fill,minmax(340px,1fr))",
+                        },
                         gap: { xs: 1.5, md: 2 },
                     }}>
                     {isLoading &&
                         Array.from({ length: 6 }).map((_, i) => (
                             <Card key={i} sx={{ borderRadius: 3 }}>
-                                <Skeleton variant="rectangular" sx={{ aspectRatio: "9 / 14" }} />
+                                <Skeleton
+                                    variant="rectangular"
+                                    sx={{
+                                        aspectRatio: { xs: "4 / 5", sm: "9 / 14" },
+                                    }}
+                                />
                             </Card>
                         ))}
 
@@ -163,7 +171,7 @@ export function DashboardProjectsSection() {
                                         <Box
                                             sx={{
                                                 position: "relative",
-                                                aspectRatio: "16 / 10",
+                                                aspectRatio: { xs: "9 / 16", sm: "16 / 10" },
                                                 overflow: "hidden",
                                                 bgcolor: "#f3f5f8",
                                             }}>
