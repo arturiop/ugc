@@ -2,10 +2,9 @@ import {
     createContext,
     useContext,
     useEffect,
-    useMemo,
-    useState,
     type PropsWithChildren,
 } from "react";
+import { useThemeMode } from "@/theme";
 
 type Theme = "light" | "dark";
 
@@ -17,27 +16,17 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: PropsWithChildren) {
-    const [theme, setThemeState] = useState<Theme>(() => {
-        if (typeof window === "undefined") return "dark";
-
-        const storedTheme = window.localStorage.getItem("w-editor-theme");
-        return storedTheme === "light" ? "light" : "dark";
-    });
+    const { mode, setMode } = useThemeMode();
 
     useEffect(() => {
-        document.documentElement.classList.toggle("dark", theme === "dark");
-        window.localStorage.setItem("w-editor-theme", theme);
-    }, [theme]);
+        document.documentElement.classList.toggle("dark", mode === "dark");
+    }, [mode]);
 
-    const value = useMemo(
-        () => ({
-            theme,
-            setTheme: setThemeState,
-        }),
-        [theme]
+    return (
+        <ThemeContext.Provider value={{ theme: mode, setTheme: setMode }}>
+            {children}
+        </ThemeContext.Provider>
     );
-
-    return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {
