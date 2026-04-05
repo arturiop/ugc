@@ -208,7 +208,7 @@ const ProductJourney = () => {
                     </p>
                 </motion.div>
                 <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
-                    <div className="lg:w-[380px] flex-shrink-0">
+                    <div className="hidden lg:block lg:w-[380px] flex-shrink-0">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -334,8 +334,8 @@ const ProductJourney = () => {
                     </div>
 
                     {/* Right side — Journey card */}
-                    <div className="lg:w-[800px]">
-                        <div className="relative mx-auto">
+                    <div className="w-full lg:w-[800px]">
+                        <div className="relative mx-auto w-full">
                             {/* Glow backdrop */}
                             <motion.div
                                 className="absolute -inset-8 rounded-3xl blur-3xl opacity-30"
@@ -352,7 +352,7 @@ const ProductJourney = () => {
 
                             <div className="relative rounded-2xl border border-border bg-card overflow-hidden shadow-2xl">
                                 {/* Stage indicators - inside the block */}
-                                <div className="flex items-center justify-center gap-4 sm:gap-6 px-6 py-4">
+                                <div className="flex items-center justify-center gap-3 sm:gap-6 px-4 sm:px-6 py-4">
                                     {stages.map((stage, i) => {
                                         const Icon = stage.icon;
                                         const isActive = activeStage === i;
@@ -361,7 +361,7 @@ const ProductJourney = () => {
                                             <div key={stage.id} className="flex items-center gap-2 sm:gap-4">
                                                 <button
                                                     onClick={() => handleStageClick(i)}
-                                                    className={`flex items-center gap-2.5 px-4 py-2.5 rounded-full transition-all duration-500 cursor-pointer ${
+                                                    className={`flex min-w-[96px] justify-center items-center gap-2.5 px-5 py-2.5 rounded-full transition-all duration-500 cursor-pointer sm:min-w-0 sm:px-4 ${
                                                         isActive
                                                             ? "bg-accent text-accent-foreground shadow-lg shadow-accent/25 scale-105"
                                                             : isPast
@@ -436,8 +436,8 @@ const ProductJourney = () => {
                                                 className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-emerald-500/5 to-background">
                                                 {/* Video placeholder with phone frame */}
                                                 <div className="relative">
-                                                    <div className="w-44 sm:w-52 aspect-[9/16] rounded-[1.5rem] border-2 border-border bg-card overflow-hidden shadow-xl">
-                                                        <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-emerald-500/10" />
+                                                    <div className="w-52 sm:w-60 aspect-[9/16] rounded-t-[1.5rem] rounded-b-none border-2 border-border bg-card overflow-hidden shadow-xl">
+                                                        <div className="absolute inset-0 rounded-[1.5rem] rounded-b-none bg-gradient-to-br from-accent/10 to-emerald-500/10" />
                                                         {/* Fake video UI */}
                                                         <div className="absolute inset-0 flex items-center justify-center">
                                                             <div className="absolute inset-0 flex items-center justify-center">
@@ -445,7 +445,7 @@ const ProductJourney = () => {
                                                                     initial={{ opacity: 0, scale: 0.95 }}
                                                                     animate={{ opacity: 1, scale: 1 }}
                                                                     transition={{ duration: 0.6, ease: "easeOut" }}
-                                                                    className="relative h-full aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl bg-black">
+                                                                    className="relative h-full aspect-[9/16] rounded-b-none rounded-2xl overflow-hidden shadow-2xl bg-black">
                                                                     <motion.video
                                                                         autoPlay
                                                                         muted
@@ -453,8 +453,8 @@ const ProductJourney = () => {
                                                                         playsInline
                                                                         initial={{ scale: 1.05 }}
                                                                         animate={{ scale: 1 }}
-                                                                        transition={{ duration: 1.2, ease: "easeOut" }}
-                                                                        className="w-full h-full object-cover">
+                                                                         transition={{ duration: 1.2, ease: "easeOut" }}
+                                                                        className="w-full h-full rounded-b-none object-cover">
                                                                         <source src="./assets/demo_s.mp4" type="video/mp4" />
                                                                     </motion.video>
                                                                 </motion.div>
