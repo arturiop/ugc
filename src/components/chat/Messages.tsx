@@ -7,37 +7,7 @@ import { useGeneratedContent } from "@/contexts/GeneratedContentContext";
 import { useProject } from "@/contexts/Project/ProjectContext";
 import { queryKeys } from "@/api/queryKeys";
 import ChatImagePreview from "./ChatImagePreview";
-
-function MessageDataImages() {
-    const message = useAuiState((s) => s.message);
-    const { addImages } = useGeneratedContent();
-    const imageMessages: any[] = useMemo(() => {
-
-        return (message.parts || []).filter((p) => p?.type === "data" && p.name === "image")
-    }, [message]);
-
-    useEffect(() => {
-        if (!imageMessages.length) return;
-        const urls = imageMessages
-            .map((imgM) => imgM?.data?.url)
-            .filter((url): url is string => typeof url === "string" && url.length > 0);
-        if (urls.length) addImages(urls);
-    }, [addImages, imageMessages]);
-
-    if (!imageMessages.length) return null;
-
-    return (
-        <Stack spacing={1} sx={{ mb: 1 }}>
-            {imageMessages.map((imgM, idx) => (
-                <MessageDataImageItem
-                    key={`${imgM.data.name}_${idx}`}
-                    name={imgM.data.name}
-                    url={imgM.data.url || ""}
-                />
-            ))}
-        </Stack>
-    );
-}
+import ChatVideoPreview from "./ChatVideoPreview";
 
 function ActionDataPart({ data }: { data?: { name?: string; action?: string; actions?: string[] } }) {
     const queryClient = useQueryClient();
@@ -116,7 +86,7 @@ function UserMessage() {
 function AssistantMessage() {
     return (
         <MessagePrimitive.Root className="w-full" style={{ padding: "10px 0" }} data-role="assistant">
-            <Stack direction="row" spacing={1.5} sx={{ width: "100%" }}>
+            <Stack direction="row" spacing={1} sx={{ width: "100%" }}>
                 <Box
                     sx={{
                         width: 32,
@@ -144,8 +114,17 @@ function AssistantMessage() {
                             py: 1.5,
                             overflowWrap: "anywhere",
                         }}>
-                        <MessageDataImages />
-                        <MessagePrimitive.Parts components={{ data: { by_name: { action: ActionDataPart } } }} />
+                        <MessagePrimitive.Parts
+                            components={{
+                                data: {
+                                    by_name: {
+                                        action: ActionDataPart,
+                                        image: ImageDataPart,
+                                        video: VideoDataPart,
+                                    },
+                                },
+                            }}
+                        />
 
                         <MessagePrimitive.Error>
                             <ErrorPrimitive.Root
@@ -185,7 +164,11 @@ function MessageImageAttachment() {
     const imageUrl = useMemo(() => {
         if (!attachment) return null;
         const imagePart = attachment.content?.find((part) => part.type === "image");
-        return imagePart && "image" in imagePart ? imagePart.image : null;
+        if (imagePart && "image" in imagePart) return imagePart.image;
+        const filePart = attachment.content?.find((part) => part.type === "file");
+        if (filePart && "url" in filePart && typeof filePart.url === "string") return filePart.url;
+        if (filePart && "data" in filePart && typeof filePart.data === "string") return filePart.data;
+        return null;
     }, [attachment]);
 
     useEffect(() => {
@@ -293,6 +276,32 @@ function MessageFileAttachment() {
     );
 }
 
-function MessageDataImageItem({ name, url }: { name: string; url: string }) {
-    return <ChatImagePreview src={url} alt={name} />;
+function ImageDataPart({ data }: { data?: { url?: string; mediaType?: string; filename?: string } }) {
+    const { addImages } = useGeneratedContent();
+    const src = data?.url || "";
+    const resolvedMimeType = data?.mediaType || "";
+    const isImage = resolvedMimeType.startsWith("image/");
+
+    useEffect(() => {
+        if (!isImage || !src) return;
+        addImages([src]);
+    }, [addImages, src, isImage]);
+
+    if (isImage) {
+        return <ChatImagePreview src={src} alt={data?.filename || "generated image"} />;
+    }
+
+    return null;
+}
+
+function VideoDataPart({ data }: { data?: { url?: string; mediaType?: string; filename?: string } }) {
+    const src = data?.url || "";
+    const resolvedMimeType = data?.mediaType || "";
+    const isVideo = resolvedMimeType.startsWith("video/");
+
+    if (isVideo) {
+        return <ChatVideoPreview src={src} />;
+    }
+
+    return null;
 }

@@ -27,15 +27,15 @@ export function ProjectChatComposer() {
                 sx={{
                     borderRadius: 3,
                     p: 1,
-                    mt: 1,
                     overflow: "hidden",
                     width: "100%",
+                    maxHeight: "min(320px, 45vh)",
                     bgcolor: "background.paper",
                     borderColor: "divider",
-                    boxShadow: "0 10px 26px rgba(11, 13, 18, 0.08)",
+                    boxShadow: "none",
                     "&:focus-within": {
                         borderColor: "secondary.main",
-                        boxShadow: "0 0 0 1px rgba(91, 97, 255, 0.4), 0 12px 28px rgba(11, 13, 18, 0.12)",
+                        boxShadow: "0 0 0 1px rgba(91, 97, 255, 0.28)",
                     },
                 }}
                 onMouseDown={handleComposerMouseDown}
@@ -55,8 +55,11 @@ export function ProjectChatComposer() {
                             width: "100%",
                             padding: "10px 12px",
                             fontSize: 14,
+                            overflowY: "auto",
                         }}
                         rows={1}
+                        minRows={1}
+                        maxRows={6}
                     />
 
                     <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ px: 1, pb: 0.5 }}>
