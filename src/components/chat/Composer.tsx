@@ -54,7 +54,8 @@ export function ProjectChatComposer() {
                             border: "none",
                             width: "100%",
                             padding: "10px 12px",
-                            fontSize: 14,
+                            // Keep iOS Safari from auto-zooming the page when the chat field receives focus.
+                            fontSize: 16,
                             overflowY: "auto",
                         }}
                         rows={1}
