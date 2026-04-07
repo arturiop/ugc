@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Box, Button, Card, CardActionArea, CardMedia, IconButton, InputAdornment, Menu, MenuItem, Skeleton, Stack, TextField, Typography } from "@mui/material";
 import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
-import { ProjectStatus } from "@/api/projects";
+import { ProjectStatus, ProjectType, type ProjectSummary } from "@/api/projects";
 import { useDeleteProject, useProjects } from "@/api/projects/hooks";
 import { LiquidPlaceholder } from "./LiquidPlaceholder";
 
@@ -18,6 +18,129 @@ const projectDateFormatter = new Intl.DateTimeFormat(undefined, {
     day: "numeric",
     year: "numeric",
 });
+
+const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v", ".ogv", ".ogg"];
+
+function isVideoAssetUrl(value?: string | null) {
+    if (!value) return false;
+
+    try {
+        const pathname = new URL(value, window.location.origin).pathname.toLowerCase();
+        return VIDEO_EXTENSIONS.some((extension) => pathname.endsWith(extension));
+    } catch {
+        const sanitized = value.split("?")[0]?.split("#")[0]?.toLowerCase() || "";
+        return VIDEO_EXTENSIONS.some((extension) => sanitized.endsWith(extension));
+    }
+}
+
+function getProjectCardMedia(project: ProjectSummary) {
+    const imageUrl = project.coverUrl || project.imageUrl || project.lastImageUrl || project.thumbnailUrl || "";
+    const previewUrl = project.previewUrl || imageUrl;
+
+    return {
+        imageUrl,
+        mediaUrl: previewUrl,
+        isVideo: isVideoAssetUrl(previewUrl),
+        fitMode: project.project_type === ProjectType.SatisfactionVideo ? "contain" : "cover",
+    } as const;
+}
+
+function getProjectCardAspectRatio(projectType: ProjectType) {
+    return projectType === ProjectType.SatisfactionVideo ? "9 / 14" : "16 / 9";
+}
+
+function getProjectCardShellLayout(project: ProjectSummary, index: number) {
+    const regularVariants = [
+        { width: "100%", ml: 0, mt: 0 },
+        { width: "82%", ml: "auto", mt: 28 },
+        { width: "92%", ml: 0, mt: 10 },
+        { width: "76%", ml: "9%", mt: 40 },
+    ] as const;
+    const satisfactionVariants = [
+        { width: "84%", ml: 0, mt: 20 },
+        { width: "92%", ml: 0, mt: 0 },
+        { width: "88%", ml: "4%", mt: 34 },
+    ] as const;
+
+    const variants = project.project_type === ProjectType.SatisfactionVideo ? satisfactionVariants : regularVariants;
+    const variant = variants[index % variants.length];
+
+    return {
+        width: { xs: "100%", md: variant.width },
+        ml: { xs: 0, md: variant.ml },
+        mt: { xs: 0, md: `${variant.mt}px` },
+    } as const;
+}
+
+function ProjectCardMediaPreview({
+    mediaUrl,
+    imageUrl,
+    isVideo,
+    fitMode,
+    backgroundColor,
+}: {
+    mediaUrl: string;
+    imageUrl: string;
+    isVideo: boolean;
+    fitMode: "contain" | "cover";
+    backgroundColor: string;
+}) {
+    const [isPortraitVideo, setIsPortraitVideo] = useState<boolean | null>(null);
+    const resolvedFitMode = !isVideo
+        ? fitMode
+        : isPortraitVideo === null
+          ? "contain"
+          : isPortraitVideo
+            ? "contain"
+            : fitMode;
+
+    if (isVideo) {
+        return (
+            <Box
+                component="video"
+                src={mediaUrl}
+                poster={imageUrl || undefined}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                onLoadedMetadata={(event) => {
+                    const { videoWidth, videoHeight } = event.currentTarget;
+                    if (!videoWidth || !videoHeight) {
+                        setIsPortraitVideo(null);
+                        return;
+                    }
+                    setIsPortraitVideo(videoHeight > videoWidth);
+                }}
+                sx={{
+                    height: "100%",
+                    width: "100%",
+                    objectFit: resolvedFitMode,
+                    objectPosition: "center center",
+                    display: "block",
+                    bgcolor: backgroundColor,
+                }}
+            />
+        );
+    }
+
+    return (
+        <CardMedia
+            component="img"
+            image={mediaUrl}
+            sx={{
+                height: "100%",
+                width: "100%",
+                objectFit: resolvedFitMode,
+                objectPosition: "center center",
+                display: "block",
+                bgcolor: "background.default",
+            }}
+            loading="lazy"
+        />
+    );
+}
 
 export function DashboardProjectsSection() {
     const navigate = useNavigate();
@@ -127,34 +250,59 @@ export function DashboardProjectsSection() {
                 }}>
                 <Box
                     sx={{
-                        display: "grid",
-                        gridTemplateColumns: {
-                            xs: "1fr",
-                            sm: "repeat(auto-fill,minmax(340px,1fr))",
-                        },
-                        gap: { xs: 1.5, md: 2 },
+                        columnCount: { xs: 1, md: 2, lg: 3, xl: 4 },
+                        columnGap: { xs: "0px", md: "16px" },
                     }}>
                     {isLoading &&
                         Array.from({ length: 6 }).map((_, i) => (
-                            <Card key={i} sx={{ borderRadius: 3 }}>
+                            <Card
+                                key={i}
+                                sx={{
+                                    display: "block",
+                                    breakInside: "avoid",
+                                    WebkitColumnBreakInside: "avoid",
+                                    borderRadius: 3,
+                                    width: {
+                                        xs: "100%",
+                                        md: i % 4 === 0 ? "100%" : i % 4 === 1 ? "82%" : i % 4 === 2 ? "92%" : "76%",
+                                    },
+                                    ml: {
+                                        xs: 0,
+                                        md: i % 4 === 1 ? "auto" : i % 4 === 3 ? "9%" : 0,
+                                    },
+                                    mt: {
+                                        xs: 0,
+                                        md: i % 4 === 1 ? "28px" : i % 4 === 2 ? "10px" : i % 4 === 3 ? "40px" : 0,
+                                    },
+                                    mb: { xs: 1.5, md: 2 },
+                                }}
+                            >
                                 <Skeleton
                                     variant="rectangular"
                                     sx={{
-                                        aspectRatio: { xs: "4 / 5", sm: "9 / 14" },
+                                        aspectRatio: i % 3 === 1 ? "9 / 14" : "16 / 9",
                                     }}
                                 />
                             </Card>
                         ))}
 
                     {!isLoading &&
-                        filteredProjects.map((project) => {
-                            const thumb = project.thumbnailUrl || "";
+                        filteredProjects.map((project, index) => {
+                            const { imageUrl, mediaUrl, isVideo, fitMode } = getProjectCardMedia(project);
                             const statusMeta = STATUS_META[project.status];
+                            const shellLayout = getProjectCardShellLayout(project, index);
 
                             return (
                                 <Card
                                     key={project.id}
                                     sx={{
+                                        display: "block",
+                                        breakInside: "avoid",
+                                        WebkitColumnBreakInside: "avoid",
+                                        width: shellLayout.width,
+                                        ml: shellLayout.ml,
+                                        mt: shellLayout.mt,
+                                        mb: { xs: 1.5, md: 2 },
                                         borderRadius: 3,
                                         overflow: "hidden",
                                         position: "relative",
@@ -171,22 +319,21 @@ export function DashboardProjectsSection() {
                                         <Box
                                             sx={{
                                                 position: "relative",
-                                                aspectRatio: { xs: "9 / 16", sm: "16 / 10" },
+                                                aspectRatio: getProjectCardAspectRatio(project.project_type),
                                                 overflow: "hidden",
-                                                bgcolor: "#f3f5f8",
+                                                bgcolor: project.project_type === ProjectType.SatisfactionVideo ? "#0d1015" : "#f3f5f8",
                                             }}>
-                                            {thumb ? (
-                                                <CardMedia
-                                                    component="img"
-                                                    image={thumb}
-                                                    sx={{
-                                                        height: "100%",
-                                                        width: "100%",
-                                                        objectFit: "cover",
-                                                        display: "block",
-                                                        bgcolor: "background.default",
-                                                    }}
-                                                    loading="lazy"
+                                            {mediaUrl ? (
+                                                <ProjectCardMediaPreview
+                                                    mediaUrl={mediaUrl}
+                                                    imageUrl={imageUrl}
+                                                    isVideo={isVideo}
+                                                    fitMode={fitMode}
+                                                    backgroundColor={
+                                                        project.project_type === ProjectType.SatisfactionVideo
+                                                            ? "#0d1015"
+                                                            : "background.default"
+                                                    }
                                                 />
                                             ) : (
                                                 <LiquidPlaceholder />

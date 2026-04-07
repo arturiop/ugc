@@ -1,6 +1,33 @@
 import { Box, Stack, Typography } from "@mui/material";
+import { ProjectType } from "@/api/projects";
+import { useProject } from "@/contexts/Project/ProjectContext";
 
 export function ProjectChatWelcome() {
+  const { projectType } = useProject();
+  const isSatisfactionVideo = projectType === ProjectType.SatisfactionVideo;
+  const content = isSatisfactionVideo
+    ? {
+        title: "What kind of satisfaction video should we make?",
+        description:
+          "Tell Watchable what the product helps with, who should relate to it, and the customer outcome you want to highlight.",
+        chips: [
+          "Product: ...",
+          "Customer feeling: relieved / happy",
+          "Outcome: clear skin / less pain / more energy",
+          "Style: selfie / testimonial / UGC",
+        ],
+      }
+    : {
+        title: "What should we build today?",
+        description: "Ask Watchable to create an ad for…",
+        chips: [
+          "Product: ...",
+          "Audience: ...",
+          "Goal: installs / sales",
+          "Style: UGC / direct response",
+        ],
+      };
+
   return (
     <Box
       sx={{
@@ -19,7 +46,7 @@ export function ProjectChatWelcome() {
             letterSpacing: -0.4,
           }}
         >
-          What should we build today?
+          {content.title}
         </Typography>
 
         <Typography
@@ -32,7 +59,7 @@ export function ProjectChatWelcome() {
             overflowWrap: "anywhere",
           }}
         >
-          Ask Watchable to create a ads for…
+          {content.description}
         </Typography>
 
         <Stack
@@ -41,10 +68,9 @@ export function ProjectChatWelcome() {
           flexWrap="wrap"
           sx={{ color: "text.secondary", fontSize: 13 }}
         >
-          <ChipLike text="Product: ..." />
-          <ChipLike text="Audience: ..." />
-          <ChipLike text="Goal: installs / sales" />
-          <ChipLike text="Style: UGC / direct response" />
+          {content.chips.map((chip) => (
+            <ChipLike key={chip} text={chip} />
+          ))}
         </Stack>
       </Stack>
     </Box>

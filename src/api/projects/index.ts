@@ -35,6 +35,10 @@ export type ProjectSummary = {
     status: ProjectStatus;
     updatedAt: string;
     thumbnailUrl?: string | null;
+    imageUrl?: string | null;
+    coverUrl?: string | null;
+    previewUrl?: string | null;
+    lastImageUrl?: string | null;
 };
 
 export enum ProjectType {

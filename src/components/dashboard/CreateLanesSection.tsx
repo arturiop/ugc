@@ -10,18 +10,128 @@ const CREATE_LANES = [
     {
         kind: "project",
         projectType: ProjectType.Storyboard,
+        label: "Ad Builder",
         title: "Build the ad before you burn credits",
+        ctaLabel: "Create ad concept",
         accent: "#ff6a1a",
-        videoSrc: "/assets/demo.mp4",
+        previewMode: "single",
+        videoSources: ["/assets/demo.mp4"],
     },
     {
         kind: "project",
         projectType: ProjectType.SatisfactionVideo,
+        label: "",
         title: "Make satisfaction short ad",
+        ctaLabel: "Create short ad",
         accent: "#5B61FF",
-        videoSrc: "/assets/demo_s.mp4",
+        previewMode: "triptych",
+        videoSources: ["/assets/demo_s.mp4", "/assets/demo_s.mp4", "/assets/demo_s.mp4"],
     },
 ] as const;
+
+function LanePreview({
+    previewMode,
+    videoSources,
+    accent,
+}: {
+    previewMode: "single" | "triptych";
+    videoSources: readonly string[];
+    accent: string;
+}) {
+    if (previewMode === "triptych") {
+        return (
+            <>
+                <Box
+                    sx={{
+                        position: "absolute",
+                        inset: 0,
+                        background:
+                            "radial-gradient(circle at top left, rgba(91, 97, 255, 0.32), transparent 42%), linear-gradient(180deg, rgba(12, 16, 24, 0.78) 0%, rgba(12, 16, 24, 0.3) 34%, rgba(12, 16, 24, 0.88) 100%)",
+                    }}
+                />
+                <Box
+                    sx={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "flex",
+                        alignItems: "flex-end",
+                        justifyContent: "center",
+                        gap: { xs: 0.8, md: 1.1 },
+                        px: { xs: 1.4, md: 1.8 },
+                        pt: 1.4,
+                        pb: { xs: 2.4, md: 2.8 },
+                    }}
+                >
+                    {videoSources.map((videoSrc, index) => (
+                        <Box
+                            key={`${videoSrc}-${index}`}
+                            sx={{
+                                position: "relative",
+                                width: { xs: "30%", md: "29%" },
+                                maxWidth: 92,
+                                aspectRatio: "9 / 16",
+                                overflow: "hidden",
+                                borderRadius: 2.5,
+                                border: "1px solid rgba(255,255,255,0.16)",
+                                boxShadow: "0 14px 28px rgba(0,0,0,0.28)",
+                                background: "#0b0f16",
+                                transform:
+                                    index === 0
+                                        ? "translateY(8px) rotate(-4deg)"
+                                        : index === 2
+                                          ? "translateY(10px) rotate(4deg)"
+                                          : "translateY(-6px)",
+                            }}
+                        >
+                            <Box
+                                component="video"
+                                autoPlay
+                                muted
+                                loop
+                                playsInline
+                                src={videoSrc}
+                                sx={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                    display: "block",
+                                    backgroundColor: "#0b0f16",
+                                }}
+                            />
+                            <Box
+                                sx={{
+                                    position: "absolute",
+                                    inset: 0,
+                                    border: `1px solid ${accent}22`,
+                                    borderRadius: 2.5,
+                                    pointerEvents: "none",
+                                }}
+                            />
+                        </Box>
+                    ))}
+                </Box>
+            </>
+        );
+    }
+
+    return (
+        <Box
+            component="video"
+            autoPlay
+            muted
+            loop
+            playsInline
+            src={videoSources[0]}
+            sx={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+            }}
+        />
+    );
+}
 
 export function CreateLanesSection() {
     const navigate = useNavigate();
@@ -60,6 +170,7 @@ export function CreateLanesSection() {
                 }}>
                 {CREATE_LANES.map((lane) => {
                     const isCreating = createProject.isPending && creatingProjectType === lane.projectType;
+                    const ctaText = isCreating ? "Creating project..." : lane.ctaLabel;
 
                     return (
                         <Card
@@ -104,57 +215,102 @@ export function CreateLanesSection() {
                                             zIndex: 1,
                                         },
                                     }}>
-                                    <Box
-                                        component="video"
-                                        autoPlay
-                                        muted
-                                        loop
-                                        playsInline
-                                        src={lane.videoSrc}
-                                        sx={{
-                                            position: "absolute",
-                                            inset: 0,
-                                            width: "100%",
-                                            height: "100%",
-                                            objectFit: "cover",
-                                        }}
+                                    <LanePreview
+                                        previewMode={lane.previewMode}
+                                        videoSources={lane.videoSources}
+                                        accent={lane.accent}
                                     />
+                                    {lane.label ? (
+                                        <Box
+                                            sx={{
+                                                position: "absolute",
+                                                top: 10,
+                                                left: 10,
+                                                zIndex: 5,
+                                                py: 0.32,
+                                                borderRadius: 999,
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                gap: 0.55,
+                                                width: "fit-content",
+                                                bgcolor: "rgba(255,255,255,0.16)",
+                                                border: "1px solid rgba(255,255,255,0.18)",
+                                                backdropFilter: "blur(10px)",
+                                                boxShadow: "0 8px 18px rgba(0,0,0,0.16)",
+                                                px: 1.05,
+                                            }}
+                                        >
+                                            <Box
+                                                sx={{
+                                                    width: 5,
+                                                    height: 5,
+                                                    borderRadius: "50%",
+                                                    bgcolor: lane.accent,
+                                                    flexShrink: 0,
+                                                }}
+                                            />
+                                            <Typography
+                                                sx={{
+                                                    fontSize: { xs: "0.64rem", sm: "0.68rem" },
+                                                    fontWeight: 700,
+                                                    color: "rgba(255,255,255,0.98)",
+                                                    letterSpacing: "0.06em",
+                                                    textTransform: "uppercase",
+                                                    lineHeight: 1,
+                                                }}
+                                            >
+                                                {lane.label}
+                                            </Typography>
+                                        </Box>
+                                    ) : null}
                                     <Box
                                         sx={{
                                             m: 1.2,
                                             zIndex: 5,
-                                            py: 0.5,
-                                            borderRadius: 999,
-                                            display: "inline-flex",
-                                            alignItems: "center",
-                                            gap: 0.7,
-                                            width: "fit-content",
-                                            bgcolor: "rgba(255,255,255,0.16)",
-                                            border: "1px solid rgba(255,255,255,0.18)",
-                                            backdropFilter: "blur(10px)",
-                                            boxShadow: "0 10px 24px rgba(0,0,0,0.18)",
-                                            px: 2,
-                                        }}>
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            alignItems: "flex-start",
+                                            gap: 1,
+                                        }}
+                                    >
+                                        <Box>
+                                            <Typography
+                                                sx={{
+                                                    fontSize: { xs: "1.06rem", sm: "1.14rem" },
+                                                    fontWeight: 800,
+                                                    color: "rgba(255,255,255,0.98)",
+                                                    letterSpacing: "-0.01em",
+                                                    lineHeight: 1.08,
+                                                }}
+                                            >
+                                                {lane.title}
+                                            </Typography>
+                                        </Box>
                                         <Box
                                             sx={{
-                                                width: 6,
-                                                height: 6,
-                                                borderRadius: "50%",
+                                                px: 1.5,
+                                                py: 0.9,
+                                                borderRadius: 999,
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                gap: 0.8,
+                                                width: "fit-content",
                                                 bgcolor: lane.accent,
-                                                flexShrink: 0,
+                                                color: "#fff",
+                                                boxShadow: `0 12px 24px ${lane.accent}44`,
                                             }}
-                                        />
-                                        <Typography
-                                            sx={{
-                                                fontSize: { xs: "1rem", sm: "1.08rem" },
-                                                fontWeight: 800,
-                                                color: "rgba(255,255,255,0.98)",
-                                                letterSpacing: "-0.01em",
-                                                px: 0.5,
-                                            }}>
-                                            {isCreating ? "Creating project..." : lane.title}
-                                        </Typography>
-                                        {!isCreating && <ArrowOutwardRoundedIcon sx={{ fontSize: 17, color: "rgba(255,255,255,0.92)" }} />}
+                                        >
+                                            <Typography
+                                                sx={{
+                                                    fontSize: { xs: "0.82rem", sm: "0.88rem" },
+                                                    fontWeight: 800,
+                                                    letterSpacing: "-0.01em",
+                                                }}
+                                            >
+                                                {ctaText}
+                                            </Typography>
+                                            {!isCreating && <ArrowOutwardRoundedIcon sx={{ fontSize: 16, color: "inherit" }} />}
+                                        </Box>
                                     </Box>
                                 </Box>
                             </CardActionArea>

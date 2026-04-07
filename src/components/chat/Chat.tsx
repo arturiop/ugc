@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { ProjectChatThread } from "./Thread";
 import { createUploadAttachmentAdapter } from "./uploadAttachmentAdapter";
+import { ProjectType } from "@/api/projects";
 import { useProject } from "@/contexts/Project/ProjectContext";
 import { getProjectChatTransportConfig, HistoryMessage } from "@/api/chat";
 import { useProjectChatHistory } from "@/api/chat/hooks";
@@ -36,7 +37,9 @@ function normalizeHistory(messages: HistoryMessage[]) {
   
 function ProjectChat2({ projectId, m }: { projectId: string; m: any[] }) {
     const queryClient = useQueryClient();
+    const { projectType } = useProject();
     const runtimeRef = useRef<ReturnType<typeof useChatRuntime> | null>(null);
+    const isSatisfactionVideo = projectType === ProjectType.SatisfactionVideo;
     const transport = useMemo(() => {
         const config = getProjectChatTransportConfig(projectId);
         return new AssistantChatTransport(config);
@@ -74,14 +77,27 @@ function ProjectChat2({ projectId, m }: { projectId: string; m: any[] }) {
                         flex: 1,
                         width: "100%",
                         display: "flex",
-                        flexDirection: "column",
+                        justifyContent: "center",
+                        px: { xs: 2, md: 3 },
                         bgcolor: "background.paper",
-                        "--thread-max-width": "100%",
+                        "--thread-max-width": isSatisfactionVideo ? "960px" : "100%",
                         "--accent-color": (theme: any) => theme.palette.primary.main,
                         "--accent-foreground": (theme: any) => theme.palette.primary.contrastText,
                     } as any
                 }>
-                <ProjectChatThread />
+                <Box
+                    sx={{
+                        height: "100%",
+                        minHeight: 0,
+                        width: "100%",
+                        maxWidth: isSatisfactionVideo ? "960px" : "100%",
+                        mx: "auto",
+                        display: "flex",
+                        flexDirection: "column",
+                    }}
+                >
+                    <ProjectChatThread />
+                </Box>
             </Box>
         </AssistantRuntimeProvider>
     );

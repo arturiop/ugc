@@ -8,6 +8,9 @@ export default function ChatVideoPreview({ src }: ChatVideoPreviewProps) {
     return (
         <Box
             sx={{
+                display: "inline-block",
+                width: "auto",
+                maxWidth: "100%",
                 borderRadius: 3,
                 overflow: "hidden",
                 bgcolor: "#05070b",
@@ -22,9 +25,11 @@ export default function ChatVideoPreview({ src }: ChatVideoPreviewProps) {
                 preload="metadata"
                 sx={{
                     display: "block",
-                    width: "100%",
+                    width: "auto",
+                    maxWidth: "100%",
+                    height: "auto",
                     maxHeight: 820,
-                    objectFit: { xs: "contain", sm: "cover" },
+                    objectFit: "contain",
                     bgcolor: "background.default",
                 }}
             />
