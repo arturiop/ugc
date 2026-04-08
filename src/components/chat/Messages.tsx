@@ -1,17 +1,19 @@
 import { AuiIf, ErrorPrimitive, MessagePrimitive, ThreadPrimitive, useAuiState } from "@assistant-ui/react";
 import { Box, CircularProgress, Link, Paper, Stack, Typography } from "@mui/material";
-import { useQueryClient } from "@tanstack/react-query";
 import { Bot, FileText } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGeneratedContent } from "@/contexts/GeneratedContentContext";
-import { useProject } from "@/contexts/Project/ProjectContext";
-import { queryKeys } from "@/api/queryKeys";
+import { useGenerationPlaceholder } from "@/contexts/GenerationPlaceholderContext";
 import ChatImagePreview from "./ChatImagePreview";
 import ChatVideoPreview from "./ChatVideoPreview";
+import { ProjectGenerationPlaceholder } from "./ProjectGenerationPlaceholder";
 
-function ActionDataPart({ data }: { data?: { name?: string; action?: string; actions?: string[] } }) {
-    const queryClient = useQueryClient();
-    const { projectId } = useProject();
+function ActionDataPart({
+    data,
+}: {
+    data?: { name?: string; action?: string; actions?: string[]; media?: string; scope?: string; error?: string };
+}) {
+    const { startPlaceholder, stopPlaceholder, failPlaceholder } = useGenerationPlaceholder();
     const firedRef = useRef<Set<string>>(new Set());
     const actions = useMemo(() => {
         if (!data) return [];
@@ -22,20 +24,22 @@ function ActionDataPart({ data }: { data?: { name?: string; action?: string; act
     }, [data]);
 
     useEffect(() => {
-        if (!actions.length || !projectId) return;
+        if (!actions.length) return;
         actions.forEach((action) => {
-            const key = `${projectId}:${action}`;
+            const key = `${action}:${data?.media || ""}:${data?.scope || ""}`;
             if (firedRef.current.has(key)) return;
             firedRef.current.add(key);
-            if (action === "refresh_storyboard") {
-                window.dispatchEvent(new Event("refresh_storyboard"));
-                void queryClient.invalidateQueries({ queryKey: queryKeys.projects.storyboard(projectId) });
+            if (action === "generation_placeholder_start" && (data?.media === "image" || data?.media === "video")) {
+                startPlaceholder({ media: data.media, scope: data.scope });
             }
-            if (action === "refresh_storyboard_data") {
-                void queryClient.invalidateQueries({ queryKey: queryKeys.projects.storyboard(projectId) });
+            if (action === "generation_placeholder_stop" && (data?.media === "image" || data?.media === "video")) {
+                stopPlaceholder({ media: data.media, scope: data.scope });
+            }
+            if (action === "generation_placeholder_fail" && (data?.media === "image" || data?.media === "video")) {
+                failPlaceholder({ media: data.media, scope: data.scope, error: data.error });
             }
         });
-    }, [actions, projectId, queryClient]);
+    }, [actions, data?.error, data?.media, data?.scope, failPlaceholder, startPlaceholder, stopPlaceholder]);
 
     return null;
 }
@@ -119,12 +123,17 @@ function AssistantMessage() {
                                 data: {
                                     by_name: {
                                         action: ActionDataPart,
+                                        generation: GenerationDataPart,
                                         image: ImageDataPart,
                                         video: VideoDataPart,
                                     },
                                 },
                             }}
                         />
+
+                        <AuiIf condition={(s) => s.message.isLast}>
+                            <ProjectGenerationPlaceholder />
+                        </AuiIf>
 
                         <MessagePrimitive.Error>
                             <ErrorPrimitive.Root
@@ -278,6 +287,7 @@ function MessageFileAttachment() {
 
 function ImageDataPart({ data }: { data?: { url?: string; mediaType?: string; filename?: string } }) {
     const { addImages } = useGeneratedContent();
+    const { stopPlaceholder } = useGenerationPlaceholder();
     const src = data?.url || "";
     const resolvedMimeType = data?.mediaType || "";
     const isImage = resolvedMimeType.startsWith("image/");
@@ -285,7 +295,8 @@ function ImageDataPart({ data }: { data?: { url?: string; mediaType?: string; fi
     useEffect(() => {
         if (!isImage || !src) return;
         addImages([src]);
-    }, [addImages, src, isImage]);
+        stopPlaceholder({ media: "image" });
+    }, [addImages, isImage, src, stopPlaceholder]);
 
     if (isImage) {
         return <ChatImagePreview src={src} alt={data?.filename || "generated image"} />;
@@ -294,10 +305,46 @@ function ImageDataPart({ data }: { data?: { url?: string; mediaType?: string; fi
     return null;
 }
 
+function GenerationDataPart({
+    data,
+}: {
+    data?: { event?: string; media?: string; scope?: string; error?: string };
+}) {
+    const { startPlaceholder, stopPlaceholder, failPlaceholder } = useGenerationPlaceholder();
+
+    useEffect(() => {
+        if (data?.media !== "image" && data?.media !== "video") {
+            return;
+        }
+
+        if (data?.event === "started") {
+            startPlaceholder({ media: data.media, scope: data.scope });
+            return;
+        }
+
+        if (data?.event === "stopped") {
+            stopPlaceholder({ media: data.media, scope: data.scope });
+            return;
+        }
+
+        if (data?.event === "failed") {
+            failPlaceholder({ media: data.media, scope: data.scope, error: data.error });
+        }
+    }, [data?.error, data?.event, data?.media, data?.scope, failPlaceholder, startPlaceholder, stopPlaceholder]);
+
+    return null;
+}
+
 function VideoDataPart({ data }: { data?: { url?: string; mediaType?: string; filename?: string } }) {
+    const { stopPlaceholder } = useGenerationPlaceholder();
     const src = data?.url || "";
     const resolvedMimeType = data?.mediaType || "";
     const isVideo = resolvedMimeType.startsWith("video/");
+
+    useEffect(() => {
+        if (!isVideo || !src) return;
+        stopPlaceholder({ media: "video" });
+    }, [isVideo, src, stopPlaceholder]);
 
     if (isVideo) {
         return <ChatVideoPreview src={src} />;

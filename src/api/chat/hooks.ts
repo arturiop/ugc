@@ -8,5 +8,6 @@ export function useProjectChatHistory(projectId: string | null | undefined) {
         queryKey: projectId ? queryKeys.projects.chatMessages(projectId) : queryKeys.projects.chatMessages(""),
         queryFn: ({ signal }) => getProjectChatMessages(projectId as string, signal),
         enabled: Boolean(projectId),
+        refetchOnMount: "always",
     });
 }

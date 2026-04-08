@@ -10,6 +10,7 @@ export type HistoryMessage = {
         | { type: "file"; url?: string; data?: string; mediaType?: string; mimeType?: string; filename?: string }
         | { type: "data-image"; data?: { url?: string; mediaType?: string; filename?: string } }
         | { type: "data-video"; data?: { url?: string; mediaType?: string; filename?: string } }
+        | { type: "data-generation"; data?: { event?: string; media?: string; scope?: string; error?: string } }
         | { type: "data"; name: string; data?: Record<string, unknown> }
     >;
     createdAt?: string;
@@ -25,6 +26,7 @@ export async function getProjectChatMessages(projectId: string, signal?: AbortSi
     return requestJson<ProjectChatHistoryResponse>({
         path: `/api/v1/projects/${projectId}/chat/messages`,
         signal,
+        cache: "no-store",
     });
 }
 

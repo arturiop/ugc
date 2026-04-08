@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { AssistantChatTransport, useChatRuntime } from "@assistant-ui/react-ai-sdk";
 
@@ -105,20 +105,17 @@ function ProjectChat2({ projectId, m }: { projectId: string; m: any[] }) {
 
 export function ProjectChat() {
     const { projectId } = useProject();
-    const { data, isLoading, error, isFetching } = useProjectChatHistory(projectId);
-    const [initialMessages, setInitialMessages] = useState<NormalizedMessage[] | null>(null);
+    const { data, isLoading, error } = useProjectChatHistory(projectId);
+    const initialMessages = useMemo(() => {
+        if (!data) return null;
+        return normalizeHistory(data.messages || []);
+    }, [data]);
+    const historyKey = useMemo(() => {
+        if (!initialMessages) return `${projectId}:empty`;
+        const ids = initialMessages.map((message) => message.id || `${message.role}:${message.parts.length}`).join("|");
+        return `${projectId}:${initialMessages.length}:${ids}`;
+    }, [initialMessages, projectId]);
 
-    useEffect(() => {
-        setInitialMessages(null);
-    }, [projectId]);
-
-    useEffect(() => {
-        if (initialMessages === null && data) {
-            setInitialMessages(normalizeHistory(data.messages || []));
-        }
-    }, [data, initialMessages]);
-
-    console.log("data, isLoading, error, isFetching", data, isLoading, error, isFetching);
     return (
         <Box sx={{ height: "100%", minHeight: 0, width: "100%", display: "flex", flexDirection: "column", bgcolor: "background.paper" }}>
             {(isLoading || !data || initialMessages === null) ? (
@@ -127,7 +124,7 @@ export function ProjectChat() {
                 </Box>
             ) : (
                 <>
-                    <ProjectChat2 projectId={projectId} m={initialMessages} />
+                    <ProjectChat2 key={historyKey} projectId={projectId} m={initialMessages} />
                     {error && (
                         <Box sx={{ px: 2, pt: 1 }}>
                             <Typography variant="caption" color="error">

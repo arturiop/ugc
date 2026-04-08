@@ -8,6 +8,7 @@ export type RequestOptions = {
     body?: unknown;
     headers?: HeadersInit;
     signal?: AbortSignal;
+    cache?: RequestCache;
 };
 
 export function buildUrl(path: string) {
@@ -42,6 +43,7 @@ export async function requestJson<T>({
     body,
     headers,
     signal,
+    cache,
 }: RequestOptions): Promise<T> {
     const response = await fetch(buildUrl(path), {
         method,
@@ -52,6 +54,7 @@ export async function requestJson<T>({
         },
         body: body ? JSON.stringify(body) : undefined,
         signal,
+        cache,
     });
 
     if (!response.ok) {

@@ -5,6 +5,7 @@ import { ProjectProvider } from "@/contexts/Project/ProjectProvider";
 import ResizableSplit from "@/components/ResizableSplit";
 import { useProject } from "@/contexts/Project/ProjectContext";
 import { GeneratedContentProvider } from "@/contexts/GeneratedContentContext";
+import { GenerationPlaceholderProvider } from "@/contexts/GenerationPlaceholderContext";
 import AppHeader from "@/components/AppHeader";
 import { ProjectType } from "@/api/projects";
 
@@ -31,19 +32,21 @@ function ProjectLayout() {
             <AppHeader />
             <Box sx={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
                 <GeneratedContentProvider>
-                    {isMobile || shouldHideWorkspace ? (
-                        <Box
-                            sx={{
-                                height: "100%",
-                                width: "100%",
-                                minHeight: 0,
-                            }}
-                        >
-                            {projectId && <ProjectChat />}
-                        </Box>
-                    ) : (
-                        <ResizableSplit left={projectId && <ProjectChat />} right={<WorkspacePane />} />
-                    )}
+                    <GenerationPlaceholderProvider>
+                        {isMobile || shouldHideWorkspace ? (
+                            <Box
+                                sx={{
+                                    height: "100%",
+                                    width: "100%",
+                                    minHeight: 0,
+                                }}
+                            >
+                                {projectId && <ProjectChat />}
+                            </Box>
+                        ) : (
+                            <ResizableSplit left={projectId && <ProjectChat />} right={<WorkspacePane />} />
+                        )}
+                    </GenerationPlaceholderProvider>
                 </GeneratedContentProvider>
             </Box>
         </Box>
