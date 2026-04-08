@@ -89,6 +89,7 @@ function LanePreview({
                                 muted
                                 loop
                                 playsInline
+                                preload="metadata"
                                 src={videoSrc}
                                 sx={{
                                     width: "100%",
@@ -121,6 +122,7 @@ function LanePreview({
             muted
             loop
             playsInline
+            preload="metadata"
             src={videoSources[0]}
             sx={{
                 position: "absolute",
