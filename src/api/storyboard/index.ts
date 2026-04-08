@@ -13,6 +13,21 @@ export type StoryboardScene = {
     generated_image_url?: string | null;
     generated_video_url?: string | null;
     video_status?: "not_started" | "generating" | "ready" | "approved" | "failed" | null;
+    selected_for_video?: boolean;
+};
+
+export type MarketplaceStoryboardState = {
+    source: string;
+    product_url?: string | null;
+    product_title?: string | null;
+    product_description?: string | null;
+    product_image_url?: string | null;
+    listing_metadata?: Record<string, unknown> | null;
+    selected_scene_indices?: number[];
+    pipeline_status?: "idle" | "running" | "completed" | "failed";
+    pipeline_error?: string | null;
+    final_video_url?: string | null;
+    final_video_status?: "not_started" | "processing" | "ready" | "failed";
 };
 
 export type Storyboard = {
@@ -35,6 +50,7 @@ export type Storyboard = {
 
 export type StoryboardResponse = {
     storyboard: Storyboard | null;
+    marketplace?: MarketplaceStoryboardState | null;
 };
 
 export type StoryboardUpdateRequest = {

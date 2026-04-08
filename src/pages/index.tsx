@@ -9,6 +9,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 const Page404 = Loadable(lazy(() => import("./Page404")));
 const Hero = Loadable(lazy(() => import("./Hero")));
 const ProjectPage = Loadable(lazy(() => import("./Project")));
+const MarketplacePage = Loadable(lazy(() => import("./Marketplace")));
 const EditorPage = Loadable(lazy(() => import("../editor")));
 const Dashboard = Loadable(lazy(() => import("./Dashboard")));
 const SettingsPage = Loadable(lazy(() => import("./Settings")));
@@ -77,6 +78,7 @@ const router = [
                 element: <ProtectedRoute />,
                 children: [
                     { path: "dashboard", element: <Dashboard /> },
+                    { path: "marketplace", element: <MarketplacePage /> },
                     { path: "projects/:projectId", element: <ProjectPage /> },
                     { path: "editor", element: <EditorPage /> },
                     { path: "editor/:projectId", element: <EditorPage /> },

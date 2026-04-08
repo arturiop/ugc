@@ -175,6 +175,14 @@ export function DashboardProjectsSection() {
         setMenuProjectId(null);
     };
 
+    const openProject = (project: ProjectSummary) => {
+        if (project.project_type === ProjectType.MarketplaceCreatives) {
+            navigate(`/marketplace?projectId=${encodeURIComponent(project.id)}`);
+            return;
+        }
+        navigate(`/projects/${project.id}`);
+    };
+
     return (
         <Box
             sx={{
@@ -315,7 +323,7 @@ export function DashboardProjectsSection() {
                                             boxShadow: "0 18px 40px rgba(11, 13, 18, 0.12)",
                                         },
                                     }}>
-                                    <CardActionArea component="div" onClick={() => navigate(`/projects/${project.id}`)}>
+                                    <CardActionArea component="div" onClick={() => openProject(project)}>
                                         <Box
                                             sx={{
                                                 position: "relative",

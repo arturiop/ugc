@@ -44,10 +44,21 @@ export type ProjectSummary = {
 export enum ProjectType {
     Storyboard = "storyboard",
     SatisfactionVideo = "satisfaction_video",
+    MarketplaceCreatives = "marketplace_creatives",
 }
 
 export type ProjectListResponse = {
     items: ProjectSummary[];
+};
+
+export type MarketplaceStartRequest = {
+    product_url: string;
+};
+
+export type MarketplaceStartResponse = {
+    started: boolean;
+    project_id: string;
+    pipeline_status: "running";
 };
 
 export async function listProjects(signal?: AbortSignal) {
@@ -76,5 +87,13 @@ export async function deleteProject(projectId: string) {
     return requestJson<void>({
         path: `/api/v1/projects/${projectId}`,
         method: "DELETE",
+    });
+}
+
+export async function startMarketplaceProject(projectId: string, payload: MarketplaceStartRequest) {
+    return requestJson<MarketplaceStartResponse>({
+        path: `/api/v1/projects/${projectId}/marketplace/start`,
+        method: "POST",
+        body: payload,
     });
 }
