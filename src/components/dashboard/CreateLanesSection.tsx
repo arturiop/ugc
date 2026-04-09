@@ -27,6 +27,16 @@ const CREATE_LANES = [
         previewMode: "triptych",
         videoSources: ["/assets/demo_s.mp4", "/assets/demo_s.mp4", "/assets/demo_s.mp4"],
     },
+    {
+        kind: "route",
+        route: "/marketplace",
+        label: "Marketplace",
+        title: "Turn an Amazon listing into ready assets",
+        ctaLabel: "Open marketplace",
+        accent: "#FF8A5B",
+        previewMode: "marketplace",
+        videoSources: ["/assets/s_s.png", "/assets/st.webp", "/assets/s_s.png"],
+    },
 ] as const;
 
 function LanePreview({
@@ -34,10 +44,177 @@ function LanePreview({
     videoSources,
     accent,
 }: {
-    previewMode: "single" | "triptych";
+    previewMode: "single" | "triptych" | "marketplace";
     videoSources: readonly string[];
     accent: string;
 }) {
+    if (previewMode === "marketplace") {
+        return (
+            <>
+                <Box
+                    sx={{
+                        position: "absolute",
+                        inset: 0,
+                        background:
+                            "radial-gradient(circle at 16% 18%, rgba(255, 138, 91, 0.34), transparent 28%), radial-gradient(circle at 86% 24%, rgba(255, 196, 89, 0.22), transparent 18%), linear-gradient(180deg, rgba(18, 20, 26, 0.9) 0%, rgba(18, 20, 26, 0.5) 42%, rgba(18, 20, 26, 0.92) 100%)",
+                    }}
+                />
+                <Box
+                    sx={{
+                        position: "absolute",
+                        inset: 0,
+                        overflow: "hidden",
+                    }}
+                >
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            top: 18,
+                            left: 14,
+                            px: 1,
+                            py: 0.45,
+                            borderRadius: 999,
+                            bgcolor: "rgba(255,255,255,0.92)",
+                            color: "#11161d",
+                            fontSize: "0.66rem",
+                            fontWeight: 800,
+                            letterSpacing: "0.06em",
+                            textTransform: "uppercase",
+                            boxShadow: "0 10px 22px rgba(0,0,0,0.16)",
+                            transform: "rotate(-6deg)",
+                        }}
+                    >
+                        Amazon URL
+                    </Box>
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            top: 22,
+                            right: 18,
+                            px: 0.95,
+                            py: 0.4,
+                            borderRadius: 999,
+                            bgcolor: `${accent}22`,
+                            border: `1px solid ${accent}44`,
+                            color: "#fff2ea",
+                            fontSize: "0.64rem",
+                            fontWeight: 800,
+                            letterSpacing: "0.06em",
+                            textTransform: "uppercase",
+                            backdropFilter: "blur(10px)",
+                            transform: "rotate(8deg)",
+                        }}
+                    >
+                        Extract
+                    </Box>
+
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            left: "12%",
+                            top: 50,
+                            width: "50%",
+                            maxWidth: 152,
+                            aspectRatio: "1 / 1",
+                            overflow: "hidden",
+                            borderRadius: 3,
+                            bgcolor: "#fff",
+                            border: "1px solid rgba(255,255,255,0.18)",
+                            boxShadow: "0 22px 40px rgba(0,0,0,0.28)",
+                            transform: "rotate(-6deg)",
+                        }}
+                    >
+                        <Box
+                            component="img"
+                            src={videoSources[0]}
+                            alt=""
+                            sx={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                objectPosition: "center",
+                                display: "block",
+                            }}
+                        />
+                    </Box>
+
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            right: "10%",
+                            top: 60,
+                            width: "32%",
+                            minWidth: 84,
+                            aspectRatio: "4 / 5",
+                            overflow: "hidden",
+                            borderRadius: 2.8,
+                            bgcolor: "#f6f2eb",
+                            border: "1px solid rgba(255,255,255,0.16)",
+                            boxShadow: "0 18px 34px rgba(0,0,0,0.24)",
+                            transform: "rotate(8deg)",
+                        }}
+                    >
+                        <Box
+                            component="img"
+                            src={videoSources[1]}
+                            alt=""
+                            sx={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                objectPosition: "center",
+                                display: "block",
+                            }}
+                        />
+                    </Box>
+
+                    <Box
+                        sx={{
+                            position: "absolute",
+                            left: "26%",
+                            bottom: 38,
+                            width: "48%",
+                            maxWidth: 144,
+                            borderRadius: 2.8,
+                            bgcolor: "rgba(255,255,255,0.96)",
+                            color: "#11161d",
+                            p: 1.1,
+                            boxShadow: "0 18px 34px rgba(0,0,0,0.24)",
+                            transform: "rotate(4deg)",
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                height: 8,
+                                width: "72%",
+                                borderRadius: 999,
+                                bgcolor: "rgba(17,22,29,0.16)",
+                                mb: 0.7,
+                            }}
+                        />
+                        <Box
+                            sx={{
+                                height: 6,
+                                width: "88%",
+                                borderRadius: 999,
+                                bgcolor: "rgba(17,22,29,0.1)",
+                                mb: 0.45,
+                            }}
+                        />
+                        <Box
+                            sx={{
+                                height: 6,
+                                width: "64%",
+                                borderRadius: 999,
+                                bgcolor: `${accent}66`,
+                            }}
+                        />
+                    </Box>
+                </Box>
+            </>
+        );
+    }
+
     if (previewMode === "triptych") {
         return (
             <>
@@ -140,7 +317,13 @@ export function CreateLanesSection() {
     const createProject = useCreateProject();
     const [creatingProjectType, setCreatingProjectType] = useState<ProjectType | null>(null);
 
-    const handleCreateProject = async (projectType: ProjectType) => {
+    const handleCreateProject = async (lane: (typeof CREATE_LANES)[number]) => {
+        if (lane.kind === "route") {
+            navigate(lane.route);
+            return;
+        }
+
+        const projectType = lane.projectType;
         setCreatingProjectType(projectType);
 
         try {
@@ -171,12 +354,12 @@ export function CreateLanesSection() {
                     rowGap: { xs: 1.5, md: 2 },
                 }}>
                 {CREATE_LANES.map((lane) => {
-                    const isCreating = createProject.isPending && creatingProjectType === lane.projectType;
+                    const isCreating = lane.kind === "project" && createProject.isPending && creatingProjectType === lane.projectType;
                     const ctaText = isCreating ? "Creating project..." : lane.ctaLabel;
 
                     return (
                         <Card
-                            key={lane.projectType}
+                            key={lane.kind === "project" ? lane.projectType : lane.route}
                             sx={{
                                 width: { xs: "100%", md: "calc((100% - 72px) / 3)" },
                                 minWidth: 0,
@@ -193,7 +376,7 @@ export function CreateLanesSection() {
                             <CardActionArea
                                 component="button"
                                 disabled={createProject.isPending}
-                                onClick={() => handleCreateProject(lane.projectType)}
+                                onClick={() => handleCreateProject(lane)}
                                 sx={{
                                     display: "block",
                                     width: "100%",
@@ -319,75 +502,6 @@ export function CreateLanesSection() {
                         </Card>
                     );
                 })}
-                <Card
-                    sx={{
-                        display: { xs: "none", md: "block" },
-                        width: { md: "calc((100% - 72px) / 3)" },
-                        minWidth: 0,
-                        borderRadius: 3.5,
-                        bgcolor: "#0d1015",
-                        boxShadow: "0 14px 32px rgba(8, 10, 14, 0.12)",
-                        overflow: "hidden",
-                        transition: "transform .18s ease, box-shadow .18s ease",
-                        "&:hover": {
-                            transform: "translateY(-2px)",
-                            boxShadow: "0 18px 36px rgba(8, 10, 14, 0.18)",
-                        },
-                    }}>
-                    <Box
-                        sx={{
-                            position: "relative",
-                            display: "flex",
-                            flexDirection: "column",
-                            justifyContent: "flex-end",
-                            minHeight: { md: 198 },
-                            p: 1.2,
-                            color: "common.white",
-                            overflow: "hidden",
-                        }}>
-                        <Box
-                            sx={{
-                                position: "absolute",
-                                inset: 0,
-                            }}>
-                            <LiquidPlaceholder />
-                        </Box>
-                        <Box
-                            sx={{
-                                position: "absolute",
-                                inset: 0,
-                                background:
-                                    "radial-gradient(circle at top left, rgba(61,217,162,0.18), transparent 38%), linear-gradient(180deg, rgba(8, 11, 16, 0.12) 0%, rgba(8, 11, 16, 0.18) 28%, rgba(8, 11, 16, 0.84) 100%)",
-                            }}
-                        />
-                        <Box
-                            sx={{
-                                position: "relative",
-                                zIndex: 1,
-                                px: 0.95,
-                                py: 0.72,
-                                borderRadius: 999,
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: 0.7,
-                                width: "fit-content",
-                                bgcolor: "rgba(255,255,255,0.08)",
-                                border: "1px solid rgba(255,255,255,0.12)",
-                                backdropFilter: "blur(10px)",
-                            }}>
-                            <Typography
-                                sx={{
-                                    fontSize: { xs: "1rem", sm: "1.08rem" },
-                                    fontWeight: 800,
-                                    color: "rgba(255,255,255,0.98)",
-                                    letterSpacing: "-0.01em",
-                                    px: 1,
-                                }}>
-                                New formats and creation flows are on the way
-                            </Typography>
-                        </Box>
-                    </Box>
-                </Card>
             </Box>
         </Box>
     );

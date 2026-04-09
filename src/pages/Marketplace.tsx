@@ -5,9 +5,6 @@ import {
     Box,
     Button,
     Chip,
-    Container,
-    Divider,
-    LinearProgress,
     Paper,
     Stack,
     TextField,
@@ -16,15 +13,11 @@ import {
 } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
-import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
-import CollectionsRoundedIcon from "@mui/icons-material/CollectionsRounded";
-import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
-import BoltRoundedIcon from "@mui/icons-material/BoltRounded";
 import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
-import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
 import AppHeader from "@/components/AppHeader";
-import { useCreateProject, useProject, useStartMarketplaceProject } from "@/api/projects/hooks";
 import { ProjectType } from "@/api/projects";
+import { useCreateProject, useProject, useStartMarketplaceProject } from "@/api/projects/hooks";
 import { useProjectStoryboard } from "@/api/storyboard/hooks";
 import type { StoryboardScene } from "@/api/storyboard";
 
@@ -43,21 +36,6 @@ const SCENE_SLOTS: ResultSlot[] = [
     { id: "scene-6", title: "Scene 6", caption: "Offer and finish frame" },
 ];
 
-const PIPELINE_STEPS = [
-    {
-        title: "Extract listing",
-        body: "Read the Amazon page, title, bullets, and first product image.",
-    },
-    {
-        title: "Build scenes",
-        body: "Create six marketplace-ready storyboard frames from the listing context.",
-    },
-    {
-        title: "Render video",
-        body: "Pick three scenes for motion and combine them into the final ad video.",
-    },
-];
-
 function normalizeAmazonUrl(value: string) {
     const trimmed = value.trim();
     if (!trimmed) return "";
@@ -74,6 +52,33 @@ function isAmazonUrl(value: string) {
     }
 }
 
+function prettyJson(value: Record<string, unknown> | null | undefined) {
+    if (!value || Object.keys(value).length === 0) return "";
+    return JSON.stringify(value, null, 2);
+}
+
+function resolveProgressLabel(
+    pipelineStatus: "idle" | "running" | "completed" | "failed" | undefined,
+    currentStage: string | null | undefined,
+    pipelineStep: string | null | undefined,
+    hasPipelineActivity: boolean
+) {
+    if (!hasPipelineActivity && pipelineStatus !== "failed" && pipelineStatus !== "completed") return "Idle";
+    if (pipelineStatus === "failed") return "Failed";
+    if (pipelineStatus === "completed") return "Ready";
+    if (pipelineStep === "extracting_listing") return "Extracting";
+    if (pipelineStep === "listing_extracted") return "Extracted";
+    if (pipelineStep === "generating_storyboard") return "Building scenes";
+    if (pipelineStep === "generating_scene_videos") return "Rendering videos";
+    if (pipelineStep === "combining_video") return "Combining";
+    if (currentStage === "brand_context") return "Extracting";
+    if (currentStage === "storyboard") return "Building scenes";
+    if (currentStage === "scene_generation") return "Rendering videos";
+    if (currentStage === "combine_scenes") return "Combining";
+    if (pipelineStatus === "running") return "Processing";
+    return "Idle";
+}
+
 function SceneCard({
     title,
     caption,
@@ -85,100 +90,85 @@ function SceneCard({
 }) {
     const imageUrl = scene?.generated_image_url || null;
     const isSelected = Boolean(scene?.selected_for_video);
-    const statusLabel = imageUrl ? (isSelected ? "Selected for video" : "Ready") : "Queued";
+    const statusLabel = imageUrl ? (isSelected ? "Selected" : "Ready") : "Waiting";
 
     return (
         <Paper
             elevation={0}
             sx={{
-                position: "relative",
-                overflow: "hidden",
-                borderRadius: 4,
+                p: 2,
+                borderRadius: 3,
                 border: "1px solid",
-                borderColor: alpha("#F7F1E8", 0.12),
-                background:
-                    "linear-gradient(180deg, rgba(13,17,24,0.94) 0%, rgba(13,17,24,0.88) 100%), radial-gradient(circle at top left, rgba(255,132,64,0.22), transparent 46%), radial-gradient(circle at bottom right, rgba(72,126,255,0.22), transparent 48%)",
-                minHeight: 280,
+                borderColor: "divider",
+                bgcolor: "background.paper",
+                display: "flex",
+                flexDirection: "column",
+                gap: 1.5,
+                minHeight: 336,
             }}
         >
+            <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
+                <Typography sx={{ fontWeight: 700, color: "text.primary", fontSize: "0.95rem" }}>
+                    {title}
+                </Typography>
+                <Chip
+                    label={statusLabel}
+                    size="small"
+                    sx={{
+                        borderRadius: 999,
+                        fontWeight: 700,
+                        bgcolor: imageUrl
+                            ? isSelected
+                                ? alpha("#5B61FF", 0.1)
+                                : alpha("#FF6A1A", 0.1)
+                            : "action.hover",
+                        color: imageUrl
+                            ? isSelected
+                                ? "#5B61FF"
+                                : "#C85616"
+                            : "text.secondary",
+                    }}
+                />
+            </Stack>
+
             <Box
                 sx={{
-                    position: "relative",
-                    zIndex: 1,
+                    width: "100%",
+                    aspectRatio: "4 / 5",
+                    borderRadius: 2.5,
+                    overflow: "hidden",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    bgcolor: imageUrl ? "grey.100" : "background.default",
                     display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    minHeight: 280,
-                    p: 2,
+                    alignItems: "center",
+                    justifyContent: "center",
                 }}
             >
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                    <Chip
-                        label={title}
-                        size="small"
+                {imageUrl ? (
+                    <Box
+                        component="img"
+                        src={imageUrl}
+                        alt={scene?.title || title}
                         sx={{
-                            bgcolor: "rgba(255,255,255,0.10)",
-                            color: "rgba(255,255,255,0.96)",
-                            borderRadius: 999,
-                            fontWeight: 700,
-                            border: "1px solid rgba(255,255,255,0.12)",
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            display: "block",
                         }}
                     />
-                    <Chip
-                        label={statusLabel}
-                        size="small"
-                        sx={{
-                            bgcolor: imageUrl
-                                ? isSelected
-                                    ? "rgba(72,126,255,0.18)"
-                                    : "rgba(82, 201, 118, 0.18)"
-                                : "rgba(255,132,64,0.14)",
-                            color: imageUrl ? "#E5F8E9" : "#FFD4BD",
-                            borderRadius: 999,
-                            fontWeight: 700,
-                        }}
-                    />
-                </Stack>
+                ) : (
+                    <Typography sx={{ color: "text.disabled", fontSize: "0.86rem" }}>Waiting for image</Typography>
+                )}
+            </Box>
 
-                <Box
-                    sx={{
-                        alignSelf: "center",
-                        width: "100%",
-                        maxWidth: 230,
-                        aspectRatio: "4 / 5",
-                        borderRadius: 3,
-                        overflow: "hidden",
-                        border: "1px solid rgba(255,255,255,0.12)",
-                        background:
-                            imageUrl
-                                ? "rgba(255,255,255,0.06)"
-                                : "linear-gradient(180deg, rgba(250,246,240,0.10) 0%, rgba(250,246,240,0.03) 100%), radial-gradient(circle at 20% 18%, rgba(255,167,117,0.42), transparent 28%), radial-gradient(circle at 78% 82%, rgba(103,142,255,0.38), transparent 36%)",
-                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08)",
-                    }}
-                >
-                    {imageUrl ? (
-                        <Box
-                            component="img"
-                            src={imageUrl}
-                            alt={scene?.title || title}
-                            sx={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "cover",
-                                display: "block",
-                            }}
-                        />
-                    ) : null}
-                </Box>
-
-                <Box>
-                    <Typography sx={{ color: "#F5EDE2", fontWeight: 700, fontSize: "0.98rem" }}>
-                        {scene?.title || caption}
-                    </Typography>
-                    <Typography sx={{ color: "rgba(245,237,226,0.62)", fontSize: "0.84rem", mt: 0.75 }}>
-                        {scene?.description || "This slot updates as soon as the scene image is generated."}
-                    </Typography>
-                </Box>
+            <Box sx={{ minHeight: 0 }}>
+                <Typography sx={{ color: "text.primary", fontWeight: 700, fontSize: "0.95rem" }}>
+                    {scene?.title || caption}
+                </Typography>
+                <Typography sx={{ color: "text.secondary", fontSize: "0.84rem", mt: 0.75 }}>
+                    {scene?.description || "This asset appears here after generation."}
+                </Typography>
             </Box>
         </Paper>
     );
@@ -198,118 +188,99 @@ function VideoCard({
               ? "Failed"
               : status === "processing"
                 ? "Processing"
-                : "Waiting for scene videos";
+                : "Waiting";
 
     return (
         <Paper
             elevation={0}
             sx={{
-                position: "relative",
-                overflow: "hidden",
-                borderRadius: 4,
+                p: 2,
+                borderRadius: 3,
                 border: "1px solid",
-                borderColor: alpha("#F7F1E8", 0.12),
-                background:
-                    "linear-gradient(180deg, rgba(12,15,22,0.96) 0%, rgba(12,15,22,0.9) 100%), radial-gradient(circle at top left, rgba(255,132,64,0.18), transparent 42%), radial-gradient(circle at bottom right, rgba(72,126,255,0.2), transparent 46%)",
+                borderColor: "divider",
+                bgcolor: "background.paper",
             }}
         >
-            <Box sx={{ position: "relative", zIndex: 1, p: 2.25 }}>
-                <Stack direction={{ xs: "column", md: "row" }} spacing={2.25} alignItems={{ xs: "stretch", md: "center" }}>
-                    <Box
-                        sx={{
-                            flex: "0 0 auto",
-                            width: { xs: "100%", md: 360 },
-                            maxWidth: "100%",
-                            aspectRatio: "16 / 9",
-                            borderRadius: 3,
-                            overflow: "hidden",
-                            border: "1px solid rgba(255,255,255,0.12)",
-                            background:
-                                "linear-gradient(135deg, rgba(255,132,64,0.22) 0%, rgba(255,255,255,0.03) 42%, rgba(72,126,255,0.2) 100%)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08)",
-                        }}
-                    >
-                        {videoUrl ? (
-                            <Box
-                                component="video"
-                                src={videoUrl}
-                                controls
-                                playsInline
-                                sx={{
-                                    width: "100%",
-                                    height: "100%",
-                                    display: "block",
-                                    objectFit: "cover",
-                                    backgroundColor: "#0b0f16",
-                                }}
-                            />
-                        ) : (
-                            <VideoLibraryRoundedIcon sx={{ fontSize: 38, color: "rgba(255,255,255,0.8)" }} />
-                        )}
-                    </Box>
-                    <Stack spacing={1.15} sx={{ minWidth: 0 }}>
-                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                            <Chip
-                                label="Final Video"
-                                size="small"
-                                sx={{
-                                    bgcolor: "rgba(255,255,255,0.10)",
-                                    color: "rgba(255,255,255,0.96)",
-                                    borderRadius: 999,
-                                    fontWeight: 700,
-                                    border: "1px solid rgba(255,255,255,0.12)",
-                                }}
-                            />
-                            <Chip
-                                label={statusLabel}
-                                size="small"
-                                sx={{
-                                    bgcolor:
-                                        status === "ready"
-                                            ? "rgba(82, 201, 118, 0.18)"
-                                            : status === "failed"
-                                              ? "rgba(224, 79, 95, 0.18)"
-                                              : "rgba(72,126,255,0.16)",
-                                    color: status === "failed" ? "#FFD1D7" : "#D8E4FF",
-                                    borderRadius: 999,
-                                    fontWeight: 700,
-                                }}
-                            />
-                        </Stack>
-                        <Typography sx={{ color: "#F5EDE2", fontWeight: 700, fontSize: "1.02rem" }}>
-                            3 selected scenes combined into one 20-30 second ad
-                        </Typography>
-                        <Typography sx={{ color: "rgba(245,237,226,0.62)", maxWidth: 640 }}>
-                            The final video card stays in place while the selected motion scenes render and combine.
-                        </Typography>
+            <Stack direction={{ xs: "column", lg: "row" }} spacing={2}>
+                <Box
+                    sx={{
+                        width: { xs: "100%", lg: 420 },
+                        maxWidth: "100%",
+                        aspectRatio: "16 / 9",
+                        borderRadius: 2.5,
+                        overflow: "hidden",
+                        border: "1px solid",
+                        borderColor: "divider",
+                        bgcolor: "background.default",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                    }}
+                >
+                    {videoUrl ? (
+                        <Box
+                            component="video"
+                            src={videoUrl}
+                            controls
+                            playsInline
+                            sx={{
+                                width: "100%",
+                                height: "100%",
+                                display: "block",
+                                objectFit: "cover",
+                                bgcolor: "#000",
+                            }}
+                        />
+                    ) : (
+                        <VideoLibraryRoundedIcon sx={{ fontSize: 34, color: "text.disabled" }} />
+                    )}
+                </Box>
+                <Stack spacing={1.2} justifyContent="space-between" sx={{ minWidth: 0 }}>
+                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                        <Chip
+                            label="Final video"
+                            size="small"
+                            sx={{
+                                borderRadius: 999,
+                                fontWeight: 700,
+                                bgcolor: "action.hover",
+                                color: "text.primary",
+                            }}
+                        />
+                        <Chip
+                            label={statusLabel}
+                            size="small"
+                            sx={{
+                                borderRadius: 999,
+                                fontWeight: 700,
+                                bgcolor:
+                                    status === "ready"
+                                        ? alpha("#FF6A1A", 0.1)
+                                        : status === "failed"
+                                          ? alpha("#d32f2f", 0.1)
+                                          : alpha("#5B61FF", 0.1),
+                                color:
+                                    status === "ready"
+                                        ? "#C85616"
+                                        : status === "failed"
+                                          ? "error.main"
+                                          : "#5B61FF",
+                            }}
+                        />
                     </Stack>
+                    <Box>
+                        <Typography sx={{ color: "text.primary", fontWeight: 700, fontSize: "1rem" }}>
+                            Final combined asset
+                        </Typography>
+                        <Typography sx={{ color: "text.secondary", mt: 0.75 }}>
+                            Generated from the 3 selected scenes after the scene videos finish rendering.
+                        </Typography>
+                    </Box>
                 </Stack>
-            </Box>
+            </Stack>
         </Paper>
     );
-}
-
-function resolveProgressLabel(
-    pipelineStatus: "idle" | "running" | "completed" | "failed" | undefined,
-    currentStage: string | null | undefined,
-    progressIndex: number
-) {
-    if (pipelineStatus === "failed") return "Marketplace generation failed";
-    if (pipelineStatus === "completed") return "Creative pack ready";
-    if (currentStage === "brand_context") return "Pulling the Amazon listing details";
-    if (currentStage === "storyboard") return "Building the 6-scene marketplace storyboard";
-    if (currentStage === "scene_generation") return "Rendering selected scene videos";
-    if (currentStage === "combine_scenes") return "Combining the final marketplace video";
-    if (pipelineStatus === "running") return ["Preparing project", "Generating creative pack", "Publishing assets"][progressIndex % 3];
-    return "Waiting for Amazon URL";
-}
-
-function prettyJson(value: Record<string, unknown> | null | undefined) {
-    if (!value || Object.keys(value).length === 0) return "";
-    return JSON.stringify(value, null, 2);
 }
 
 export default function MarketplacePage() {
@@ -317,7 +288,6 @@ export default function MarketplacePage() {
     const projectId = searchParams.get("projectId");
     const [urlInput, setUrlInput] = useState("");
     const [error, setError] = useState("");
-    const [progressIndex, setProgressIndex] = useState(0);
 
     const createProject = useCreateProject();
     const startMarketplaceProject = useStartMarketplaceProject();
@@ -325,48 +295,60 @@ export default function MarketplacePage() {
     const storyboardQuery = useProjectStoryboard(projectId, {
         refetchInterval: (query) => {
             const pipelineStatus = query.state.data?.marketplace?.pipeline_status;
-            return pipelineStatus === "running" ? 15000 : false;
+            return pipelineStatus === "running" ? 25000 : false;
         },
     });
     const projectQuery = useProject(projectId, {
         refetchInterval: () => {
             const pipelineStatus = storyboardQuery.data?.marketplace?.pipeline_status;
-            return pipelineStatus === "running" ? 15000 : false;
+            return pipelineStatus === "running" ? 25000 : false;
         },
     });
 
     const storyboard = storyboardQuery.data?.storyboard ?? null;
     const marketplace = storyboardQuery.data?.marketplace ?? null;
     const pipelineStatus = marketplace?.pipeline_status;
+    const pipelineStep = marketplace?.pipeline_step;
     const finalVideoStatus = marketplace?.final_video_status ?? "not_started";
     const finalVideoUrl = marketplace?.final_video_url ?? null;
-    const hasStarted = Boolean(projectId);
+    const hasBoundProject = Boolean(projectId);
     const isSubmitting = createProject.isPending || startMarketplaceProject.isPending;
-    const shouldAnimateProgress = false && (pipelineStatus === "running" || (hasStarted && !marketplace && !storyboard));
-
-    useEffect(() => {
-        if (!shouldAnimateProgress) return;
-        const interval = window.setInterval(() => {
-            setProgressIndex((current) => current + 1);
-        }, 2600);
-        return () => window.clearInterval(interval);
-    }, [shouldAnimateProgress]);
+    const hasPipelineActivity = Boolean(
+        marketplace?.product_url || (pipelineStatus && pipelineStatus !== "idle")
+    );
+    const isSubmissionLocked = Boolean(
+        pipelineStatus === "running" || pipelineStatus === "completed" || marketplace?.product_url || isSubmitting
+    );
+    const progressLabel = resolveProgressLabel(
+        pipelineStatus,
+        projectQuery.data?.current_stage,
+        pipelineStep,
+        hasPipelineActivity
+    );
+    const pipelineError = marketplace?.pipeline_error || error;
+    const listingMetadataText = useMemo(() => prettyJson(marketplace?.listing_metadata ?? null), [marketplace?.listing_metadata]);
+    const readySceneCount = storyboard?.scenes?.filter((scene) => Boolean(scene.generated_image_url)).length ?? 0;
+    const hasExtractedData = Boolean(
+        marketplace?.product_title ||
+            marketplace?.product_description ||
+            marketplace?.product_image_url ||
+            marketplace?.product_url ||
+            listingMetadataText
+    );
+    const hasGeneratedAssets = readySceneCount > 0 || Boolean(finalVideoUrl);
+    const extractedDataEmptyLabel =
+        hasBoundProject && hasPipelineActivity
+            ? "Product data will appear here after extraction."
+            : "Submit an Amazon URL to extract product data.";
+    const generatedAssetsEmptyLabel =
+        hasBoundProject && hasPipelineActivity
+            ? "Assets will appear here as scenes finish rendering."
+            : "Assets will appear here after extraction.";
 
     useEffect(() => {
         if (!marketplace?.product_url) return;
         setUrlInput((current) => current || marketplace.product_url || "");
     }, [marketplace?.product_url]);
-
-    const progressLabel = resolveProgressLabel(pipelineStatus, projectQuery.data?.current_stage, progressIndex);
-    const pipelineError = marketplace?.pipeline_error || error;
-    const listingMetadataText = useMemo(() => prettyJson(marketplace?.listing_metadata ?? null), [marketplace?.listing_metadata]);
-    const resultSummary = useMemo(
-        () => ({
-            sceneCount: SCENE_SLOTS.length,
-            videoCount: 1,
-        }),
-        []
-    );
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -382,23 +364,25 @@ export default function MarketplacePage() {
         }
 
         setError("");
-        setProgressIndex(0);
 
         try {
-            const project = await createProject.mutateAsync(ProjectType.MarketplaceCreatives);
-            const nextProjectId = project?.short_id || project?.uuid;
+            let nextProjectId = projectId;
             if (!nextProjectId) {
-                throw new Error("Project created but no project id was returned.");
+                const project = await createProject.mutateAsync(ProjectType.MarketplaceCreatives);
+                nextProjectId = project?.short_id || project?.uuid;
+                if (!nextProjectId) {
+                    throw new Error("Project created but no project id was returned.");
+                }
+
+                const nextParams = new URLSearchParams(searchParams);
+                nextParams.set("projectId", nextProjectId);
+                setSearchParams(nextParams, { replace: true });
             }
 
             await startMarketplaceProject.mutateAsync({
                 projectId: nextProjectId,
                 productUrl: normalized,
             });
-
-            const nextParams = new URLSearchParams(searchParams);
-            nextParams.set("projectId", nextProjectId);
-            setSearchParams(nextParams, { replace: true });
             setUrlInput(normalized);
         } catch (submissionError) {
             setError(submissionError instanceof Error ? submissionError.message : "Failed to start marketplace generation.");
@@ -407,7 +391,6 @@ export default function MarketplacePage() {
 
     const handleReset = () => {
         setError("");
-        setProgressIndex(0);
         setUrlInput("");
         if (!projectId) return;
         const nextParams = new URLSearchParams(searchParams);
@@ -416,189 +399,66 @@ export default function MarketplacePage() {
     };
 
     return (
-        <Box
-            sx={{
-                minHeight: "100dvh",
-                bgcolor: "#f6efe6",
-                backgroundImage:
-                    "radial-gradient(circle at top left, rgba(255, 132, 64, 0.18), transparent 26%), radial-gradient(circle at bottom right, rgba(72, 126, 255, 0.16), transparent 24%), linear-gradient(180deg, #f8f2ea 0%, #f2eadf 100%)",
-            }}
-        >
+        <Box sx={{ height: "100dvh", width: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
             <AppHeader />
-
-            <Box sx={{ py: { xs: 3, md: 5 } }}>
-                <Container maxWidth="xl">
-                    <Stack spacing={{ xs: 3, md: 4 }}>
-                        <Stack direction={{ xs: "column", lg: "row" }} spacing={{ xs: 2.5, md: 3 }} alignItems={{ xs: "stretch", lg: "stretch" }}>
-                            <Paper
-                                elevation={0}
-                                sx={{
-                                    flex: 1.2,
-                                    p: { xs: 2.5, md: 3.5 },
-                                    borderRadius: 5,
-                                    color: "#fff6ef",
-                                    border: "1px solid rgba(17, 22, 29, 0.08)",
-                                    background:
-                                        "linear-gradient(135deg, rgba(12,15,21,0.96) 0%, rgba(20,24,33,0.94) 52%, rgba(13,17,24,0.98) 100%)",
-                                    boxShadow: "0 28px 60px rgba(32, 24, 18, 0.08)",
-                                }}
-                            >
-                                <Stack spacing={2.2}>
+            <Box sx={{ flex: 1, overflow: "auto" }}>
+                <Box sx={{ width: "100%", mx: "auto", px: { xs: 1, md: 2 }, pb: 6 }}>
+                    <Stack spacing={3} sx={{ pt: 2 }}>
+                        <Paper
+                            elevation={0}
+                            component="form"
+                            onSubmit={handleSubmit}
+                            sx={{
+                                p: { xs: 2, md: 2.5 },
+                                borderRadius: 3,
+                                border: "1px solid",
+                                borderColor: "divider",
+                                bgcolor: "background.paper",
+                            }}
+                        >
+                            <Stack spacing={2}>
+                                <Stack
+                                    direction={{ xs: "column", md: "row" }}
+                                    spacing={1.5}
+                                    justifyContent="space-between"
+                                    alignItems={{ xs: "flex-start", md: "center" }}
+                                >
+                                    <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1.1 }}>
+                                        Marketplace creative
+                                    </Typography>
                                     <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                                        <Chip
-                                            icon={<BoltRoundedIcon />}
-                                            label="Marketplace Creative Studio"
-                                            sx={{
-                                                width: "fit-content",
-                                                bgcolor: "rgba(255,132,64,0.14)",
-                                                color: "#FFE2D1",
-                                                borderRadius: 999,
-                                                fontWeight: 700,
-                                            }}
-                                        />
-                                        <Chip
-                                            label="Amazon-first"
-                                            sx={{
-                                                width: "fit-content",
-                                                bgcolor: "rgba(255,255,255,0.08)",
-                                                color: "rgba(255,255,255,0.86)",
-                                                borderRadius: 999,
-                                            }}
-                                        />
                                         {projectId ? (
                                             <Chip
-                                                icon={<CheckCircleRoundedIcon />}
                                                 label={projectId}
                                                 sx={{
-                                                    width: "fit-content",
-                                                    bgcolor: "rgba(255,255,255,0.08)",
-                                                    color: "rgba(255,255,255,0.86)",
                                                     borderRadius: 999,
+                                                    bgcolor: "action.hover",
+                                                    color: "text.primary",
+                                                    fontWeight: 700,
                                                 }}
                                             />
                                         ) : null}
-                                    </Stack>
-
-                                    <Box>
-                                        <Typography
-                                            sx={{
-                                                fontSize: { xs: "2rem", md: "3.25rem" },
-                                                lineHeight: 0.98,
-                                                fontWeight: 900,
-                                                letterSpacing: "-0.04em",
-                                                maxWidth: 760,
-                                            }}
-                                        >
-                                            Paste the product link. Let the marketplace creative pack assemble itself.
-                                        </Typography>
-                                        <Typography
-                                            sx={{
-                                                mt: 1.5,
-                                                maxWidth: 680,
-                                                color: "rgba(255,246,239,0.72)",
-                                                fontSize: { xs: "1rem", md: "1.08rem" },
-                                            }}
-                                        >
-                                            One Amazon URL in. Six scene images and one final ad video out. Assets appear here progressively as the backend
-                                            finishes each stage.
-                                        </Typography>
-                                    </Box>
-
-                                    {marketplace?.product_title ? (
-                                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2} alignItems={{ xs: "flex-start", sm: "center" }}>
-                                            {marketplace.product_image_url ? (
-                                                <Box
-                                                    component="img"
-                                                    src={marketplace.product_image_url}
-                                                    alt={marketplace.product_title}
-                                                    sx={{
-                                                        width: 72,
-                                                        height: 72,
-                                                        borderRadius: 3,
-                                                        objectFit: "cover",
-                                                        border: "1px solid rgba(255,255,255,0.12)",
-                                                    }}
-                                                />
-                                            ) : null}
-                                            <Box sx={{ minWidth: 0 }}>
-                                                <Typography sx={{ fontWeight: 800, color: "#fff6ef" }}>{marketplace.product_title}</Typography>
-                                                {/* <Typography sx={{ color: "rgba(255,246,239,0.72)", mt: 0.6 }} noWrap>
-                                                    {marketplace.product_url}
-                                                </Typography> */}
-                                                {marketplace.product_description ? (
-                                                    <Typography
-                                                        sx={{
-                                                            color: "rgba(255,246,239,0.72)",
-                                                            mt: 0.9,
-                                                            display: "-webkit-box",
-                                                            WebkitLineClamp: 3,
-                                                            WebkitBoxOrient: "vertical",
-                                                            overflow: "hidden",
-                                                            maxWidth: 640,
-                                                        }}
-                                                    >
-                                                        {marketplace.product_description}
-                                                    </Typography>
-                                                ) : null}
-                                            </Box>
-                                        </Stack>
-                                    ) : null}
-
-                                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>
                                         <Chip
-                                            icon={<CollectionsRoundedIcon />}
-                                            label={`${resultSummary.sceneCount} marketplace scene images`}
+                                            label={progressLabel}
                                             sx={{
-                                                bgcolor: "rgba(255,255,255,0.08)",
-                                                color: "rgba(255,255,255,0.9)",
                                                 borderRadius: 999,
-                                            }}
-                                        />
-                                        <Chip
-                                            icon={<VideoLibraryRoundedIcon />}
-                                            label={`${resultSummary.videoCount} final video from 3 selected scenes`}
-                                            sx={{
-                                                bgcolor: "rgba(255,255,255,0.08)",
-                                                color: "rgba(255,255,255,0.9)",
-                                                borderRadius: 999,
+                                                bgcolor: hasPipelineActivity ? alpha("#FF6A1A", 0.1) : "action.hover",
+                                                color: hasPipelineActivity ? "#C85616" : "text.secondary",
+                                                fontWeight: 700,
                                             }}
                                         />
                                     </Stack>
                                 </Stack>
-                            </Paper>
 
-                            <Paper
-                                elevation={0}
-                                component="form"
-                                onSubmit={handleSubmit}
-                                sx={{
-                                    flex: 0.9,
-                                    p: { xs: 2.5, md: 3 },
-                                    borderRadius: 5,
-                                    border: "1px solid rgba(17, 22, 29, 0.08)",
-                                    background: "rgba(255,255,255,0.82)",
-                                    backdropFilter: "blur(18px)",
-                                    boxShadow: "0 28px 60px rgba(32, 24, 18, 0.06)",
-                                }}
-                            >
-                                <Stack spacing={2}>
-                                    <Box>
-                                        <Typography sx={{ fontWeight: 800, fontSize: "1.15rem", color: "#11161d" }}>
-                                            Start with the listing URL
-                                        </Typography>
-                                        <Typography sx={{ mt: 0.75, color: "rgba(17,22,29,0.68)" }}>
-                                            Paste one Amazon product link and keep the workflow moving without filling a long brief.
-                                        </Typography>
-                                    </Box>
-
+                                <Stack direction={{ xs: "column", xl: "row" }} spacing={1.25}>
                                     <TextField
                                         fullWidth
                                         value={urlInput}
-                                        disabled={hasStarted || isSubmitting}
+                                        disabled={isSubmissionLocked}
                                         onChange={(event) => setUrlInput(event.target.value)}
                                         placeholder="https://www.amazon.com/..."
                                         error={Boolean(error)}
-                                        helperText={error || "Use a direct Amazon product link."}
+                                        helperText={error || "Paste the Amazon product link."}
                                         InputProps={{
                                             startAdornment: (
                                                 <InputAdornment position="start">
@@ -607,248 +467,278 @@ export default function MarketplacePage() {
                                             ),
                                         }}
                                         sx={{
+                                            flex: 1,
                                             "& .MuiOutlinedInput-root": {
-                                                borderRadius: 3,
-                                                bgcolor: "#fffdf9",
+                                                borderRadius: 999,
+                                                bgcolor: "background.default",
                                             },
                                         }}
                                     />
-
-                                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>
-                                        <Button
-                                            type="submit"
-                                            variant="contained"
-                                            size="large"
-                                            disabled={hasStarted || isSubmitting}
-                                            sx={{
-                                                flex: 1,
-                                                minHeight: 52,
-                                                borderRadius: 999,
-                                                textTransform: "none",
-                                                fontWeight: 800,
-                                                fontSize: "0.98rem",
-                                                bgcolor: "#11161d",
-                                                boxShadow: "0 18px 34px rgba(17,22,29,0.18)",
-                                                "&:hover": { bgcolor: "#11161d" },
-                                            }}
-                                        >
-                                            {isSubmitting ? "Starting..." : "Generate creative pack"}
-                                        </Button>
-                                        <Button
-                                            type="button"
-                                            variant="outlined"
-                                            size="large"
-                                            disabled={!hasStarted && !urlInput}
-                                            onClick={handleReset}
-                                            startIcon={<RefreshRoundedIcon />}
-                                            sx={{
-                                                minHeight: 52,
-                                                borderRadius: 999,
-                                                textTransform: "none",
-                                                fontWeight: 700,
-                                            }}
-                                        >
-                                            Use another link
-                                        </Button>
-                                    </Stack>
-
-                                    {hasStarted ? (
-                                        <Alert
-                                            severity={pipelineStatus === "failed" ? "error" : "info"}
-                                            icon={<AutoAwesomeRoundedIcon fontSize="inherit" />}
-                                            sx={{ borderRadius: 3, bgcolor: alpha("#5B61FF", 0.08) }}
-                                        >
-                                            {pipelineStatus === "failed"
-                                                ? pipelineError || "Marketplace generation failed."
-                                                : "Your creative pack layout is locked in. Scene images can start landing here progressively, followed by the final combined video."}
-                                        </Alert>
-                                    ) : null}
+                                    <Box>
+                                    <Button
+                                        type="submit"
+                                        variant="contained"
+                                        disabled={isSubmissionLocked}
+                                        sx={{
+                                            minHeight: 52,
+                                            borderRadius: 999,
+                                            textTransform: "none",
+                                            fontWeight: 800,
+                                            boxShadow: "0 10px 22px rgba(255, 106, 26, 0.24)",
+                                        }}
+                                    >
+                                        {isSubmitting ? "Starting..." : "Generate"}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outlined"
+                                        disabled={isSubmitting || (!hasBoundProject && !urlInput)}
+                                        onClick={handleReset}
+                                        startIcon={<RefreshRoundedIcon />}
+                                        sx={{
+                                            minWidth: { xs: "100%", xl: 180 },
+                                            minHeight: 52,
+                                            borderRadius: 999,
+                                            textTransform: "none",
+                                            fontWeight: 700,
+                                        }}
+                                    >
+                                        Reset
+                                    </Button>
+                                    </Box>
+                                    
                                 </Stack>
-                            </Paper>
-                        </Stack>
+
+                                {hasBoundProject ? (
+                                    <Alert severity={pipelineError ? "error" : "info"} sx={{ borderRadius: 2.5 }}>
+                                        {pipelineError
+                                            ? pipelineError
+                                            : hasPipelineActivity
+                                              ? progressLabel
+                                              : "Paste an Amazon URL to start this marketplace project."}
+                                    </Alert>
+                                ) : null}
+                            </Stack>
+                        </Paper>
 
                         <Paper
                             elevation={0}
                             sx={{
-                                borderRadius: 4,
-                                border: "1px solid rgba(17,22,29,0.08)",
-                                background: "rgba(255,255,255,0.72)",
-                                overflow: "hidden",
+                                p: { xs: 2, md: 2.5 },
+                                borderRadius: 3,
+                                border: "1px solid",
+                                borderColor: "divider",
+                                bgcolor: "background.paper",
                             }}
                         >
-                            <Box sx={{ p: { xs: 2, md: 2.5 } }}>
-                                <Stack direction={{ xs: "column", md: "row" }} spacing={2.5} justifyContent="space-between">
-                                    <Box sx={{ minWidth: 0 }}>
-                                        <Typography sx={{ fontWeight: 800, color: "#11161d", fontSize: "1rem" }}>Generation pipeline</Typography>
-                                        <Typography sx={{ mt: 0.7, color: "rgba(17,22,29,0.68)" }}>
-                                            The page is bound to the current project stage and polls while the marketplace pipeline is still running.
-                                        </Typography>
-                                    </Box>
-                                    <Chip
-                                        label={progressLabel}
-                                        sx={{
-                                            alignSelf: { xs: "flex-start", md: "center" },
-                                            bgcolor: hasStarted ? "rgba(255,132,64,0.12)" : "rgba(17,22,29,0.06)",
-                                            color: "#11161d",
-                                            borderRadius: 999,
-                                            fontWeight: 700,
-                                        }}
-                                    />
-                                </Stack>
+                            <Stack spacing={2}>
+                                <Typography sx={{ fontWeight: 700, color: "text.primary", fontSize: "1rem" }}>
+                                    Extracted product data
+                                </Typography>
 
-                                <LinearProgress
-                                    variant="indeterminate"
-                                    sx={{
-                                        mt: 2,
-                                        height: 8,
-                                        borderRadius: 999,
-                                        bgcolor: "rgba(17,22,29,0.06)",
-                                        visibility: shouldAnimateProgress ? "visible" : "hidden",
-                                        "& .MuiLinearProgress-bar": {
-                                            borderRadius: 999,
-                                            background: "linear-gradient(90deg, #FF8440 0%, #5B61FF 100%)",
-                                        },
-                                    }}
-                                />
-
-                                <Stack
-                                    direction={{ xs: "column", md: "row" }}
-                                    divider={<Divider flexItem orientation="vertical" sx={{ display: { xs: "none", md: "block" } }} />}
-                                    spacing={{ xs: 2, md: 0 }}
-                                    sx={{ mt: 2.5 }}
-                                >
-                                    {PIPELINE_STEPS.map((step) => (
-                                        <Box key={step.title} sx={{ flex: 1, pr: { md: 2.25 } }}>
-                                            <Typography sx={{ fontWeight: 800, color: "#11161d" }}>{step.title}</Typography>
-                                            <Typography sx={{ mt: 0.7, color: "rgba(17,22,29,0.66)", maxWidth: 320 }}>{step.body}</Typography>
-                                        </Box>
-                                    ))}
-                                </Stack>
-                            </Box>
-                        </Paper>
-
-                        {marketplace ? (
-                            <Paper
-                                elevation={0}
-                                sx={{
-                                    borderRadius: 4,
-                                    border: "1px solid rgba(17,22,29,0.08)",
-                                    background: "rgba(255,255,255,0.72)",
-                                    overflow: "hidden",
-                                }}
-                            >
-                                <Box sx={{ p: { xs: 2, md: 2.5 } }}>
-                                    <Stack spacing={2}>
-                                        <Box>
-                                            <Typography sx={{ fontWeight: 800, color: "#11161d", fontSize: "1rem" }}>
-                                                Extracted listing data
-                                            </Typography>
-                                            <Typography sx={{ mt: 0.7, color: "rgba(17,22,29,0.68)" }}>
-                                                This is the Amazon data currently stored for the project before scene and video generation.
-                                            </Typography>
-                                        </Box>
-
+                                {hasExtractedData ? (
+                                    <>
                                         <Box
                                             sx={{
                                                 display: "grid",
-                                                gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
+                                                gridTemplateColumns: { xs: "1fr", lg: "140px minmax(0, 1fr)" },
                                                 gap: 2,
+                                                alignItems: "start",
                                             }}
                                         >
-                                            <Paper elevation={0} sx={{ p: 2, borderRadius: 3, bgcolor: "#fffaf5", border: "1px solid rgba(17,22,29,0.08)" }}>
-                                                <Typography sx={{ fontWeight: 800, color: "#11161d" }}>Title</Typography>
-                                                <Typography sx={{ mt: 0.9, color: "rgba(17,22,29,0.78)" }}>
-                                                    {marketplace.product_title || "Waiting for extraction"}
-                                                </Typography>
-                                            </Paper>
-
-                                            <Paper elevation={0} sx={{ p: 2, borderRadius: 3, bgcolor: "#fffaf5", border: "1px solid rgba(17,22,29,0.08)" }}>
-                                                <Typography sx={{ fontWeight: 800, color: "#11161d" }}>Source URL</Typography>
-                                                <Typography sx={{ mt: 0.9, color: "rgba(17,22,29,0.78)", wordBreak: "break-word" }}>
-                                                    {marketplace.product_url || "Waiting for extraction"}
-                                                </Typography>
-                                            </Paper>
-
-                                            <Paper elevation={0} sx={{ p: 2, borderRadius: 3, bgcolor: "#fffaf5", border: "1px solid rgba(17,22,29,0.08)" }}>
-                                                <Typography sx={{ fontWeight: 800, color: "#11161d" }}>Description</Typography>
-                                                <Typography sx={{ mt: 0.9, color: "rgba(17,22,29,0.78)", whiteSpace: "pre-wrap" }}>
-                                                    {marketplace.product_description || "Waiting for extraction"}
-                                                </Typography>
-                                            </Paper>
-
-                                            <Paper elevation={0} sx={{ p: 2, borderRadius: 3, bgcolor: "#fffaf5", border: "1px solid rgba(17,22,29,0.08)" }}>
-                                                <Typography sx={{ fontWeight: 800, color: "#11161d" }}>Product image</Typography>
-                                                {marketplace.product_image_url ? (
-                                                    <Stack spacing={1.2} sx={{ mt: 0.9 }}>
-                                                        <Box
-                                                            component="img"
-                                                            src={marketplace.product_image_url}
-                                                            alt={marketplace.product_title || "Product image"}
-                                                            sx={{
-                                                                width: 96,
-                                                                height: 96,
-                                                                objectFit: "cover",
-                                                                borderRadius: 2,
-                                                                border: "1px solid rgba(17,22,29,0.08)",
-                                                            }}
-                                                        />
-                                                        <Typography sx={{ color: "rgba(17,22,29,0.68)", wordBreak: "break-word" }}>
-                                                            {marketplace.product_image_url}
-                                                        </Typography>
-                                                    </Stack>
+                                            <Box
+                                                sx={{
+                                                    width: { xs: "100%", lg: 140 },
+                                                    maxWidth: 140,
+                                                    aspectRatio: "1 / 1",
+                                                    borderRadius: 2.5,
+                                                    overflow: "hidden",
+                                                    border: "1px solid",
+                                                    borderColor: "divider",
+                                                    bgcolor: "background.default",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                }}
+                                            >
+                                                {marketplace?.product_image_url ? (
+                                                    <Box
+                                                        component="img"
+                                                        src={marketplace.product_image_url}
+                                                        alt={marketplace.product_title || "Product image"}
+                                                        sx={{
+                                                            width: "100%",
+                                                            height: "100%",
+                                                            objectFit: "cover",
+                                                            display: "block",
+                                                        }}
+                                                    />
                                                 ) : (
-                                                    <Typography sx={{ mt: 0.9, color: "rgba(17,22,29,0.78)" }}>
-                                                        Waiting for extraction
+                                                    <Typography sx={{ color: "text.disabled", fontSize: "0.82rem" }}>
+                                                        No image
                                                     </Typography>
                                                 )}
-                                            </Paper>
+                                            </Box>
+
+                                            <Stack spacing={1.5}>
+                                                <Box>
+                                                    <Typography sx={{ fontSize: "0.8rem", color: "text.secondary", mb: 0.5 }}>Title</Typography>
+                                                    <Typography sx={{ color: "text.primary", fontWeight: 700 }}>
+                                                        {marketplace?.product_title || "Waiting for extraction"}
+                                                    </Typography>
+                                                </Box>
+                                                <Box>
+                                                    <Typography sx={{ fontSize: "0.8rem", color: "text.secondary", mb: 0.5 }}>
+                                                        Source URL
+                                                    </Typography>
+                                                    <Typography sx={{ color: "text.secondary", wordBreak: "break-word" }}>
+                                                        {marketplace?.product_url || "Waiting for extraction"}
+                                                    </Typography>
+                                                </Box>
+                                                <Box>
+                                                    <Typography sx={{ fontSize: "0.8rem", color: "text.secondary", mb: 0.5 }}>
+                                                        Description
+                                                    </Typography>
+                                                    <Typography sx={{ color: "text.secondary", whiteSpace: "pre-wrap" }}>
+                                                        {marketplace?.product_description || "Waiting for extraction"}
+                                                    </Typography>
+                                                </Box>
+                                            </Stack>
                                         </Box>
 
-                                        <Paper elevation={0} sx={{ p: 2, borderRadius: 3, bgcolor: "#fffaf5", border: "1px solid rgba(17,22,29,0.08)" }}>
-                                            <Typography sx={{ fontWeight: 800, color: "#11161d" }}>Listing metadata</Typography>
-                                            <Typography sx={{ mt: 0.7, color: "rgba(17,22,29,0.62)" }}>
-                                                Raw normalized metadata saved from the listing extraction step.
-                                            </Typography>
+                                        <Box>
+                                            <Typography sx={{ fontSize: "0.8rem", color: "text.secondary", mb: 0.75 }}>Metadata</Typography>
                                             <Box
                                                 component="pre"
                                                 sx={{
-                                                    mt: 1.25,
-                                                    mb: 0,
+                                                    m: 0,
                                                     p: 1.5,
-                                                    borderRadius: 2,
-                                                    overflowX: "auto",
-                                                    bgcolor: "#11161d",
-                                                    color: "#F5EDE2",
+                                                    borderRadius: 2.5,
+                                                    border: "1px solid",
+                                                    borderColor: "divider",
+                                                    bgcolor: "background.default",
+                                                    color: "text.secondary",
                                                     fontSize: "0.78rem",
                                                     lineHeight: 1.45,
                                                     whiteSpace: "pre-wrap",
                                                     wordBreak: "break-word",
+                                                    maxHeight: 240,
+                                                    overflow: "auto",
                                                 }}
                                             >
                                                 {listingMetadataText || "Waiting for extraction"}
                                             </Box>
-                                        </Paper>
-                                    </Stack>
-                                </Box>
-                            </Paper>
-                        ) : null}
+                                        </Box>
+                                    </>
+                                ) : (
+                                    <Box
+                                        sx={{
+                                            minHeight: 240,
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            px: 4,
+                                            textAlign: "center",
+                                        }}
+                                    >
+                                        <Typography sx={{ color: "text.secondary", fontSize: "1rem" }}>
+                                            {extractedDataEmptyLabel}
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Stack>
+                        </Paper>
 
-                        <Box
+                        <Paper
+                            elevation={0}
                             sx={{
-                                display: "grid",
-                                gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))", xl: "repeat(3, minmax(0, 1fr))" },
-                                gap: 2,
+                                p: { xs: 2, md: 2.5 },
+                                borderRadius: 3,
+                                border: "1px solid",
+                                borderColor: "divider",
+                                bgcolor: "background.paper",
                             }}
                         >
-                            {SCENE_SLOTS.map((slot, index) => {
-                                const scene = storyboard?.scenes?.find((item) => item.scene_index === index + 1) ?? null;
-                                return <SceneCard key={slot.id} title={slot.title} caption={slot.caption} scene={scene} />;
-                            })}
-                        </Box>
+                            <Stack spacing={2}>
+                                <Stack
+                                    direction={{ xs: "column", md: "row" }}
+                                    spacing={1}
+                                    alignItems={{ xs: "flex-start", md: "center" }}
+                                    justifyContent="space-between"
+                                >
+                                    <Typography sx={{ fontWeight: 700, color: "text.primary", fontSize: "1rem" }}>
+                                        Generated assets
+                                    </Typography>
+                                    {hasBoundProject ? (
+                                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                                            <Chip
+                                                label={`${readySceneCount}/${SCENE_SLOTS.length} scenes`}
+                                                size="small"
+                                                sx={{
+                                                    borderRadius: 999,
+                                                    bgcolor: "action.hover",
+                                                    color: "text.primary",
+                                                    fontWeight: 700,
+                                                }}
+                                            />
+                                            <Chip
+                                                label={finalVideoStatus === "ready" ? "Video ready" : "Video pending"}
+                                                size="small"
+                                                sx={{
+                                                    borderRadius: 999,
+                                                    bgcolor:
+                                                        finalVideoStatus === "ready"
+                                                            ? alpha("#FF6A1A", 0.1)
+                                                            : alpha("#5B61FF", 0.1),
+                                                    color: finalVideoStatus === "ready" ? "#C85616" : "#5B61FF",
+                                                    fontWeight: 700,
+                                                }}
+                                            />
+                                        </Stack>
+                                    ) : null}
+                                </Stack>
 
-                        <VideoCard videoUrl={finalVideoUrl} status={finalVideoStatus} />
+                                {hasGeneratedAssets ? (
+                                    <>
+                                        <Box
+                                            sx={{
+                                                display: "grid",
+                                                gridTemplateColumns: {
+                                                    xs: "1fr",
+                                                    sm: "repeat(2, minmax(0, 1fr))",
+                                                    xl: "repeat(3, minmax(0, 1fr))",
+                                                },
+                                                gap: 2,
+                                            }}
+                                        >
+                                            {SCENE_SLOTS.map((slot, index) => {
+                                                const scene = storyboard?.scenes?.find((item) => item.scene_index === index + 1) ?? null;
+                                                return <SceneCard key={slot.id} title={slot.title} caption={slot.caption} scene={scene} />;
+                                            })}
+                                        </Box>
+
+                                        <VideoCard videoUrl={finalVideoUrl} status={finalVideoStatus} />
+                                    </>
+                                ) : (
+                                    <Box
+                                        sx={{
+                                            minHeight: 240,
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            px: 4,
+                                            textAlign: "center",
+                                        }}
+                                    >
+                                        <Typography sx={{ color: "text.secondary", fontSize: "1rem" }}>
+                                            {generatedAssetsEmptyLabel}
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Stack>
+                        </Paper>
                     </Stack>
-                </Container>
+                </Box>
             </Box>
         </Box>
     );

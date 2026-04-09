@@ -25,6 +25,16 @@ export type MarketplaceStoryboardState = {
     listing_metadata?: Record<string, unknown> | null;
     selected_scene_indices?: number[];
     pipeline_status?: "idle" | "running" | "completed" | "failed";
+    pipeline_step?:
+        | "extracting_listing"
+        | "listing_extracted"
+        | "generating_storyboard"
+        | "generating_scene_videos"
+        | "combining_video"
+        | "completed"
+        | "failed"
+        | string
+        | null;
     pipeline_error?: string | null;
     final_video_url?: string | null;
     final_video_status?: "not_started" | "processing" | "ready" | "failed";
