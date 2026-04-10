@@ -1,7 +1,16 @@
 import { useMutation, useQuery, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
 
 import { queryKeys } from "@/api/queryKeys";
-import { createProject, deleteProject, getProject, listProjects, ProjectResponse, startMarketplaceProject } from "./index";
+import {
+    createProject,
+    deleteProject,
+    extractMarketplaceListing,
+    getProject,
+    initializeMarketplaceProjectBrief,
+    listProjects,
+    ProjectResponse,
+    startMarketplaceProject,
+} from "./index";
 
 type ProjectQueryOptions = Omit<UseQueryOptions<ProjectResponse>, "queryKey" | "queryFn" | "enabled">;
 
@@ -60,6 +69,30 @@ export function useStartMarketplaceProject() {
             queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(variables.projectId) });
             queryClient.invalidateQueries({ queryKey: queryKeys.projects.storyboard(variables.projectId) });
             queryClient.invalidateQueries({ queryKey: queryKeys.projects.list() });
+        },
+    });
+}
+
+export function useExtractMarketplaceListing() {
+    return useMutation({
+        mutationFn: ({ productUrl }: { productUrl: string }) => extractMarketplaceListing({ product_url: productUrl }),
+    });
+}
+
+export function useInitializeMarketplaceProjectBrief() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ projectId, payload }: { projectId: string; payload: Parameters<typeof initializeMarketplaceProjectBrief>[1] }) =>
+            initializeMarketplaceProjectBrief(projectId, payload),
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.projects.list() });
+            if (data?.short_id) {
+                queryClient.setQueryData(queryKeys.projects.detail(data.short_id), data);
+            }
+            if (data?.uuid) {
+                queryClient.setQueryData(queryKeys.projects.detail(data.uuid), data);
+            }
         },
     });
 }

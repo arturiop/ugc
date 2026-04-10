@@ -55,6 +55,24 @@ export type MarketplaceStartRequest = {
     product_url: string;
 };
 
+export type MarketplaceExtractResponse = {
+    product_url: string;
+    product_title: string;
+    product_description: string;
+    product_image_url: string;
+};
+
+export type MarketplaceBriefInitRequest = {
+    source: "amazon" | "manual";
+    product_url?: string | null;
+    product_title: string;
+    product_description: string;
+    product_image_url?: string | null;
+    vibe?: string | null;
+    image_asset_ids?: number[];
+    listing_metadata?: Record<string, unknown>;
+};
+
 export type MarketplaceStartResponse = {
     started: boolean;
     project_id: string;
@@ -93,6 +111,22 @@ export async function deleteProject(projectId: string) {
 export async function startMarketplaceProject(projectId: string, payload: MarketplaceStartRequest) {
     return requestJson<MarketplaceStartResponse>({
         path: `/api/v1/projects/${projectId}/marketplace/start`,
+        method: "POST",
+        body: payload,
+    });
+}
+
+export async function extractMarketplaceListing(payload: MarketplaceStartRequest) {
+    return requestJson<MarketplaceExtractResponse>({
+        path: "/api/v1/projects/marketplace/extract",
+        method: "POST",
+        body: payload,
+    });
+}
+
+export async function initializeMarketplaceProjectBrief(projectId: string, payload: MarketplaceBriefInitRequest) {
+    return requestJson<ProjectResponse>({
+        path: `/api/v1/projects/${projectId}/marketplace/brief`,
         method: "POST",
         body: payload,
     });

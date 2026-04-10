@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
     Alert,
@@ -13,11 +13,12 @@ import {
 } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
-import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
 import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
+import AddPhotoAlternateRoundedIcon from "@mui/icons-material/AddPhotoAlternateRounded";
 import AppHeader from "@/components/AppHeader";
-import { ProjectType } from "@/api/projects";
-import { useCreateProject, useProject, useStartMarketplaceProject } from "@/api/projects/hooks";
+import { uploadProjectAsset } from "@/api/assets";
+import { ProjectType, type MarketplaceExtractResponse } from "@/api/projects";
+import { useCreateProject, useExtractMarketplaceListing, useInitializeMarketplaceProjectBrief } from "@/api/projects/hooks";
 import { useProjectStoryboard } from "@/api/storyboard/hooks";
 import type { StoryboardScene } from "@/api/storyboard";
 
@@ -26,6 +27,21 @@ type ResultSlot = {
     title: string;
     caption: string;
 };
+
+type ManualImage = {
+    id: string;
+    file: File;
+    previewUrl: string;
+};
+
+type ManualProductDraft = {
+    title: string;
+    description: string;
+    vibe: string;
+    images: ManualImage[];
+};
+
+type ExtractedListingState = MarketplaceExtractResponse | null;
 
 const SCENE_SLOTS: ResultSlot[] = [
     { id: "scene-1", title: "Scene 1", caption: "Marketplace hero frame" },
@@ -52,31 +68,17 @@ function isAmazonUrl(value: string) {
     }
 }
 
-function prettyJson(value: Record<string, unknown> | null | undefined) {
-    if (!value || Object.keys(value).length === 0) return "";
-    return JSON.stringify(value, null, 2);
+function createEmptyManualDraft(): ManualProductDraft {
+    return {
+        title: "",
+        description: "",
+        vibe: "",
+        images: [],
+    };
 }
 
-function resolveProgressLabel(
-    pipelineStatus: "idle" | "running" | "completed" | "failed" | undefined,
-    currentStage: string | null | undefined,
-    pipelineStep: string | null | undefined,
-    hasPipelineActivity: boolean
-) {
-    if (!hasPipelineActivity && pipelineStatus !== "failed" && pipelineStatus !== "completed") return "Idle";
-    if (pipelineStatus === "failed") return "Failed";
-    if (pipelineStatus === "completed") return "Ready";
-    if (pipelineStep === "extracting_listing") return "Extracting";
-    if (pipelineStep === "listing_extracted") return "Extracted";
-    if (pipelineStep === "generating_storyboard") return "Building scenes";
-    if (pipelineStep === "generating_scene_videos") return "Rendering videos";
-    if (pipelineStep === "combining_video") return "Combining";
-    if (currentStage === "brand_context") return "Extracting";
-    if (currentStage === "storyboard") return "Building scenes";
-    if (currentStage === "scene_generation") return "Rendering videos";
-    if (currentStage === "combine_scenes") return "Combining";
-    if (pipelineStatus === "running") return "Processing";
-    return "Idle";
+function releaseManualImages(images: ManualImage[]) {
+    images.forEach((image) => URL.revokeObjectURL(image.previewUrl));
 }
 
 function SceneCard({
@@ -288,9 +290,14 @@ export default function MarketplacePage() {
     const projectId = searchParams.get("projectId");
     const [urlInput, setUrlInput] = useState("");
     const [error, setError] = useState("");
+    const [manualDraft, setManualDraft] = useState<ManualProductDraft>(() => createEmptyManualDraft());
+    const [savedManualDraft, setSavedManualDraft] = useState<ManualProductDraft | null>(null);
+    const [extractedListing, setExtractedListing] = useState<ExtractedListingState>(null);
+    const [isCreatingProject, setIsCreatingProject] = useState(false);
 
     const createProject = useCreateProject();
-    const startMarketplaceProject = useStartMarketplaceProject();
+    const extractMarketplaceListing = useExtractMarketplaceListing();
+    const initializeMarketplaceProjectBrief = useInitializeMarketplaceProjectBrief();
 
     const storyboardQuery = useProjectStoryboard(projectId, {
         refetchInterval: (query) => {
@@ -298,57 +305,51 @@ export default function MarketplacePage() {
             return pipelineStatus === "running" ? 25000 : false;
         },
     });
-    const projectQuery = useProject(projectId, {
-        refetchInterval: () => {
-            const pipelineStatus = storyboardQuery.data?.marketplace?.pipeline_status;
-            return pipelineStatus === "running" ? 25000 : false;
-        },
-    });
-
     const storyboard = storyboardQuery.data?.storyboard ?? null;
     const marketplace = storyboardQuery.data?.marketplace ?? null;
     const pipelineStatus = marketplace?.pipeline_status;
-    const pipelineStep = marketplace?.pipeline_step;
     const finalVideoStatus = marketplace?.final_video_status ?? "not_started";
     const finalVideoUrl = marketplace?.final_video_url ?? null;
     const hasBoundProject = Boolean(projectId);
-    const isSubmitting = createProject.isPending || startMarketplaceProject.isPending;
-    const hasPipelineActivity = Boolean(
-        marketplace?.product_url || (pipelineStatus && pipelineStatus !== "idle")
-    );
-    const isSubmissionLocked = Boolean(
-        pipelineStatus === "running" || pipelineStatus === "completed" || marketplace?.product_url || isSubmitting
-    );
-    const progressLabel = resolveProgressLabel(
-        pipelineStatus,
-        projectQuery.data?.current_stage,
-        pipelineStep,
-        hasPipelineActivity
-    );
+    const isLocked = hasBoundProject;
+    const isSubmitting = extractMarketplaceListing.isPending;
+    const manualTitle = manualDraft.title.trim();
+    const manualDescription = manualDraft.description.trim();
+    const manualVibe = manualDraft.vibe.trim();
+    const imageUrlFromState = marketplace?.product_image_url || extractedListing?.product_image_url || null;
+    const canCreateProjectFromCurrentData = Boolean(manualTitle && manualDescription && (manualDraft.images.length > 0 || imageUrlFromState));
+    const hasPipelineActivity = Boolean(pipelineStatus && pipelineStatus !== "idle");
+    const isSubmissionLocked = Boolean(isSubmitting || isLocked);
+    const progressLabel =
+        isCreatingProject
+            ? "Creating project"
+            : isSubmitting
+              ? "Extracting"
+              : isLocked
+                ? "Project created"
+                : canCreateProjectFromCurrentData
+                  ? "Ready"
+                  : extractedListing
+                    ? "Preview ready"
+                : "Idle";
     const pipelineError = marketplace?.pipeline_error || error;
-    const listingMetadataText = useMemo(() => prettyJson(marketplace?.listing_metadata ?? null), [marketplace?.listing_metadata]);
     const readySceneCount = storyboard?.scenes?.filter((scene) => Boolean(scene.generated_image_url)).length ?? 0;
-    const hasExtractedData = Boolean(
-        marketplace?.product_title ||
-            marketplace?.product_description ||
-            marketplace?.product_image_url ||
-            marketplace?.product_url ||
-            listingMetadataText
-    );
     const hasGeneratedAssets = readySceneCount > 0 || Boolean(finalVideoUrl);
-    const extractedDataEmptyLabel =
-        hasBoundProject && hasPipelineActivity
-            ? "Product data will appear here after extraction."
-            : "Submit an Amazon URL to extract product data.";
+    const displayImages = savedManualDraft?.images || manualDraft.images;
     const generatedAssetsEmptyLabel =
         hasBoundProject && hasPipelineActivity
             ? "Assets will appear here as scenes finish rendering."
             : "Assets will appear here after extraction.";
 
     useEffect(() => {
-        if (!marketplace?.product_url) return;
-        setUrlInput((current) => current || marketplace.product_url || "");
-    }, [marketplace?.product_url]);
+        return () => {
+            const uniqueUrls = new Set([
+                ...manualDraft.images.map((image) => image.previewUrl),
+                ...(savedManualDraft?.images ?? []).map((image) => image.previewUrl),
+            ]);
+            uniqueUrls.forEach((url) => URL.revokeObjectURL(url));
+        };
+    }, [manualDraft.images, savedManualDraft]);
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -366,36 +367,108 @@ export default function MarketplacePage() {
         setError("");
 
         try {
-            let nextProjectId = projectId;
-            if (!nextProjectId) {
-                const project = await createProject.mutateAsync(ProjectType.MarketplaceCreatives);
-                nextProjectId = project?.short_id || project?.uuid;
-                if (!nextProjectId) {
-                    throw new Error("Project created but no project id was returned.");
-                }
-
-                const nextParams = new URLSearchParams(searchParams);
-                nextParams.set("projectId", nextProjectId);
-                setSearchParams(nextParams, { replace: true });
-            }
-
-            await startMarketplaceProject.mutateAsync({
-                projectId: nextProjectId,
+            const listing = await extractMarketplaceListing.mutateAsync({
                 productUrl: normalized,
             });
-            setUrlInput(normalized);
+            setExtractedListing(listing);
+            setUrlInput(listing.product_url);
+            setManualDraft((current) => ({
+                ...current,
+                title: listing.product_title,
+                description: listing.product_description,
+            }));
         } catch (submissionError) {
-            setError(submissionError instanceof Error ? submissionError.message : "Failed to start marketplace generation.");
+            setError(submissionError instanceof Error ? submissionError.message : "Failed to extract marketplace listing.");
         }
     };
 
-    const handleReset = () => {
+    const handleManualFieldChange =
+        (field: keyof Omit<ManualProductDraft, "images">) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            setManualDraft((current) => ({ ...current, [field]: event.target.value }));
+        };
+
+    const handleManualImagesChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(event.target.files ?? []);
+        if (files.length === 0) return;
+
+        const nextImages = files.map((file, index) => ({
+            id: `${file.name}-${file.size}-${file.lastModified}-${index}`,
+            file,
+            previewUrl: URL.createObjectURL(file),
+        }));
+
+        setManualDraft((current) => ({
+            ...current,
+            images: [...current.images, ...nextImages],
+        }));
+        event.target.value = "";
+    };
+
+    const handleCreateProjectFromBrief = async () => {
+        if (!canCreateProjectFromCurrentData || isCreatingProject) return;
+
         setError("");
-        setUrlInput("");
-        if (!projectId) return;
-        const nextParams = new URLSearchParams(searchParams);
-        nextParams.delete("projectId");
-        setSearchParams(nextParams, { replace: true });
+        setIsCreatingProject(true);
+
+        try {
+            const project = await createProject.mutateAsync(ProjectType.MarketplaceCreatives);
+            const nextProjectId = project?.short_id || project?.uuid;
+            if (!nextProjectId) {
+                throw new Error("Project created but no project id was returned.");
+            }
+
+            if (manualDraft.images.length > 0) {
+                const uploadedAssets = await Promise.all(
+                    manualDraft.images.map((image) => uploadProjectAsset(nextProjectId, image.file, "product"))
+                );
+                await initializeMarketplaceProjectBrief.mutateAsync({
+                    projectId: nextProjectId,
+                    payload: {
+                        source: extractedListing ? "amazon" : "manual",
+                        product_url: extractedListing?.product_url || null,
+                        product_title: manualTitle,
+                        product_description: manualDescription,
+                        product_image_url: extractedListing?.product_image_url || null,
+                        vibe: manualVibe || null,
+                        image_asset_ids: uploadedAssets.map((asset) => asset.id),
+                        listing_metadata:
+                            extractedListing?.product_image_url
+                                ? {
+                                      image_candidates: [extractedListing.product_image_url],
+                                  }
+                                : {},
+                    },
+                });
+                setSavedManualDraft({
+                    title: manualTitle,
+                    description: manualDescription,
+                    vibe: manualVibe,
+                    images: manualDraft.images,
+                });
+            } else if (extractedListing) {
+                await initializeMarketplaceProjectBrief.mutateAsync({
+                    projectId: nextProjectId,
+                    payload: {
+                        source: "amazon",
+                        product_url: extractedListing.product_url,
+                        product_title: extractedListing.product_title,
+                        product_description: extractedListing.product_description,
+                        product_image_url: extractedListing.product_image_url,
+                        listing_metadata: {
+                            image_candidates: [extractedListing.product_image_url],
+                        },
+                    },
+                });
+            }
+
+            const nextParams = new URLSearchParams(searchParams);
+            nextParams.set("projectId", nextProjectId);
+            setSearchParams(nextParams, { replace: true });
+        } catch (creationError) {
+            setError(creationError instanceof Error ? creationError.message : "Failed to create marketplace project.");
+        } finally {
+            setIsCreatingProject(false);
+        }
     };
 
     return (
@@ -450,202 +523,284 @@ export default function MarketplacePage() {
                                     </Stack>
                                 </Stack>
 
-                                <Stack direction={{ xs: "column", xl: "row" }} spacing={1.25}>
-                                    <TextField
-                                        fullWidth
-                                        value={urlInput}
-                                        disabled={isSubmissionLocked}
-                                        onChange={(event) => setUrlInput(event.target.value)}
-                                        placeholder="https://www.amazon.com/..."
-                                        error={Boolean(error)}
-                                        helperText={error || "Paste the Amazon product link."}
-                                        InputProps={{
-                                            startAdornment: (
-                                                <InputAdornment position="start">
-                                                    <LinkRoundedIcon sx={{ color: "rgba(17,22,29,0.42)" }} />
-                                                </InputAdornment>
-                                            ),
-                                        }}
-                                        sx={{
-                                            flex: 1,
-                                            "& .MuiOutlinedInput-root": {
-                                                borderRadius: 999,
-                                                bgcolor: "background.default",
-                                            },
-                                        }}
-                                    />
-                                    <Box>
-                                    <Button
-                                        type="submit"
-                                        variant="contained"
-                                        disabled={isSubmissionLocked}
-                                        sx={{
-                                            minHeight: 52,
-                                            borderRadius: 999,
-                                            textTransform: "none",
-                                            fontWeight: 800,
-                                            boxShadow: "0 10px 22px rgba(255, 106, 26, 0.24)",
-                                        }}
+                                <Stack spacing={2}>
+                                    <Stack
+                                        direction={{ xs: "column", lg: "row" }}
+                                        spacing={1.25}
+                                        alignItems={{ xs: "stretch", lg: "flex-start" }}
                                     >
-                                        {isSubmitting ? "Starting..." : "Generate"}
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="outlined"
-                                        disabled={isSubmitting || (!hasBoundProject && !urlInput)}
-                                        onClick={handleReset}
-                                        startIcon={<RefreshRoundedIcon />}
-                                        sx={{
-                                            minWidth: { xs: "100%", xl: 180 },
-                                            minHeight: 52,
-                                            borderRadius: 999,
-                                            textTransform: "none",
-                                            fontWeight: 700,
-                                        }}
-                                    >
-                                        Reset
-                                    </Button>
-                                    </Box>
-                                    
-                                </Stack>
-
-                                {hasBoundProject ? (
-                                    <Alert severity={pipelineError ? "error" : "info"} sx={{ borderRadius: 2.5 }}>
-                                        {pipelineError
-                                            ? pipelineError
-                                            : hasPipelineActivity
-                                              ? progressLabel
-                                              : "Paste an Amazon URL to start this marketplace project."}
-                                    </Alert>
-                                ) : null}
-                            </Stack>
-                        </Paper>
-
-                        <Paper
-                            elevation={0}
-                            sx={{
-                                p: { xs: 2, md: 2.5 },
-                                borderRadius: 3,
-                                border: "1px solid",
-                                borderColor: "divider",
-                                bgcolor: "background.paper",
-                            }}
-                        >
-                            <Stack spacing={2}>
-                                <Typography sx={{ fontWeight: 700, color: "text.primary", fontSize: "1rem" }}>
-                                    Extracted product data
-                                </Typography>
-
-                                {hasExtractedData ? (
-                                    <>
-                                        <Box
+                                        <TextField
+                                            fullWidth
+                                            value={urlInput}
+                                            disabled={isSubmissionLocked}
+                                            onChange={(event) => setUrlInput(event.target.value)}
+                                            placeholder="https://www.amazon.com/..."
+                                            error={Boolean(error) && !manualTitle && !manualDescription}
+                                            helperText="Paste the Amazon product link and extract data into the fields below."
+                                            InputProps={{
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <LinkRoundedIcon sx={{ color: "rgba(17,22,29,0.42)" }} />
+                                                    </InputAdornment>
+                                                ),
+                                            }}
                                             sx={{
-                                                display: "grid",
-                                                gridTemplateColumns: { xs: "1fr", lg: "140px minmax(0, 1fr)" },
-                                                gap: 2,
-                                                alignItems: "start",
+                                                flex: 1,
+                                                "& .MuiOutlinedInput-root": {
+                                                    borderRadius: 3,
+                                                    bgcolor: "background.default",
+                                                    minHeight: 56,
+                                                },
+                                            }}
+                                        />
+                                        <Button
+                                            type="submit"
+                                            variant="contained"
+                                            disabled={isSubmissionLocked}
+                                            sx={{
+                                                minWidth: { xs: "100%", lg: 132 },
+                                                minHeight: 44,
+                                                borderRadius: 999,
+                                                px: 2.25,
+                                                textTransform: "none",
+                                                fontWeight: 800,
+                                                boxShadow: "0 8px 18px rgba(255, 106, 26, 0.18)",
                                             }}
                                         >
+                                            {isSubmitting ? "Extracting..." : "Extract data"}
+                                        </Button>
+                                    </Stack>
+
+                                    <Box
+                                        sx={{
+                                            display: "grid",
+                                            gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1fr) minmax(0, 1fr)" },
+                                            gap: 2,
+                                        }}
+                                    >
+                                        <TextField
+                                            fullWidth
+                                            disabled={isLocked}
+                                            label="Product title"
+                                            value={manualDraft.title}
+                                            onChange={handleManualFieldChange("title")}
+                                            error={Boolean(error) && !manualTitle}
+                                            placeholder="Hydrating magnesium body spray"
+                                        />
+                                        <TextField
+                                            fullWidth
+                                            disabled={isLocked}
+                                            label="Expected vibe or style"
+                                            value={manualDraft.vibe}
+                                            onChange={handleManualFieldChange("vibe")}
+                                            placeholder="Clean, natural light, creator-style, premium but casual"
+                                        />
+                                        <TextField
+                                            fullWidth
+                                            multiline
+                                            minRows={5}
+                                            disabled={isLocked}
+                                            label="Product description"
+                                            value={manualDraft.description}
+                                            onChange={handleManualFieldChange("description")}
+                                            error={Boolean(error) && !manualDescription}
+                                            placeholder="What the product is, key benefits, who it is for, and what should stand out."
+                                            sx={{ gridColumn: { xs: "auto", lg: "1 / -1" } }}
+                                        />
+                                    </Box>
+
+                                    <Stack spacing={1.25}>
+                                        <Stack
+                                            direction={{ xs: "column", sm: "row" }}
+                                            spacing={1.25}
+                                            justifyContent="space-between"
+                                            alignItems={{ xs: "flex-start", sm: "center" }}
+                                        >
+                                            <Box>
+                                                <Typography sx={{ color: "text.primary", fontWeight: 700, fontSize: "0.95rem" }}>
+                                                    Product image
+                                                </Typography>
+                                                <Typography sx={{ color: "text.secondary", fontSize: "0.84rem", mt: 0.5 }}>
+                                                    Extract from Amazon or upload one image manually before creating the project.
+                                                </Typography>
+                                            </Box>
+                                            {!isLocked ? (
+                                                <Button
+                                                    component="label"
+                                                    variant="outlined"
+                                                    startIcon={<AddPhotoAlternateRoundedIcon />}
+                                                    sx={{
+                                                        borderRadius: 999,
+                                                        textTransform: "none",
+                                                        fontWeight: 700,
+                                                    }}
+                                                >
+                                                    Add image
+                                                    <Box
+                                                        component="input"
+                                                        type="file"
+                                                        accept="image/*"
+                                                        multiple
+                                                        onChange={handleManualImagesChange}
+                                                        sx={{ display: "none" }}
+                                                    />
+                                                </Button>
+                                            ) : null}
+                                        </Stack>
+
+                                        {isLocked && marketplace?.product_image_url ? (
                                             <Box
                                                 sx={{
-                                                    width: { xs: "100%", lg: 140 },
-                                                    maxWidth: 140,
+                                                    width: "100%",
+                                                    maxWidth: 360,
                                                     aspectRatio: "1 / 1",
                                                     borderRadius: 2.5,
                                                     overflow: "hidden",
                                                     border: "1px solid",
                                                     borderColor: "divider",
                                                     bgcolor: "background.default",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
                                                 }}
                                             >
-                                                {marketplace?.product_image_url ? (
-                                                    <Box
-                                                        component="img"
-                                                        src={marketplace.product_image_url}
-                                                        alt={marketplace.product_title || "Product image"}
-                                                        sx={{
-                                                            width: "100%",
-                                                            height: "100%",
-                                                            objectFit: "cover",
-                                                            display: "block",
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <Typography sx={{ color: "text.disabled", fontSize: "0.82rem" }}>
-                                                        No image
-                                                    </Typography>
-                                                )}
+                                                <Box
+                                                    component="img"
+                                                    src={marketplace.product_image_url}
+                                                    alt={manualDraft.title || "Product image"}
+                                                    sx={{
+                                                        width: "100%",
+                                                        height: "100%",
+                                                        objectFit: "contain",
+                                                        display: "block",
+                                                        p: 1,
+                                                        bgcolor: "background.paper",
+                                                    }}
+                                                />
                                             </Box>
-
-                                            <Stack spacing={1.5}>
-                                                <Box>
-                                                    <Typography sx={{ fontSize: "0.8rem", color: "text.secondary", mb: 0.5 }}>Title</Typography>
-                                                    <Typography sx={{ color: "text.primary", fontWeight: 700 }}>
-                                                        {marketplace?.product_title || "Waiting for extraction"}
-                                                    </Typography>
-                                                </Box>
-                                                <Box>
-                                                    <Typography sx={{ fontSize: "0.8rem", color: "text.secondary", mb: 0.5 }}>
-                                                        Source URL
-                                                    </Typography>
-                                                    <Typography sx={{ color: "text.secondary", wordBreak: "break-word" }}>
-                                                        {marketplace?.product_url || "Waiting for extraction"}
-                                                    </Typography>
-                                                </Box>
-                                                <Box>
-                                                    <Typography sx={{ fontSize: "0.8rem", color: "text.secondary", mb: 0.5 }}>
-                                                        Description
-                                                    </Typography>
-                                                    <Typography sx={{ color: "text.secondary", whiteSpace: "pre-wrap" }}>
-                                                        {marketplace?.product_description || "Waiting for extraction"}
-                                                    </Typography>
-                                                </Box>
-                                            </Stack>
-                                        </Box>
-
-                                        <Box>
-                                            <Typography sx={{ fontSize: "0.8rem", color: "text.secondary", mb: 0.75 }}>Metadata</Typography>
+                                        ) : imageUrlFromState && manualDraft.images.length === 0 ? (
                                             <Box
-                                                component="pre"
                                                 sx={{
-                                                    m: 0,
-                                                    p: 1.5,
+                                                    width: "100%",
+                                                    maxWidth: 360,
+                                                    aspectRatio: "1 / 1",
                                                     borderRadius: 2.5,
+                                                    overflow: "hidden",
                                                     border: "1px solid",
                                                     borderColor: "divider",
                                                     bgcolor: "background.default",
-                                                    color: "text.secondary",
-                                                    fontSize: "0.78rem",
-                                                    lineHeight: 1.45,
-                                                    whiteSpace: "pre-wrap",
-                                                    wordBreak: "break-word",
-                                                    maxHeight: 240,
-                                                    overflow: "auto",
                                                 }}
                                             >
-                                                {listingMetadataText || "Waiting for extraction"}
+                                                <Box
+                                                    component="img"
+                                                    src={imageUrlFromState}
+                                                    alt={manualDraft.title || "Product image"}
+                                                    sx={{
+                                                        width: "100%",
+                                                        height: "100%",
+                                                        objectFit: "contain",
+                                                        display: "block",
+                                                        p: 1,
+                                                        bgcolor: "background.paper",
+                                                    }}
+                                                />
                                             </Box>
-                                        </Box>
-                                    </>
-                                ) : (
-                                    <Box
+                                        ) : manualDraft.images.length > 0 ? (
+                                            <Box
+                                                sx={{
+                                                    display: "grid",
+                                                    gridTemplateColumns: {
+                                                        xs: "repeat(2, minmax(0, 1fr))",
+                                                        md: "repeat(4, minmax(0, 1fr))",
+                                                    },
+                                                    gap: 1.25,
+                                                }}
+                                            >
+                                                {displayImages.map((image) => (
+                                                    <Box
+                                                        key={image.id}
+                                                        sx={{
+                                                            aspectRatio: "1 / 1",
+                                                            borderRadius: 2.5,
+                                                            overflow: "hidden",
+                                                            border: "1px solid",
+                                                            borderColor: "divider",
+                                                            bgcolor: "background.default",
+                                                        }}
+                                                    >
+                                                        <Box
+                                                            component="img"
+                                                            src={image.previewUrl}
+                                                            alt={image.file.name}
+                                                            sx={{
+                                                                width: "100%",
+                                                                height: "100%",
+                                                                objectFit: "cover",
+                                                                display: "block",
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                        ) : (
+                                            <Box
+                                                sx={{
+                                                    minHeight: 120,
+                                                    borderRadius: 2.5,
+                                                    border: "1px dashed",
+                                                    borderColor: "divider",
+                                                    bgcolor: "background.default",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    px: 3,
+                                                    textAlign: "center",
+                                                }}
+                                            >
+                                                <Typography sx={{ color: "text.secondary", fontSize: "0.92rem" }}>
+                                                    No image yet.
+                                                </Typography>
+                                            </Box>
+                                        )}
+                                    </Stack>
+
+                                    {!isLocked ? (
+                                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} justifyContent="flex-end" sx={{ width: "100%" }}>
+                                            <Button
+                                                type="button"
+                                                variant="outlined"
+                                                disabled={!canCreateProjectFromCurrentData || isCreatingProject}
+                                                onClick={handleCreateProjectFromBrief}
+                                                sx={{
+                                                    minWidth: { xs: "100%", sm: 136 },
+                                                    minHeight: 44,
+                                                    borderRadius: 999,
+                                                    px: 2,
+                                                    textTransform: "none",
+                                                    fontWeight: 700,
+                                                    borderColor: alpha("#FF6A1A", 0.24),
+                                                    color: "#C85616",
+                                                    bgcolor: alpha("#FF6A1A", 0.04),
+                                                }}
+                                            >
+                                                {isCreatingProject ? "Creating..." : "Build the creative set"}
+                                            </Button>
+                                        </Stack>
+                                    ) : null}
+                                </Stack>
+
+                                {pipelineError || hasPipelineActivity ? (
+                                    <Alert
+                                        severity={pipelineError ? "error" : "info"}
                                         sx={{
-                                            minHeight: 240,
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            px: 4,
-                                            textAlign: "center",
+                                            borderRadius: 2.5,
+                                            bgcolor: pipelineError ? alpha("#d32f2f", 0.06) : alpha("#5B61FF", 0.08),
+                                            color: pipelineError ? "error.main" : "#3E47D6",
+                                            "& .MuiAlert-icon": {
+                                                color: pipelineError ? "error.main" : "#5B61FF",
+                                            },
                                         }}
                                     >
-                                        <Typography sx={{ color: "text.secondary", fontSize: "1rem" }}>
-                                            {extractedDataEmptyLabel}
-                                        </Typography>
-                                    </Box>
-                                )}
+                                        {pipelineError || progressLabel}
+                                    </Alert>
+                                ) : null}
                             </Stack>
                         </Paper>
 

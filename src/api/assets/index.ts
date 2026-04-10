@@ -1,4 +1,4 @@
-import { requestJson } from "@/api/httpClient";
+import { buildUrl, getDefaultHeaders, requestJson } from "@/api/httpClient";
 
 export type AssetLabel = "product" | "logo" | "brandbook" | "reference";
 
@@ -44,4 +44,28 @@ export async function deleteProjectAsset(projectId: string, assetId: number, sig
         method: "DELETE",
         signal,
     });
+}
+
+export async function uploadProjectAsset(projectId: string, file: File, label: AssetLabel = "product") {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("label", label);
+
+    const response = await fetch(buildUrl(`/api/v1/projects/${projectId}/assets/upload`), {
+        method: "POST",
+        headers: getDefaultHeaders(),
+        body: form,
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to upload asset.");
+    }
+
+    const payload = (await response.json()) as { asset: AssetItem };
+    if (!payload.asset) {
+        throw new Error("Upload response missing asset data.");
+    }
+
+    return payload.asset;
 }
