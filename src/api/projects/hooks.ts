@@ -2,13 +2,13 @@ import { useMutation, useQuery, useQueryClient, type UseQueryOptions } from "@ta
 
 import { queryKeys } from "@/api/queryKeys";
 import {
+    createAndSubmitMarketplaceProject,
     createProject,
     deleteProject,
     extractMarketplaceListing,
     getProject,
     listProjects,
     ProjectResponse,
-    submitMarketplaceProject,
 } from "./index";
 
 type ProjectQueryOptions = Omit<UseQueryOptions<ProjectResponse>, "queryKey" | "queryFn" | "enabled">;
@@ -58,16 +58,17 @@ export function useDeleteProject() {
     });
 }
 
-export function useSubmitMarketplaceProject() {
+export function useCreateAndSubmitMarketplaceProject() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ projectId, payload }: { projectId: string; payload: Parameters<typeof submitMarketplaceProject>[1] }) =>
-            submitMarketplaceProject(projectId, payload),
-        onSuccess: (_data, variables) => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(variables.projectId) });
-            queryClient.invalidateQueries({ queryKey: queryKeys.projects.storyboard(variables.projectId) });
+        mutationFn: createAndSubmitMarketplaceProject,
+        onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: queryKeys.projects.list() });
+            if (data?.project_id) {
+                queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(data.project_id) });
+                queryClient.invalidateQueries({ queryKey: queryKeys.projects.storyboard(data.project_id) });
+            }
         },
     });
 }

@@ -1,4 +1,5 @@
 import { requestJson } from "@/api/httpClient";
+import { buildUrl, getDefaultHeaders } from "@/api/httpClient";
 
 export type ProjectStageEntry = {
     stage: string;
@@ -62,20 +63,18 @@ export type MarketplaceExtractResponse = {
     product_image_url: string;
 };
 
-export type MarketplaceSubmitRequest = {
+export type MarketplaceSubmitResponse = {
+    project_id: string;
+};
+
+export type CreateMarketplaceProjectPayload = {
     source: "amazon_extracted" | "manual";
     product_title: string;
     product_description: string;
     style?: string | null;
-    image_asset_ids?: number[];
     image_urls?: string[];
     listing_metadata?: Record<string, unknown>;
-};
-
-export type MarketplaceSubmitResponse = {
-    started: boolean;
-    project_id: string;
-    pipeline_status: "running" | "completed";
+    files?: File[];
 };
 
 export async function listProjects(signal?: AbortSignal) {
@@ -115,10 +114,34 @@ export async function extractMarketplaceListing(payload: MarketplaceExtractReque
     });
 }
 
-export async function submitMarketplaceProject(projectId: string, payload: MarketplaceSubmitRequest) {
-    return requestJson<MarketplaceSubmitResponse>({
-        path: `/api/projects/${projectId}/marketplace/submit`,
+export async function createAndSubmitMarketplaceProject(payload: CreateMarketplaceProjectPayload) {
+    const form = new FormData();
+    form.append("source", payload.source);
+    form.append("product_title", payload.product_title);
+    form.append("product_description", payload.product_description);
+    if (payload.style) {
+        form.append("style", payload.style);
+    }
+    if (payload.image_urls?.length) {
+        form.append("image_urls_json", JSON.stringify(payload.image_urls));
+    }
+    if (payload.listing_metadata) {
+        form.append("listing_metadata_json", JSON.stringify(payload.listing_metadata));
+    }
+    for (const file of payload.files ?? []) {
+        form.append("files", file);
+    }
+
+    const response = await fetch(buildUrl("/api/projects/make-creatives"), {
         method: "POST",
-        body: payload,
+        headers: getDefaultHeaders(),
+        body: form,
     });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to create marketplace project.");
+    }
+
+    return (await response.json()) as MarketplaceSubmitResponse;
 }

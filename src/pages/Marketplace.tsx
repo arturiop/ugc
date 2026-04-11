@@ -16,9 +16,8 @@ import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
 import AddPhotoAlternateRoundedIcon from "@mui/icons-material/AddPhotoAlternateRounded";
 import AppHeader from "@/components/AppHeader";
-import { uploadProjectAsset } from "@/api/assets";
-import { ProjectType, type MarketplaceExtractResponse } from "@/api/projects";
-import { useCreateProject, useExtractMarketplaceListing, useSubmitMarketplaceProject } from "@/api/projects/hooks";
+import type { MarketplaceExtractResponse } from "@/api/projects";
+import { useCreateAndSubmitMarketplaceProject, useExtractMarketplaceListing } from "@/api/projects/hooks";
 import { useProjectStoryboard } from "@/api/storyboard/hooks";
 import type { StoryboardScene } from "@/api/storyboard";
 
@@ -295,9 +294,8 @@ export default function MarketplacePage() {
     const [extractedListing, setExtractedListing] = useState<ExtractedListingState>(null);
     const [isCreatingProject, setIsCreatingProject] = useState(false);
 
-    const createProject = useCreateProject();
+    const createAndSubmitMarketplaceProject = useCreateAndSubmitMarketplaceProject();
     const extractMarketplaceListing = useExtractMarketplaceListing();
-    const submitMarketplaceProject = useSubmitMarketplaceProject();
 
     const storyboardQuery = useProjectStoryboard(projectId, {
         refetchInterval: (query) => {
@@ -411,26 +409,16 @@ export default function MarketplacePage() {
         setIsCreatingProject(true);
 
         try {
-            const project = await createProject.mutateAsync(ProjectType.MarketplaceCreatives);
-            const nextProjectId = project?.short_id || project?.uuid;
-            if (!nextProjectId) {
-                throw new Error("Project created but no project id was returned.");
-            }
+            let result;
 
             if (manualDraft.images.length > 0) {
-                const uploadedAssets = await Promise.all(
-                    manualDraft.images.map((image) => uploadProjectAsset(nextProjectId, image.file, "product"))
-                );
-                await submitMarketplaceProject.mutateAsync({
-                    projectId: nextProjectId,
-                    payload: {
-                        source: extractedListing ? "amazon_extracted" : "manual",
-                        product_title: manualTitle,
-                        product_description: manualDescription,
-                        style: manualVibe || null,
-                        image_asset_ids: uploadedAssets.map((asset) => asset.id),
-                        listing_metadata: {},
-                    },
+                result = await createAndSubmitMarketplaceProject.mutateAsync({
+                    source: extractedListing ? "amazon_extracted" : "manual",
+                    product_title: manualTitle,
+                    product_description: manualDescription,
+                    style: manualVibe || null,
+                    files: manualDraft.images.map((image) => image.file),
+                    listing_metadata: {},
                 });
                 setSavedManualDraft({
                     title: manualTitle,
@@ -439,23 +427,22 @@ export default function MarketplacePage() {
                     images: manualDraft.images,
                 });
             } else if (extractedListing) {
-                await submitMarketplaceProject.mutateAsync({
-                    projectId: nextProjectId,
-                    payload: {
-                        source: "amazon_extracted",
-                        product_title: manualTitle || extractedListing.product_title,
-                        product_description: manualDescription || extractedListing.product_description,
-                        style: manualVibe || null,
-                        image_urls: [extractedListing.product_image_url],
-                        listing_metadata: {
-                            image_candidates: [extractedListing.product_image_url],
-                        },
+                result = await createAndSubmitMarketplaceProject.mutateAsync({
+                    source: "amazon_extracted",
+                    product_title: manualTitle || extractedListing.product_title,
+                    product_description: manualDescription || extractedListing.product_description,
+                    style: manualVibe || null,
+                    image_urls: [extractedListing.product_image_url],
+                    listing_metadata: {
+                        image_candidates: [extractedListing.product_image_url],
                     },
                 });
+            } else {
+                throw new Error("No marketplace input was provided.");
             }
 
             const nextParams = new URLSearchParams(searchParams);
-            nextParams.set("projectId", nextProjectId);
+            nextParams.set("projectId", result.project_id);
             setSearchParams(nextParams, { replace: true });
         } catch (creationError) {
             setError(creationError instanceof Error ? creationError.message : "Failed to create marketplace project.");
