@@ -19,7 +19,7 @@ export type PromptUpsertRequest = {
 
 export async function listPrompts(signal?: AbortSignal) {
     return requestJson<PromptListResponse>({
-        path: "/api/v1/settings/prompts",
+        path: "/api/settings/prompts",
         signal,
     });
 }
@@ -30,7 +30,7 @@ export async function upsertPrompt(
     signal?: AbortSignal
 ) {
     return requestJson<PromptItem>({
-        path: `/api/v1/settings/prompts/${encodeURIComponent(key)}`,
+        path: `/api/settings/prompts/${encodeURIComponent(key)}`,
         method: "PUT",
         body: payload,
         signal,
@@ -39,7 +39,7 @@ export async function upsertPrompt(
 
 export async function deletePrompt(key: string, signal?: AbortSignal) {
     return requestJson<PromptItem>({
-        path: `/api/v1/settings/prompts/${encodeURIComponent(key)}`,
+        path: `/api/settings/prompts/${encodeURIComponent(key)}`,
         method: "DELETE",
         signal,
     });

@@ -47,7 +47,7 @@ export const createUploadAttachmentAdapter = ({
         const form = new FormData();
         form.append("file", attachment.file);
 
-        const response = await fetch(`${apiBaseUrl}/api/v1/projects/${projectId}/assets/upload`, {
+        const response = await fetch(`${apiBaseUrl}/api/projects/${projectId}/assets/upload`, {
             method: "POST",
             headers: getDefaultHeaders(),
             body: form,

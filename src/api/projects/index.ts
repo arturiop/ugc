@@ -51,7 +51,7 @@ export type ProjectListResponse = {
     items: ProjectSummary[];
 };
 
-export type MarketplaceStartRequest = {
+export type MarketplaceExtractRequest = {
     product_url: string;
 };
 
@@ -62,33 +62,32 @@ export type MarketplaceExtractResponse = {
     product_image_url: string;
 };
 
-export type MarketplaceBriefInitRequest = {
-    source: "amazon" | "manual";
-    product_url?: string | null;
+export type MarketplaceSubmitRequest = {
+    source: "amazon_extracted" | "manual";
     product_title: string;
     product_description: string;
-    product_image_url?: string | null;
-    vibe?: string | null;
+    style?: string | null;
     image_asset_ids?: number[];
+    image_urls?: string[];
     listing_metadata?: Record<string, unknown>;
 };
 
-export type MarketplaceStartResponse = {
+export type MarketplaceSubmitResponse = {
     started: boolean;
     project_id: string;
-    pipeline_status: "running";
+    pipeline_status: "running" | "completed";
 };
 
 export async function listProjects(signal?: AbortSignal) {
     return requestJson<ProjectListResponse>({
-        path: "/api/v1/projects",
+        path: "/api/projects",
         signal,
     });
 }
 
 export async function createProject(projectType: ProjectType = ProjectType.Storyboard) {
     return requestJson<ProjectResponse>({
-        path: "/api/v1/projects",
+        path: "/api/projects",
         method: "POST",
         body: { project_type: projectType },
     });
@@ -96,37 +95,29 @@ export async function createProject(projectType: ProjectType = ProjectType.Story
 
 export async function getProject(projectId: string, signal?: AbortSignal) {
     return requestJson<ProjectResponse>({
-        path: `/api/v1/projects/${projectId}`,
+        path: `/api/projects/${projectId}`,
         signal,
     });
 }
 
 export async function deleteProject(projectId: string) {
     return requestJson<void>({
-        path: `/api/v1/projects/${projectId}`,
+        path: `/api/projects/${projectId}`,
         method: "DELETE",
     });
 }
 
-export async function startMarketplaceProject(projectId: string, payload: MarketplaceStartRequest) {
-    return requestJson<MarketplaceStartResponse>({
-        path: `/api/v1/projects/${projectId}/marketplace/start`,
-        method: "POST",
-        body: payload,
-    });
-}
-
-export async function extractMarketplaceListing(payload: MarketplaceStartRequest) {
+export async function extractMarketplaceListing(payload: MarketplaceExtractRequest) {
     return requestJson<MarketplaceExtractResponse>({
-        path: "/api/v1/projects/marketplace/extract",
+        path: "/api/projects/marketplace/extract",
         method: "POST",
         body: payload,
     });
 }
 
-export async function initializeMarketplaceProjectBrief(projectId: string, payload: MarketplaceBriefInitRequest) {
-    return requestJson<ProjectResponse>({
-        path: `/api/v1/projects/${projectId}/marketplace/brief`,
+export async function submitMarketplaceProject(projectId: string, payload: MarketplaceSubmitRequest) {
+    return requestJson<MarketplaceSubmitResponse>({
+        path: `/api/projects/${projectId}/marketplace/submit`,
         method: "POST",
         body: payload,
     });

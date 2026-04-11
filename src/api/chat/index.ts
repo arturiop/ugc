@@ -24,7 +24,7 @@ export type ProjectChatHistoryResponse = {
 
 export async function getProjectChatMessages(projectId: string, signal?: AbortSignal) {
     return requestJson<ProjectChatHistoryResponse>({
-        path: `/api/v1/projects/${projectId}/chat/messages`,
+        path: `/api/projects/${projectId}/chat/messages`,
         signal,
         cache: "no-store",
     });
@@ -32,7 +32,7 @@ export async function getProjectChatMessages(projectId: string, signal?: AbortSi
 
 export function getProjectChatTransportConfig(projectId: string) {
     return {
-        api: buildUrl("/api/v1/projects/chat"),
+        api: buildUrl("/api/projects/chat"),
         headers: getDefaultHeaders(),
         body: { projectId },
     };

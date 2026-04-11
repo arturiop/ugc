@@ -18,14 +18,15 @@ export type StoryboardScene = {
 
 export type MarketplaceStoryboardState = {
     source: string;
-    product_url?: string | null;
     product_title?: string | null;
     product_description?: string | null;
+    style?: string | null;
     product_image_url?: string | null;
     listing_metadata?: Record<string, unknown> | null;
     selected_scene_indices?: number[];
     pipeline_status?: "idle" | "running" | "completed" | "failed";
     pipeline_step?:
+        | "input_confirmed"
         | "extracting_listing"
         | "listing_extracted"
         | "generating_storyboard"
@@ -72,7 +73,7 @@ export type StoryboardUpdateRequest = {
 
 export async function getProjectStoryboard(projectId: string, signal?: AbortSignal) {
     return requestJson<StoryboardResponse>({
-        path: `/api/v1/projects/${projectId}/storyboard`,
+        path: `/api/projects/${projectId}/storyboard`,
         signal,
     });
 }
@@ -83,7 +84,7 @@ export async function updateProjectStoryboard(
     signal?: AbortSignal
 ) {
     return requestJson<StoryboardResponse>({
-        path: `/api/v1/projects/${projectId}/storyboard`,
+        path: `/api/projects/${projectId}/storyboard`,
         method: "PATCH",
         body: updates,
         signal,
@@ -102,14 +103,14 @@ export type SceneApproveResponse = {
 export async function generateSceneVideo(projectId: string, sceneIndex: number, force = false) {
     const query = force ? "?force=true" : "";
     return requestJson<SceneVideoResponse>({
-        path: `/api/v1/projects/${projectId}/scenes/${sceneIndex}/video${query}`,
+        path: `/api/projects/${projectId}/scenes/${sceneIndex}/video${query}`,
         method: "POST",
     });
 }
 
 export async function approveSceneVideo(projectId: string, sceneIndex: number) {
     return requestJson<SceneApproveResponse>({
-        path: `/api/v1/projects/${projectId}/scenes/${sceneIndex}/approve`,
+        path: `/api/projects/${projectId}/scenes/${sceneIndex}/approve`,
         method: "POST",
     });
 }

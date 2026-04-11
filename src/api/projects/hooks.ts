@@ -6,10 +6,9 @@ import {
     deleteProject,
     extractMarketplaceListing,
     getProject,
-    initializeMarketplaceProjectBrief,
     listProjects,
     ProjectResponse,
-    startMarketplaceProject,
+    submitMarketplaceProject,
 } from "./index";
 
 type ProjectQueryOptions = Omit<UseQueryOptions<ProjectResponse>, "queryKey" | "queryFn" | "enabled">;
@@ -59,12 +58,12 @@ export function useDeleteProject() {
     });
 }
 
-export function useStartMarketplaceProject() {
+export function useSubmitMarketplaceProject() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ projectId, productUrl }: { projectId: string; productUrl: string }) =>
-            startMarketplaceProject(projectId, { product_url: productUrl }),
+        mutationFn: ({ projectId, payload }: { projectId: string; payload: Parameters<typeof submitMarketplaceProject>[1] }) =>
+            submitMarketplaceProject(projectId, payload),
         onSuccess: (_data, variables) => {
             queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(variables.projectId) });
             queryClient.invalidateQueries({ queryKey: queryKeys.projects.storyboard(variables.projectId) });
@@ -76,23 +75,5 @@ export function useStartMarketplaceProject() {
 export function useExtractMarketplaceListing() {
     return useMutation({
         mutationFn: ({ productUrl }: { productUrl: string }) => extractMarketplaceListing({ product_url: productUrl }),
-    });
-}
-
-export function useInitializeMarketplaceProjectBrief() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: ({ projectId, payload }: { projectId: string; payload: Parameters<typeof initializeMarketplaceProjectBrief>[1] }) =>
-            initializeMarketplaceProjectBrief(projectId, payload),
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.projects.list() });
-            if (data?.short_id) {
-                queryClient.setQueryData(queryKeys.projects.detail(data.short_id), data);
-            }
-            if (data?.uuid) {
-                queryClient.setQueryData(queryKeys.projects.detail(data.uuid), data);
-            }
-        },
     });
 }

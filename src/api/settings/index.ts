@@ -19,7 +19,7 @@ export type GlobalSettingUpsertRequest = {
 
 export async function listGlobalSettings(signal?: AbortSignal) {
     return requestJson<GlobalSettingListResponse>({
-        path: "/api/v1/settings",
+        path: "/api/settings",
         signal,
     });
 }
@@ -30,7 +30,7 @@ export async function upsertGlobalSetting(
     signal?: AbortSignal
 ) {
     return requestJson<GlobalSettingItem>({
-        path: `/api/v1/settings/${encodeURIComponent(key)}`,
+        path: `/api/settings/${encodeURIComponent(key)}`,
         method: "PUT",
         body: payload,
         signal,
@@ -39,7 +39,7 @@ export async function upsertGlobalSetting(
 
 export async function deleteGlobalSetting(key: string, signal?: AbortSignal) {
     return requestJson<GlobalSettingItem>({
-        path: `/api/v1/settings/${encodeURIComponent(key)}`,
+        path: `/api/settings/${encodeURIComponent(key)}`,
         method: "DELETE",
         signal,
     });

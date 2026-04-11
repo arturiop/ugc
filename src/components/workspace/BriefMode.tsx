@@ -138,7 +138,7 @@ const BriefMode = ({ storyboard }: BriefModeProps) => {
                 form.append("file", file);
                 form.append("label", uploadLabel);
 
-                const response = await fetch(buildUrl(`/api/v1/projects/${projectId}/assets/upload`), {
+                const response = await fetch(buildUrl(`/api/projects/${projectId}/assets/upload`), {
                     method: "POST",
                     headers: getDefaultHeaders(),
                     body: form,

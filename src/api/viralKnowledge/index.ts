@@ -53,7 +53,7 @@ type CreateEntryResponse = {
 
 export async function extractViralKnowledgeFromUrl(payload: ExtractByUrlPayload, signal?: AbortSignal) {
     return requestJson<ExtractResponse>({
-        path: "/api/v1/admin/viral-kb/extract/url",
+        path: "/api/admin/viral-kb/extract/url",
         method: "POST",
         body: payload,
         signal,
@@ -64,7 +64,7 @@ export async function extractViralKnowledgeFromFile(file: File, signal?: AbortSi
     const form = new FormData();
     form.append("file", file);
 
-    const response = await fetch(buildUrl("/api/v1/admin/viral-kb/extract/file"), {
+    const response = await fetch(buildUrl("/api/admin/viral-kb/extract/file"), {
         method: "POST",
         headers: getDefaultHeaders(),
         body: form,
@@ -88,7 +88,7 @@ export async function extractViralKnowledgeFromFile(file: File, signal?: AbortSi
 
 export async function createViralKnowledgeEntry(payload: CreateEntryPayload, signal?: AbortSignal) {
     return requestJson<CreateEntryResponse>({
-        path: "/api/v1/admin/viral-kb/entries",
+        path: "/api/admin/viral-kb/entries",
         method: "POST",
         body: payload,
         signal,

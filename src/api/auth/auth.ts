@@ -24,7 +24,7 @@ export interface CurrentUserResponse {
 /** Authenticate via Google ID token. */
 export async function googleLogin(credential: string): Promise<AuthUserResponse> {
     return requestJson<AuthUserResponse>({
-        path: "/api/v1/auth/google",
+        path: "/api/auth/google",
         method: "POST",
         body: { credential },
     });
@@ -33,7 +33,7 @@ export async function googleLogin(credential: string): Promise<AuthUserResponse>
 /** Register a new account with email & password. */
 export async function emailRegister(email: string, password: string, full_name?: string): Promise<AuthUserResponse> {
     return requestJson<AuthUserResponse>({
-        path: "/api/v1/auth/register",
+        path: "/api/auth/register",
         method: "POST",
         body: { email, password, full_name },
     });
@@ -47,7 +47,7 @@ export async function emailLogin(email: string, password: string): Promise<AuthU
     formData.append("grant_type", "password");
 
     const response = await fetch(
-        `${import.meta.env.VITE_APP_NGROK || "http://localhost:5050"}/api/v1/auth/login`,
+        `${import.meta.env.VITE_APP_NGROK || "http://localhost:5050"}/api/auth/login`,
         {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -66,7 +66,7 @@ export async function emailLogin(email: string, password: string): Promise<AuthU
 /** Fetch the current user profile from the backend. */
 export async function getCurrentUser(): Promise<CurrentUserResponse> {
     return requestJson<CurrentUserResponse>({
-        path: "/api/v1/auth/me",
+        path: "/api/auth/me",
         method: "GET",
     });
 }
@@ -74,7 +74,7 @@ export async function getCurrentUser(): Promise<CurrentUserResponse> {
 /** Generate a shareable access token for the current user. */
 export async function createShareToken(): Promise<AuthTokenResponse> {
     return requestJson<AuthTokenResponse>({
-        path: "/api/v1/auth/share-token",
+        path: "/api/auth/share-token",
         method: "POST",
     });
 }

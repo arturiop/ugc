@@ -18,7 +18,7 @@ import AddPhotoAlternateRoundedIcon from "@mui/icons-material/AddPhotoAlternateR
 import AppHeader from "@/components/AppHeader";
 import { uploadProjectAsset } from "@/api/assets";
 import { ProjectType, type MarketplaceExtractResponse } from "@/api/projects";
-import { useCreateProject, useExtractMarketplaceListing, useInitializeMarketplaceProjectBrief } from "@/api/projects/hooks";
+import { useCreateProject, useExtractMarketplaceListing, useSubmitMarketplaceProject } from "@/api/projects/hooks";
 import { useProjectStoryboard } from "@/api/storyboard/hooks";
 import type { StoryboardScene } from "@/api/storyboard";
 
@@ -297,7 +297,7 @@ export default function MarketplacePage() {
 
     const createProject = useCreateProject();
     const extractMarketplaceListing = useExtractMarketplaceListing();
-    const initializeMarketplaceProjectBrief = useInitializeMarketplaceProjectBrief();
+    const submitMarketplaceProject = useSubmitMarketplaceProject();
 
     const storyboardQuery = useProjectStoryboard(projectId, {
         refetchInterval: (query) => {
@@ -421,22 +421,15 @@ export default function MarketplacePage() {
                 const uploadedAssets = await Promise.all(
                     manualDraft.images.map((image) => uploadProjectAsset(nextProjectId, image.file, "product"))
                 );
-                await initializeMarketplaceProjectBrief.mutateAsync({
+                await submitMarketplaceProject.mutateAsync({
                     projectId: nextProjectId,
                     payload: {
-                        source: extractedListing ? "amazon" : "manual",
-                        product_url: extractedListing?.product_url || null,
+                        source: extractedListing ? "amazon_extracted" : "manual",
                         product_title: manualTitle,
                         product_description: manualDescription,
-                        product_image_url: extractedListing?.product_image_url || null,
-                        vibe: manualVibe || null,
+                        style: manualVibe || null,
                         image_asset_ids: uploadedAssets.map((asset) => asset.id),
-                        listing_metadata:
-                            extractedListing?.product_image_url
-                                ? {
-                                      image_candidates: [extractedListing.product_image_url],
-                                  }
-                                : {},
+                        listing_metadata: {},
                     },
                 });
                 setSavedManualDraft({
@@ -446,14 +439,14 @@ export default function MarketplacePage() {
                     images: manualDraft.images,
                 });
             } else if (extractedListing) {
-                await initializeMarketplaceProjectBrief.mutateAsync({
+                await submitMarketplaceProject.mutateAsync({
                     projectId: nextProjectId,
                     payload: {
-                        source: "amazon",
-                        product_url: extractedListing.product_url,
-                        product_title: extractedListing.product_title,
-                        product_description: extractedListing.product_description,
-                        product_image_url: extractedListing.product_image_url,
+                        source: "amazon_extracted",
+                        product_title: manualTitle || extractedListing.product_title,
+                        product_description: manualDescription || extractedListing.product_description,
+                        style: manualVibe || null,
+                        image_urls: [extractedListing.product_image_url],
                         listing_metadata: {
                             image_candidates: [extractedListing.product_image_url],
                         },

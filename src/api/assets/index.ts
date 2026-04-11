@@ -19,7 +19,7 @@ export type AssetListResponse = {
 
 export async function listProjectAssets(projectId: string, signal?: AbortSignal) {
     return requestJson<AssetListResponse>({
-        path: `/api/v1/projects/${projectId}/assets`,
+        path: `/api/projects/${projectId}/assets`,
         signal,
     });
 }
@@ -31,7 +31,7 @@ export async function updateProjectAssetLabel(
     signal?: AbortSignal
 ) {
     return requestJson<AssetItem>({
-        path: `/api/v1/projects/${projectId}/assets/${assetId}`,
+        path: `/api/projects/${projectId}/assets/${assetId}`,
         method: "PATCH",
         body: { label },
         signal,
@@ -40,7 +40,7 @@ export async function updateProjectAssetLabel(
 
 export async function deleteProjectAsset(projectId: string, assetId: number, signal?: AbortSignal) {
     return requestJson<void>({
-        path: `/api/v1/projects/${projectId}/assets/${assetId}`,
+        path: `/api/projects/${projectId}/assets/${assetId}`,
         method: "DELETE",
         signal,
     });
@@ -51,7 +51,7 @@ export async function uploadProjectAsset(projectId: string, file: File, label: A
     form.append("file", file);
     form.append("label", label);
 
-    const response = await fetch(buildUrl(`/api/v1/projects/${projectId}/assets/upload`), {
+    const response = await fetch(buildUrl(`/api/projects/${projectId}/assets/upload`), {
         method: "POST",
         headers: getDefaultHeaders(),
         body: form,
