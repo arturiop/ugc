@@ -2,6 +2,16 @@ import { useAuthStore } from "@/stores/useAuthStore";
 
 export const API_BASE_URL = import.meta.env.VITE_APP_API_BASE;
 
+export class HttpError extends Error {
+    status: number;
+
+    constructor(status: number, message: string) {
+        super(message);
+        this.name = "HttpError";
+        this.status = status;
+    }
+}
+
 export type RequestOptions = {
     path: string;
     method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -58,7 +68,7 @@ export async function requestJson<T>({
     });
 
     if (!response.ok) {
-        throw new Error(await readError(response));
+        throw new HttpError(response.status, await readError(response));
     }
 
     if (response.status === 204) {
