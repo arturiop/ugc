@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { AppBar, Avatar, Box, Button, IconButton, Menu, MenuItem, Stack, Toolbar } from "@mui/material";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import SettingsDialog from "./SettingsDialog";
-import { useCreateProject } from "@/api/projects/hooks";
+import { ProjectType } from "@/api/projects";
+import { useCreateProject, useProject } from "@/api/projects/hooks";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { WatchableLogoText } from "./LogoText";
 
@@ -14,8 +15,10 @@ const AppHeader = () => {
     const createProject = useCreateProject();
     const logout = useAuthStore((s) => s.logout);
     const user = useAuthStore((s) => s.user);
-
+    const location = useLocation();
     const navigate = useNavigate();
+    const { projectId } = useParams();
+    const { data: currentProject } = useProject(projectId ?? null);
     const avatarLabel = user?.full_name?.trim() || user?.email?.trim() || "User";
     const avatarInitials = avatarLabel
         .split(" ")
@@ -27,8 +30,20 @@ const AppHeader = () => {
     const hasProfileImage = Boolean(user?.profile_image_url);
 
     const handleCreateProject = async () => {
+        if (location.pathname.startsWith("/marketplace")) {
+            navigate("/marketplace");
+            return;
+        }
+
+        const nextProjectType =
+            location.pathname.startsWith("/projects/")
+                ? currentProject?.project_type === ProjectType.SatisfactionVideo
+                    ? ProjectType.SatisfactionVideo
+                    : ProjectType.Storyboard
+                : ProjectType.Storyboard;
+
         try {
-            const data = await createProject.mutateAsync(undefined);
+            const data = await createProject.mutateAsync(nextProjectType);
             const id = data?.short_id || data?.uuid;
 
             if (id) {

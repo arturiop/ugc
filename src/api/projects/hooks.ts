@@ -69,6 +69,10 @@ export function useCreateAndSubmitMarketplaceProject() {
                 queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(data.project_id) });
                 queryClient.invalidateQueries({ queryKey: queryKeys.projects.storyboard(data.project_id) });
             }
+            if (data?.project_short_id) {
+                queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(data.project_short_id) });
+                queryClient.invalidateQueries({ queryKey: queryKeys.projects.storyboard(data.project_short_id) });
+            }
         },
     });
 }

@@ -65,6 +65,7 @@ export type MarketplaceExtractResponse = {
 
 export type MarketplaceSubmitResponse = {
     project_id: string;
+    project_short_id: string;
 };
 
 export type CreateMarketplaceProjectPayload = {

@@ -91,47 +91,25 @@ function SceneCard({
 }) {
     const imageUrl = scene?.generated_image_url || null;
     const isSelected = Boolean(scene?.selected_for_video);
-    const statusLabel = imageUrl ? (isSelected ? "Selected" : "Ready") : "Waiting";
+    const statusLabel = imageUrl ? (isSelected ? "Selected" : "Ready") : scene ? "Planned" : "Waiting";
 
     return (
         <Paper
             elevation={0}
             sx={{
-                p: 2,
+                p: 1.5,
                 borderRadius: 3,
                 border: "1px solid",
                 borderColor: "divider",
                 bgcolor: "background.paper",
                 display: "flex",
                 flexDirection: "column",
-                gap: 1.5,
-                minHeight: 336,
+                gap: 1.25,
+                width: "100%",
+                minWidth: 0,
+                boxShadow: "0 1px 2px rgba(16, 24, 40, 0.04)",
             }}
         >
-            <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
-                <Typography sx={{ fontWeight: 700, color: "text.primary", fontSize: "0.95rem" }}>
-                    {title}
-                </Typography>
-                <Chip
-                    label={statusLabel}
-                    size="small"
-                    sx={{
-                        borderRadius: 999,
-                        fontWeight: 700,
-                        bgcolor: imageUrl
-                            ? isSelected
-                                ? alpha("#5B61FF", 0.1)
-                                : alpha("#FF6A1A", 0.1)
-                            : "action.hover",
-                        color: imageUrl
-                            ? isSelected
-                                ? "#5B61FF"
-                                : "#C85616"
-                            : "text.secondary",
-                    }}
-                />
-            </Stack>
-
             <Box
                 sx={{
                     width: "100%",
@@ -140,7 +118,7 @@ function SceneCard({
                     overflow: "hidden",
                     border: "1px solid",
                     borderColor: "divider",
-                    bgcolor: imageUrl ? "grey.100" : "background.default",
+                    bgcolor: "#F6F8FC",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -154,23 +132,71 @@ function SceneCard({
                         sx={{
                             width: "100%",
                             height: "100%",
-                            objectFit: "cover",
+                            objectFit: "contain",
                             display: "block",
+                            p: 1.25,
+                            bgcolor: "background.paper",
                         }}
                     />
                 ) : (
-                    <Typography sx={{ color: "text.disabled", fontSize: "0.86rem" }}>Waiting for image</Typography>
+                    <Stack spacing={0.75} alignItems="center" sx={{ px: 2, textAlign: "center" }}>
+                        <Box
+                            sx={{
+                                width: 34,
+                                height: 34,
+                                borderRadius: "50%",
+                                bgcolor: "rgba(91, 97, 255, 0.08)",
+                                color: "#6B7280",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: "0.82rem",
+                                fontWeight: 700,
+                            }}
+                        >
+                            Img
+                        </Box>
+                        <Typography sx={{ color: "text.secondary", fontSize: "0.84rem", lineHeight: 1.35 }}>
+                            Waiting for image
+                        </Typography>
+                    </Stack>
                 )}
             </Box>
 
-            <Box sx={{ minHeight: 0 }}>
-                <Typography sx={{ color: "text.primary", fontWeight: 700, fontSize: "0.95rem" }}>
-                    {scene?.title || caption}
+            <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={1} sx={{ minWidth: 0 }}>
+                <Typography
+                    sx={{
+                        fontWeight: 700,
+                        color: "text.primary",
+                        fontSize: "0.94rem",
+                        lineHeight: 1.2,
+                        flex: 1,
+                        minWidth: 0,
+                    }}
+                >
+                    {scene?.title || title || caption}
                 </Typography>
-                <Typography sx={{ color: "text.secondary", fontSize: "0.84rem", mt: 0.75 }}>
-                    {scene?.description || "This asset appears here after generation."}
-                </Typography>
-            </Box>
+                <Chip
+                    label={statusLabel}
+                    size="small"
+                    sx={{
+                        borderRadius: 999,
+                        fontWeight: 700,
+                        flexShrink: 0,
+                        mt: 0.125,
+                        bgcolor: imageUrl
+                            ? isSelected
+                                ? alpha("#5B61FF", 0.1)
+                                : alpha("#FF6A1A", 0.1)
+                            : "action.hover",
+                        color: imageUrl
+                            ? isSelected
+                                ? "#5B61FF"
+                                : "#C85616"
+                            : "text.secondary",
+                    }}
+                />
+            </Stack>
         </Paper>
     );
 }
@@ -275,7 +301,7 @@ function VideoCard({
                             Final combined asset
                         </Typography>
                         <Typography sx={{ color: "text.secondary", mt: 0.75 }}>
-                            Generated from the 3 selected scenes after the scene videos finish rendering.
+                            Generated from the 2 selected scenes after the scene videos finish rendering.
                         </Typography>
                     </Box>
                 </Stack>
@@ -300,7 +326,7 @@ export default function MarketplacePage() {
     const storyboardQuery = useProjectStoryboard(projectId, {
         refetchInterval: (query) => {
             const pipelineStatus = query.state.data?.marketplace?.pipeline_status;
-            return pipelineStatus === "running" ? 25000 : false;
+            return pipelineStatus === "running" ? 5000 : false;
         },
     });
     const storyboard = storyboardQuery.data?.storyboard ?? null;
@@ -331,13 +357,46 @@ export default function MarketplacePage() {
                     ? "Preview ready"
                 : "Idle";
     const pipelineError = marketplace?.pipeline_error || error;
+    const storyboardSceneCount = storyboard?.scenes?.length ?? 0;
     const readySceneCount = storyboard?.scenes?.filter((scene) => Boolean(scene.generated_image_url)).length ?? 0;
+    const hasStoryboardScenes = storyboardSceneCount > 0;
     const hasGeneratedAssets = readySceneCount > 0 || Boolean(finalVideoUrl);
     const displayImages = savedManualDraft?.images || manualDraft.images;
     const generatedAssetsEmptyLabel =
         hasBoundProject && hasPipelineActivity
             ? "Assets will appear here as scenes finish rendering."
             : "Assets will appear here after extraction.";
+
+    useEffect(() => {
+        if (!isLocked || !marketplace) return;
+
+        setManualDraft((current) => {
+            const nextTitle = marketplace.product_title ?? "";
+            const nextDescription = marketplace.product_description ?? "";
+            const nextVibe = marketplace.style ?? "";
+
+            if (
+                current.title === nextTitle &&
+                current.description === nextDescription &&
+                current.vibe === nextVibe
+            ) {
+                return current;
+            }
+
+            return {
+                ...current,
+                title: nextTitle,
+                description: nextDescription,
+                vibe: nextVibe,
+            };
+        });
+    }, [
+        isLocked,
+        marketplace?.product_title,
+        marketplace?.product_description,
+        marketplace?.style,
+        marketplace,
+    ]);
 
     useEffect(() => {
         return () => {
@@ -442,7 +501,7 @@ export default function MarketplacePage() {
             }
 
             const nextParams = new URLSearchParams(searchParams);
-            nextParams.set("projectId", result.project_id);
+            nextParams.set("projectId", result.project_short_id);
             setSearchParams(nextParams, { replace: true });
         } catch (creationError) {
             setError(creationError instanceof Error ? creationError.message : "Failed to create marketplace project.");
@@ -807,7 +866,7 @@ export default function MarketplacePage() {
                                     {hasBoundProject ? (
                                         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                                             <Chip
-                                                label={`${readySceneCount}/${SCENE_SLOTS.length} scenes`}
+                                                label={`${readySceneCount}/${storyboardSceneCount || SCENE_SLOTS.length} scenes`}
                                                 size="small"
                                                 sx={{
                                                     borderRadius: 999,
@@ -833,7 +892,7 @@ export default function MarketplacePage() {
                                     ) : null}
                                 </Stack>
 
-                                {hasGeneratedAssets ? (
+                                {hasStoryboardScenes || hasGeneratedAssets ? (
                                     <>
                                         <Box
                                             sx={{
@@ -841,13 +900,18 @@ export default function MarketplacePage() {
                                                 gridTemplateColumns: {
                                                     xs: "1fr",
                                                     sm: "repeat(2, minmax(0, 1fr))",
-                                                    xl: "repeat(3, minmax(0, 1fr))",
+                                                    lg: "repeat(3, minmax(0, 1fr))",
                                                 },
                                                 gap: 2,
+                                                alignItems: "start",
                                             }}
                                         >
-                                            {SCENE_SLOTS.map((slot, index) => {
-                                                const scene = storyboard?.scenes?.find((item) => item.scene_index === index + 1) ?? null;
+                                            {(storyboard?.scenes?.length ? storyboard.scenes : SCENE_SLOTS.map((_slot, index) => ({ scene_index: index + 1 } as StoryboardScene))).map((scene, index) => {
+                                                const slot = SCENE_SLOTS[index] ?? {
+                                                    id: `scene-${scene.scene_index}`,
+                                                    title: `Scene ${scene.scene_index}`,
+                                                    caption: "Marketplace scene",
+                                                };
                                                 return <SceneCard key={slot.id} title={slot.title} caption={slot.caption} scene={scene} />;
                                             })}
                                         </Box>
