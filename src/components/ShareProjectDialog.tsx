@@ -46,7 +46,7 @@ const ShareProjectDialog = ({ open, onClose, projectId }: ShareProjectDialogProp
         setCopied(false);
 
         try {
-            const token = await createShareToken(projectId);
+            const share = await createShareToken(projectId);
             const isMarketplaceShare = location.pathname.startsWith("/marketplace");
             const link = new URL(
                 isMarketplaceShare ? "/shared/marketplace" : `/shared/projects/${projectId}`,
@@ -55,7 +55,7 @@ const ShareProjectDialog = ({ open, onClose, projectId }: ShareProjectDialogProp
             if (isMarketplaceShare) {
                 link.searchParams.set("projectId", projectId);
             }
-            link.searchParams.set("token", token.access_token);
+            link.searchParams.set("s", share.share_key);
             setShareLink(link.toString());
         } catch (err) {
             setShareError((err as Error).message || "Failed to generate project share link.");

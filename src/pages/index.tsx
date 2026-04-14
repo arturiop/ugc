@@ -1,7 +1,8 @@
-import { Box } from "@mui/material";
-import { lazy, useEffect } from "react";
+import { Box, CircularProgress, Stack, Typography } from "@mui/material";
+import { lazy, useEffect, useMemo, useState } from "react";
 import { Navigate, Outlet, useLocation, useNavigate, useRoutes } from "react-router-dom";
 import AppShellHeader from "@/components/AppShellHeader";
+import { exchangeShareToken } from "@/api/auth/auth";
 import { Loadable } from "@/components/Loadable";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import GuestRoute from "@/components/GuestRoute";
@@ -26,6 +27,13 @@ const RootContainer = () => {
     const navigate = useNavigate();
     const setToken = useAuthStore((s) => s.setToken);
     const setSharedAccess = useAuthStore((s) => s.setSharedAccess);
+    const logout = useAuthStore((s) => s.logout);
+    const [shareResolveState, setShareResolveState] = useState<"idle" | "resolving" | "failed">(() => {
+        const params = new URLSearchParams(location.search);
+        return location.pathname.startsWith("/shared/") && Boolean(params.get("s")) ? "resolving" : "idle";
+    });
+    const [shareResolveError, setShareResolveError] = useState<string | null>(null);
+    const shareKey = useMemo(() => new URLSearchParams(location.search).get("s"), [location.search]);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -55,6 +63,95 @@ const RootContainer = () => {
             { replace: true }
         );
     }, [location.pathname, location.search, navigate, setSharedAccess, setToken]);
+
+    useEffect(() => {
+        if (!location.pathname.startsWith("/shared/")) {
+            setShareResolveState("idle");
+            setShareResolveError(null);
+            return;
+        }
+
+        if (!shareKey) {
+            return;
+        }
+
+        let active = true;
+        setShareResolveState("resolving");
+        setShareResolveError(null);
+        logout();
+
+        const resolve = async () => {
+            try {
+                const resolved = await exchangeShareToken(shareKey);
+                if (!active) return;
+                setSharedAccess(resolved.access_token, resolved.project_id);
+                const nextParams = new URLSearchParams(location.search);
+                nextParams.delete("s");
+                navigate(
+                    {
+                        pathname: location.pathname,
+                        search: nextParams.toString() ? `?${nextParams.toString()}` : "",
+                    },
+                    { replace: true }
+                );
+                setShareResolveState("idle");
+            } catch (error) {
+                if (!active) return;
+                setShareResolveError((error as Error).message || "Failed to open shared link.");
+                setShareResolveState("failed");
+            }
+        };
+
+        void resolve();
+        return () => {
+            active = false;
+        };
+    }, [location.pathname, location.search, navigate, logout, setSharedAccess, shareKey]);
+
+    if (shareResolveState === "resolving") {
+        return (
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    width: "100%",
+                    minHeight: "100vh",
+                    bgcolor: "background.default",
+                }}
+            >
+                <AppShellHeader />
+                <Box sx={{ flex: 1, display: "grid", placeItems: "center" }}>
+                    <CircularProgress size={28} />
+                </Box>
+            </Box>
+        );
+    }
+
+    if (shareResolveState === "failed") {
+        return (
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    width: "100%",
+                    minHeight: "100vh",
+                    bgcolor: "background.default",
+                }}
+            >
+                <AppShellHeader />
+                <Box sx={{ flex: 1, display: "grid", placeItems: "center", p: 3 }}>
+                    <Stack spacing={1.5} sx={{ textAlign: "center", maxWidth: 420 }}>
+                        <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                            Shared link unavailable
+                        </Typography>
+                        <Typography color="text.secondary">
+                            {shareResolveError || "This share link is invalid or has expired."}
+                        </Typography>
+                    </Stack>
+                </Box>
+            </Box>
+        );
+    }
 
     return (
         <Box

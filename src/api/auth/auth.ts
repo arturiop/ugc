@@ -1,9 +1,18 @@
-import { requestJson } from "../httpClient";
+import { buildUrl, requestJson } from "../httpClient";
 
 export interface AuthTokenResponse {
     access_token: string;
     token_type: string;
     expires_at: string;
+}
+
+export interface ShareLinkResponse {
+    share_key: string;
+    expires_at: string;
+}
+
+export interface ShareLinkExchangeResponse extends AuthTokenResponse {
+    project_id: string;
 }
 
 export interface AuthUserResponse {
@@ -71,11 +80,27 @@ export async function getCurrentUser(): Promise<CurrentUserResponse> {
     });
 }
 
-/** Generate a project-scoped shareable access token for the current user. */
-export async function createShareToken(projectId: string): Promise<AuthTokenResponse> {
-    return requestJson<AuthTokenResponse>({
+/** Generate a short share key for the current project. */
+export async function createShareToken(projectId: string): Promise<ShareLinkResponse> {
+    return requestJson<ShareLinkResponse>({
         path: "/api/auth/share-token",
         method: "POST",
         body: { project_id: projectId },
     });
+}
+
+/** Exchange a short share key for a project-scoped token. */
+export async function exchangeShareToken(shareKey: string): Promise<ShareLinkExchangeResponse> {
+    const response = await fetch(buildUrl("/api/auth/share-token/exchange"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ share_key: shareKey }),
+    });
+
+    if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.detail || `Share link exchange failed (${response.status})`);
+    }
+
+    return response.json();
 }
