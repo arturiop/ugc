@@ -1,4 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
+import SharedSessionExit from "@/components/SharedSessionExit";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 /**
@@ -7,6 +8,11 @@ import { useAuthStore } from "@/stores/useAuthStore";
  */
 export default function GuestRoute() {
     const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+    const accessMode = useAuthStore((s) => s.accessMode);
+
+    if (accessMode === "shared") {
+        return <SharedSessionExit />;
+    }
 
     if (isAuthenticated) {
         return <Navigate to="/dashboard" replace />;

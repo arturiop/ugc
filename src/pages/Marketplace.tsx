@@ -15,7 +15,6 @@ import InputAdornment from "@mui/material/InputAdornment";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
 import AddPhotoAlternateRoundedIcon from "@mui/icons-material/AddPhotoAlternateRounded";
-import AppHeader from "@/components/AppHeader";
 import type { MarketplaceExtractResponse } from "@/api/projects";
 import { useCreateAndSubmitMarketplaceProject, useExtractMarketplaceListing } from "@/api/projects/hooks";
 import { useProjectStoryboard } from "@/api/storyboard/hooks";
@@ -511,8 +510,7 @@ export default function MarketplacePage() {
     };
 
     return (
-        <Box sx={{ height: "100dvh", width: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-            <AppHeader />
+        <Box sx={{ height: "100%", width: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
             <Box sx={{ flex: 1, overflow: "auto" }}>
                 <Box sx={{ width: "100%", mx: "auto", px: { xs: 1, md: 2 }, pb: 6 }}>
                     <Stack spacing={3} sx={{ pt: 2 }}>

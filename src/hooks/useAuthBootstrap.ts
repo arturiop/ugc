@@ -8,11 +8,12 @@ const RETRY_DELAY_MS = 5000;
 
 export default function useAuthBootstrap() {
     const token = useAuthStore((s) => s.token);
+    const accessMode = useAuthStore((s) => s.accessMode);
     const setUser = useAuthStore((s) => s.setUser);
     const logout = useAuthStore((s) => s.logout);
 
     useEffect(() => {
-        if (!token) return;
+        if (!token || accessMode !== "user") return;
 
         let isActive = true;
         let retryTimer: number | null = null;
@@ -94,5 +95,5 @@ export default function useAuthBootstrap() {
             window.removeEventListener("focus", retryNow);
             window.removeEventListener("online", retryNow);
         };
-    }, [token, setUser, logout]);
+    }, [token, accessMode, setUser, logout]);
 }

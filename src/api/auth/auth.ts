@@ -71,10 +71,11 @@ export async function getCurrentUser(): Promise<CurrentUserResponse> {
     });
 }
 
-/** Generate a shareable access token for the current user. */
-export async function createShareToken(): Promise<AuthTokenResponse> {
+/** Generate a project-scoped shareable access token for the current user. */
+export async function createShareToken(projectId: string): Promise<AuthTokenResponse> {
     return requestJson<AuthTokenResponse>({
         path: "/api/auth/share-token",
         method: "POST",
+        body: { project_id: projectId },
     });
 }

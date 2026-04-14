@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { AppBar, Avatar, Box, Button, IconButton, Menu, MenuItem, Stack, Toolbar } from "@mui/material";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import LinkOutlinedIcon from "@mui/icons-material/LinkOutlined";
 import SettingsDialog from "./SettingsDialog";
+import ShareProjectDialog from "./ShareProjectDialog";
 import { ProjectType } from "@/api/projects";
 import { useCreateProject, useProject } from "@/api/projects/hooks";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -11,14 +13,18 @@ import { WatchableLogoText } from "./LogoText";
 
 const AppHeader = () => {
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [shareOpen, setShareOpen] = useState(false);
     const [avatarAnchor, setAvatarAnchor] = useState<null | HTMLElement>(null);
     const createProject = useCreateProject();
     const logout = useAuthStore((s) => s.logout);
     const user = useAuthStore((s) => s.user);
     const location = useLocation();
+    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { projectId } = useParams();
-    const { data: currentProject } = useProject(projectId ?? null);
+    const marketplaceProjectId = searchParams.get("projectId");
+    const activeProjectId = projectId ?? marketplaceProjectId;
+    const { data: currentProject } = useProject(activeProjectId ?? null);
     const avatarLabel = user?.full_name?.trim() || user?.email?.trim() || "User";
     const avatarInitials = avatarLabel
         .split(" ")
@@ -28,6 +34,9 @@ const AppHeader = () => {
         .toUpperCase();
     const avatarFallback = avatarInitials.padEnd(2, "U").slice(0, 2);
     const hasProfileImage = Boolean(user?.profile_image_url);
+    const showShareProject =
+        location.pathname.startsWith("/projects/") || location.pathname.startsWith("/marketplace");
+    const canShareProject = Boolean(activeProjectId);
 
     const handleCreateProject = async () => {
         if (location.pathname.startsWith("/marketplace")) {
@@ -118,6 +127,25 @@ const AppHeader = () => {
                         }}
                     />
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                        {showShareProject ? (
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                color="inherit"
+                                startIcon={<LinkOutlinedIcon />}
+                                sx={{
+                                    minHeight: 30,
+                                    borderRadius: 999,
+                                    textTransform: "none",
+                                    fontWeight: 700,
+                                    fontSize: "0.82rem",
+                                }}
+                                onClick={() => setShareOpen(true)}
+                                disabled={!canShareProject}
+                            >
+                                share
+                            </Button>
+                        ) : null}
                         <Button
                             size="small"
                             variant="contained"
@@ -215,6 +243,7 @@ const AppHeader = () => {
                 <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
             </Menu>
             <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+            <ShareProjectDialog open={shareOpen} onClose={() => setShareOpen(false)} projectId={activeProjectId} />
         </>
     );
 };

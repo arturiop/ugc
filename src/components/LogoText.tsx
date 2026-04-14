@@ -1,18 +1,18 @@
 import { useNavigate } from "react-router-dom";
 
-export function WatchableLogoText() {
+export function WatchableLogoText({ clickable = true }: { clickable?: boolean }) {
     const navigate = useNavigate();
 
   return (
     <div
-      onClick={() => navigate('/dashboard')}
+      onClick={clickable ? () => navigate('/dashboard') : null}
       className="!text-[32px] md:!text-[32px]"
       style={{
         fontFamily: 'Inter, "SF Pro Display", "Segoe UI", Arial, sans-serif',
         fontWeight: 700,
         letterSpacing: '-0.03em',
         lineHeight: 1,
-        cursor: "pointer"
+        cursor: clickable ? "pointer" : null
       }}
     >
       <span

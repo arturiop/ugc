@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { Box, Typography, Stack } from "@mui/material";
 
 import { useAuthStore } from "@/stores/useAuthStore";
-import AppHeader from "@/components/AppHeader";
 import { CreateLanesSection } from "@/components/dashboard/CreateLanesSection";
 import { DashboardProjectsSection } from "@/components/dashboard/DashboardProjectsSection";
 
@@ -20,8 +19,7 @@ export default function Dashboard() {
     }, [user?.full_name, user?.email]);
 
     return (
-        <Box sx={{ height: "100dvh", width: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-            <AppHeader />
+        <Box sx={{ height: "100%", width: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
             <Box sx={{ flex: 1, overflow: "auto" }}>
                 <Box sx={{ width: "100%", mx: "auto", px: { xs: 1, md: 2 }, pb: 6 }}>
                     <Stack

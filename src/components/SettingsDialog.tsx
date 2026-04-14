@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    Box,
     Button,
-    Divider,
     Dialog,
     DialogActions,
     DialogContent,
@@ -18,16 +16,12 @@ import {
     Radio,
     RadioGroup,
     Stack,
-    TextField,
-    Tooltip,
     Typography,
 } from "@mui/material";
 import BrushOutlinedIcon from "@mui/icons-material/BrushOutlined";
-import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
 import TuneOutlinedIcon from "@mui/icons-material/TuneOutlined";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import { useThemeMode } from "@/theme";
-import { createShareToken } from "@/api/auth/auth";
 
 type SettingsDialogProps = {
     open: boolean;
@@ -37,33 +31,6 @@ type SettingsDialogProps = {
 const SettingsDialog = ({ open, onClose }: SettingsDialogProps) => {
     const { mode, setMode } = useThemeMode();
     const navigate = useNavigate();
-    const [shareLink, setShareLink] = useState("");
-    const [shareError, setShareError] = useState<string | null>(null);
-    const [sharePending, setSharePending] = useState(false);
-
-    const handleGenerateShare = async () => {
-        setSharePending(true);
-        setShareError(null);
-        try {
-            const token = await createShareToken();
-            const link = new URL("/dashboard", window.location.origin);
-            link.searchParams.set("token", token.access_token);
-            setShareLink(link.toString());
-        } catch (err) {
-            setShareError((err as Error).message || "Failed to generate access link.");
-        } finally {
-            setSharePending(false);
-        }
-    };
-
-    const handleCopyShare = async () => {
-        if (!shareLink) return;
-        try {
-            await navigator.clipboard.writeText(shareLink);
-        } catch (err) {
-            console.warn("Failed to copy link", err);
-        }
-    };
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -103,7 +70,7 @@ const SettingsDialog = ({ open, onClose }: SettingsDialogProps) => {
                         </List>
                     </Paper>
 
-                    <Box sx={{ flex: 1 }}>
+                    <Paper variant="outlined" sx={{ flex: 1, p: 2 }}>
                         <Typography variant="h6" sx={{ fontWeight: 700 }}>
                             Appearance
                         </Typography>
@@ -152,52 +119,7 @@ const SettingsDialog = ({ open, onClose }: SettingsDialogProps) => {
                                 </RadioGroup>
                             </Stack>
                         </Paper>
-
-                        <Divider />
-
-                        <Box>
-                            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                                Share access
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                Generate a link that lets someone access your profile and projects.
-                            </Typography>
-
-                            <Stack spacing={1.5}>
-                                <Stack direction="row" spacing={1} alignItems="center">
-                                    <Button variant="contained" onClick={handleGenerateShare} disabled={sharePending}>
-                                        Generate access link
-                                    </Button>
-                                    <Typography variant="caption" color="text.secondary">
-                                        Anyone with this link has full access. Treat it like a password.
-                                    </Typography>
-                                </Stack>
-
-                                <Stack direction="row" spacing={1} alignItems="center">
-                                    <TextField
-                                        fullWidth
-                                        size="small"
-                                        value={shareLink}
-                                        placeholder="No link generated yet"
-                                        InputProps={{ readOnly: true }}
-                                    />
-                                    <Tooltip title="Copy link">
-                                        <span>
-                                            <IconButton onClick={handleCopyShare} disabled={!shareLink}>
-                                                <ContentCopyOutlinedIcon fontSize="small" />
-                                            </IconButton>
-                                        </span>
-                                    </Tooltip>
-                                </Stack>
-
-                                {shareError ? (
-                                    <Typography variant="caption" color="error">
-                                        {shareError}
-                                    </Typography>
-                                ) : null}
-                            </Stack>
-                        </Box>
-                    </Box>
+                    </Paper>
                 </Stack>
             </DialogContent>
             <DialogActions>

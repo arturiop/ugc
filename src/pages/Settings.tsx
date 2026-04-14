@@ -3,8 +3,6 @@ import TuneOutlinedIcon from "@mui/icons-material/TuneOutlined";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
-import AppHeader from "@/components/AppHeader";
-
 const sections = [
     {
         key: "global",
@@ -27,8 +25,7 @@ export default function SettingsLayout() {
     const navigate = useNavigate();
 
     return (
-        <Box sx={{ minHeight: "100dvh", width: "100%", display: "flex", flexDirection: "column" }}>
-            <AppHeader />
+        <Box sx={{ minHeight: "100%", width: "100%", display: "flex", flexDirection: "column" }}>
             <Box sx={{ width: "min(1280px, 100%)", mx: "auto", px: 4, py: 4, flex: 1 }}>
                 <Stack spacing={3}>
                     <Box>

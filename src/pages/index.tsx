@@ -1,9 +1,11 @@
 import { Box } from "@mui/material";
 import { lazy, useEffect } from "react";
 import { Navigate, Outlet, useLocation, useNavigate, useRoutes } from "react-router-dom";
+import AppShellHeader from "@/components/AppShellHeader";
 import { Loadable } from "@/components/Loadable";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import GuestRoute from "@/components/GuestRoute";
+import SharedRoute from "@/components/SharedRoute";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 const Page404 = Loadable(lazy(() => import("./Page404")));
@@ -23,13 +25,24 @@ const RootContainer = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const setToken = useAuthStore((s) => s.setToken);
+    const setSharedAccess = useAuthStore((s) => s.setSharedAccess);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const sharedToken = params.get("token") || params.get("key");
         if (!sharedToken) return;
 
-        setToken(sharedToken);
+        const sharedProjectMatch = location.pathname.match(/^\/shared\/projects\/([^/?#]+)/);
+        const sharedMarketplaceProjectId =
+            location.pathname === "/shared/marketplace" ? params.get("projectId") : null;
+
+        if (sharedProjectMatch) {
+            setSharedAccess(sharedToken, decodeURIComponent(sharedProjectMatch[1]));
+        } else if (sharedMarketplaceProjectId) {
+            setSharedAccess(sharedToken, sharedMarketplaceProjectId);
+        } else {
+            setToken(sharedToken);
+        }
         params.delete("token");
         params.delete("key");
 
@@ -41,18 +54,22 @@ const RootContainer = () => {
             },
             { replace: true }
         );
-    }, [location.pathname, location.search, navigate, setToken]);
+    }, [location.pathname, location.search, navigate, setSharedAccess, setToken]);
 
     return (
         <Box
             sx={{
                 display: "flex",
+                flexDirection: "column",
                 width: "100%",
                 minHeight: "100vh",
                 bgcolor: "background.default",
                 justifyContent: "center",
             }}>
-            <Outlet />
+            <AppShellHeader />
+            <Box sx={{ flex: 1, minHeight: 0, width: "100%", display: "flex", justifyContent: "center" }}>
+                <Outlet />
+            </Box>
         </Box>
     );
 };
@@ -71,6 +88,14 @@ const router = [
                 children: [
                     { path: "login", element: <Login /> },
                     { path: "signup", element: <Signup /> },
+                ],
+            },
+
+            {
+                element: <SharedRoute />,
+                children: [
+                    { path: "shared/projects/:projectId", element: <ProjectPage sharedMode /> },
+                    { path: "shared/marketplace", element: <MarketplacePage /> },
                 ],
             },
 

@@ -4,8 +4,6 @@ import UploadFileRoundedIcon from "@mui/icons-material/UploadFileRounded";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import LibraryAddCheckRoundedIcon from "@mui/icons-material/LibraryAddCheckRounded";
-
-import AppHeader from "@/components/AppHeader";
 import {
     useCreateViralKnowledgeEntry,
     useExtractViralKnowledgeFromFile,
@@ -72,8 +70,7 @@ export default function ViralKnowledgePage() {
     };
 
     return (
-        <Box sx={{ minHeight: "100dvh", width: "100%", display: "flex", flexDirection: "column", bgcolor: "background.default" }}>
-            <AppHeader />
+        <Box sx={{ minHeight: "100%", width: "100%", display: "flex", flexDirection: "column", bgcolor: "background.default" }}>
             <Box sx={{ width: "min(1240px, 100%)", mx: "auto", px: { xs: 2, md: 4 }, py: 4 }}>
                 <Stack spacing={3}>
                     <Box>
