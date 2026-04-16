@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient, type UseQueryOptions } from "@ta
 
 import { queryKeys } from "@/api/queryKeys";
 import {
+    approveMarketplaceScenes,
     createAndSubmitMarketplaceProject,
     createProject,
     deleteProject,
@@ -80,5 +81,20 @@ export function useCreateAndSubmitMarketplaceProject() {
 export function useExtractMarketplaceListing() {
     return useMutation({
         mutationFn: ({ productUrl }: { productUrl: string }) => extractMarketplaceListing({ product_url: productUrl }),
+    });
+}
+
+export function useApproveMarketplaceScenes(projectId: string | null | undefined) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ sceneIndices }: { sceneIndices: number[] }) =>
+            approveMarketplaceScenes(projectId as string, { scene_indices: sceneIndices }),
+        onSuccess: () => {
+            if (!projectId) return;
+            queryClient.invalidateQueries({ queryKey: queryKeys.projects.storyboard(projectId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.projects.list() });
+        },
     });
 }

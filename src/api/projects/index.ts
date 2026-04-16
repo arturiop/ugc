@@ -68,6 +68,16 @@ export type MarketplaceSubmitResponse = {
     project_short_id: string;
 };
 
+export type MarketplaceApproveScenesPayload = {
+    scene_indices: number[];
+};
+
+export type MarketplaceApproveScenesResponse = {
+    project_id: string;
+    selected_scene_indices: number[];
+    estimated_duration_seconds: number;
+};
+
 export type CreateMarketplaceProjectPayload = {
     source: "amazon_extracted" | "manual";
     product_title: string;
@@ -145,4 +155,12 @@ export async function createAndSubmitMarketplaceProject(payload: CreateMarketpla
     }
 
     return (await response.json()) as MarketplaceSubmitResponse;
+}
+
+export async function approveMarketplaceScenes(projectId: string, payload: MarketplaceApproveScenesPayload) {
+    return requestJson<MarketplaceApproveScenesResponse>({
+        path: `/api/projects/${projectId}/marketplace/approve-scenes`,
+        method: "POST",
+        body: payload,
+    });
 }

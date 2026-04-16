@@ -31,6 +31,7 @@ export type MarketplaceStoryboardState = {
         | "listing_extracted"
         | "generating_storyboard"
         | "generating_scene_images"
+        | "awaiting_scene_approval"
         | "generating_scene_videos"
         | "combining_video"
         | "completed"

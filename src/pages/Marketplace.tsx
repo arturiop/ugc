@@ -5,6 +5,10 @@ import {
     Box,
     Button,
     Chip,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     Paper,
     Stack,
     TextField,
@@ -16,7 +20,7 @@ import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 import VideoLibraryRoundedIcon from "@mui/icons-material/VideoLibraryRounded";
 import AddPhotoAlternateRoundedIcon from "@mui/icons-material/AddPhotoAlternateRounded";
 import type { MarketplaceExtractResponse } from "@/api/projects";
-import { useCreateAndSubmitMarketplaceProject, useExtractMarketplaceListing } from "@/api/projects/hooks";
+import { useApproveMarketplaceScenes, useCreateAndSubmitMarketplaceProject, useExtractMarketplaceListing } from "@/api/projects/hooks";
 import { useProjectStoryboard } from "@/api/storyboard/hooks";
 import type { StoryboardScene } from "@/api/storyboard";
 
@@ -49,6 +53,7 @@ const SCENE_SLOTS: ResultSlot[] = [
     { id: "scene-5", title: "Scene 5", caption: "Lifestyle proof" },
     { id: "scene-6", title: "Scene 6", caption: "Offer and finish frame" },
 ];
+const EMPTY_SCENE_SELECTION: number[] = [];
 
 function normalizeAmazonUrl(value: string) {
     const trimmed = value.trim();
@@ -300,13 +305,20 @@ function VideoCard({
                             Final combined asset
                         </Typography>
                         <Typography sx={{ color: "text.secondary", mt: 0.75 }}>
-                            Generated from the 2 selected scenes after the scene videos finish rendering.
+                            Generated after the approved scene videos finish rendering.
                         </Typography>
                     </Box>
                 </Stack>
             </Stack>
         </Paper>
     );
+}
+
+function formatEstimatedDuration(seconds: number) {
+    if (seconds <= 0) return "0s";
+    if (seconds % 60 === 0) return `${seconds / 60}m`;
+    if (seconds > 60) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+    return `${seconds}s`;
 }
 
 export default function MarketplacePage() {
@@ -318,19 +330,25 @@ export default function MarketplacePage() {
     const [savedManualDraft, setSavedManualDraft] = useState<ManualProductDraft | null>(null);
     const [extractedListing, setExtractedListing] = useState<ExtractedListingState>(null);
     const [isCreatingProject, setIsCreatingProject] = useState(false);
+    const [scenePickerOpen, setScenePickerOpen] = useState(false);
+    const [pendingSceneSelection, setPendingSceneSelection] = useState<number[]>([]);
 
     const createAndSubmitMarketplaceProject = useCreateAndSubmitMarketplaceProject();
     const extractMarketplaceListing = useExtractMarketplaceListing();
+    const approveMarketplaceScenes = useApproveMarketplaceScenes(projectId);
 
     const storyboardQuery = useProjectStoryboard(projectId, {
         refetchInterval: (query) => {
-            const pipelineStatus = query.state.data?.marketplace?.pipeline_status;
-            return pipelineStatus === "running" ? 5000 : false;
+            const marketplaceState = query.state.data?.marketplace;
+            if (!marketplaceState) return false;
+            if (marketplaceState.pipeline_step === "awaiting_scene_approval") return false;
+            return marketplaceState.pipeline_status === "running" ? 5000 : false;
         },
     });
     const storyboard = storyboardQuery.data?.storyboard ?? null;
     const marketplace = storyboardQuery.data?.marketplace ?? null;
     const pipelineStatus = marketplace?.pipeline_status;
+    const pipelineStep = marketplace?.pipeline_step;
     const finalVideoStatus = marketplace?.final_video_status ?? "not_started";
     const finalVideoUrl = marketplace?.final_video_url ?? null;
     const hasBoundProject = Boolean(projectId);
@@ -343,28 +361,48 @@ export default function MarketplacePage() {
     const canCreateProjectFromCurrentData = Boolean(manualTitle && manualDescription && (manualDraft.images.length > 0 || imageUrlFromState));
     const hasPipelineActivity = Boolean(pipelineStatus && pipelineStatus !== "idle");
     const isSubmissionLocked = Boolean(isSubmitting || isLocked);
-    const progressLabel =
-        isCreatingProject
-            ? "Creating project"
-            : isSubmitting
-              ? "Extracting"
-              : isLocked
-                ? "Project created"
-                : canCreateProjectFromCurrentData
-                  ? "Ready"
-                  : extractedListing
-                    ? "Preview ready"
-                : "Idle";
     const pipelineError = marketplace?.pipeline_error || error;
     const storyboardSceneCount = storyboard?.scenes?.length ?? 0;
     const readySceneCount = storyboard?.scenes?.filter((scene) => Boolean(scene.generated_image_url)).length ?? 0;
     const hasStoryboardScenes = storyboardSceneCount > 0;
     const hasGeneratedAssets = readySceneCount > 0 || Boolean(finalVideoUrl);
     const displayImages = savedManualDraft?.images || manualDraft.images;
+    const selectedSceneIndices = marketplace?.selected_scene_indices ?? EMPTY_SCENE_SELECTION;
+    const allSceneImagesReady = storyboardSceneCount > 0 && readySceneCount === storyboardSceneCount;
+    const estimatedVideoLengthSeconds = pendingSceneSelection.length * 8;
+    const awaitingSceneApproval = pipelineStep === "awaiting_scene_approval";
+    const canLaunchVideoSelection = Boolean(allSceneImagesReady && !pipelineError);
+    const progressLabel =
+        isCreatingProject
+            ? "Creating project"
+            : isSubmitting
+              ? "Extracting"
+              : pipelineStep === "generating_scene_images"
+                ? "Generating images"
+                : pipelineStep === "awaiting_scene_approval"
+                  ? "Select scenes for video"
+                  : pipelineStep === "generating_scene_videos"
+                    ? "Generating videos"
+                    : pipelineStep === "combining_video"
+                      ? "Combining final video"
+                      : pipelineStep === "completed"
+                        ? "Completed"
+                        : isLocked
+                          ? "Project created"
+                          : canCreateProjectFromCurrentData
+                            ? "Ready"
+                            : extractedListing
+                              ? "Preview ready"
+                              : "Idle";
     const generatedAssetsEmptyLabel =
         hasBoundProject && hasPipelineActivity
             ? "Assets will appear here as scenes finish rendering."
             : "Assets will appear here after extraction.";
+
+    useEffect(() => {
+        if (!scenePickerOpen) return;
+        setPendingSceneSelection(selectedSceneIndices);
+    }, [scenePickerOpen, selectedSceneIndices]);
 
     useEffect(() => {
         if (!isLocked || !marketplace) return;
@@ -506,6 +544,27 @@ export default function MarketplacePage() {
             setError(creationError instanceof Error ? creationError.message : "Failed to create marketplace project.");
         } finally {
             setIsCreatingProject(false);
+        }
+    };
+
+    const togglePendingScene = (sceneIndex: number) => {
+        setPendingSceneSelection((current) =>
+            current.includes(sceneIndex) ? current.filter((value) => value !== sceneIndex) : [...current, sceneIndex].sort((a, b) => a - b)
+        );
+    };
+
+    const handleApproveScenes = async () => {
+        if (!projectId || pendingSceneSelection.length === 0) {
+            setError("Select at least one scene to generate the video.");
+            return;
+        }
+
+        setError("");
+        try {
+            await approveMarketplaceScenes.mutateAsync({ sceneIndices: pendingSceneSelection });
+            setScenePickerOpen(false);
+        } catch (approvalError) {
+            setError(approvalError instanceof Error ? approvalError.message : "Failed to approve marketplace scenes.");
         }
     };
 
@@ -874,7 +933,15 @@ export default function MarketplacePage() {
                                                 }}
                                             />
                                             <Chip
-                                                label={finalVideoStatus === "ready" ? "Video ready" : "Video pending"}
+                                                label={
+                                                    finalVideoStatus === "ready"
+                                                        ? "Video ready"
+                                                        : awaitingSceneApproval
+                                                          ? "Awaiting selection"
+                                                          : finalVideoStatus === "processing"
+                                                            ? "Video processing"
+                                                            : "Video pending"
+                                                }
                                                 size="small"
                                                 sx={{
                                                     borderRadius: 999,
@@ -886,6 +953,22 @@ export default function MarketplacePage() {
                                                     fontWeight: 700,
                                                 }}
                                             />
+                                            <Button
+                                                type="button"
+                                                variant="outlined"
+                                                disabled={!canLaunchVideoSelection || approveMarketplaceScenes.isPending}
+                                                onClick={() => {
+                                                    setPendingSceneSelection(selectedSceneIndices);
+                                                    setScenePickerOpen(true);
+                                                }}
+                                                sx={{
+                                                    borderRadius: 999,
+                                                    textTransform: "none",
+                                                    fontWeight: 700,
+                                                }}
+                                            >
+                                                Generate video
+                                            </Button>
                                         </Stack>
                                     ) : null}
                                 </Stack>
@@ -937,6 +1020,93 @@ export default function MarketplacePage() {
                     </Stack>
                 </Box>
             </Box>
+            <Dialog
+                open={scenePickerOpen}
+                onClose={() => !approveMarketplaceScenes.isPending && setScenePickerOpen(false)}
+                maxWidth="lg"
+                fullWidth
+            >
+                <DialogTitle>Select Scenes For Video</DialogTitle>
+                <DialogContent>
+                    <Stack spacing={2} sx={{ pt: 1 }}>
+                        <Typography sx={{ color: "text.secondary" }}>
+                            Choose the scenes to animate. Each selected scene adds about 8 seconds to the final video.
+                        </Typography>
+                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                            <Chip
+                                label={`${pendingSceneSelection.length} scenes selected`}
+                                size="small"
+                                sx={{ borderRadius: 999, fontWeight: 700 }}
+                            />
+                            <Chip
+                                label={`Estimated length ${formatEstimatedDuration(estimatedVideoLengthSeconds)}`}
+                                size="small"
+                                sx={{
+                                    borderRadius: 999,
+                                    fontWeight: 700,
+                                    bgcolor: alpha("#5B61FF", 0.1),
+                                    color: "#5B61FF",
+                                }}
+                            />
+                        </Stack>
+                        <Box
+                            sx={{
+                                display: "grid",
+                                gridTemplateColumns: {
+                                    xs: "1fr",
+                                    sm: "repeat(2, minmax(0, 1fr))",
+                                    lg: "repeat(3, minmax(0, 1fr))",
+                                },
+                                gap: 2,
+                            }}
+                        >
+                            {(storyboard?.scenes ?? []).map((scene, index) => {
+                                const sceneIndex = scene.scene_index;
+                                const slot = SCENE_SLOTS[index] ?? {
+                                    id: `scene-${sceneIndex}`,
+                                    title: `Scene ${sceneIndex}`,
+                                    caption: "Marketplace scene",
+                                };
+                                const isActive = pendingSceneSelection.includes(sceneIndex);
+
+                                return (
+                                    <Box
+                                        key={slot.id}
+                                        onClick={() => togglePendingScene(sceneIndex)}
+                                        sx={{
+                                            borderRadius: 3,
+                                            cursor: "pointer",
+                                            border: "2px solid",
+                                            borderColor: isActive ? "#5B61FF" : "transparent",
+                                            boxShadow: isActive ? "0 0 0 3px rgba(91, 97, 255, 0.12)" : "none",
+                                        }}
+                                    >
+                                        <SceneCard title={slot.title} caption={slot.caption} scene={scene} />
+                                    </Box>
+                                );
+                            })}
+                        </Box>
+                    </Stack>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2.5 }}>
+                    <Button onClick={() => setScenePickerOpen(false)} disabled={approveMarketplaceScenes.isPending}>
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleApproveScenes}
+                        disabled={pendingSceneSelection.length === 0 || approveMarketplaceScenes.isPending}
+                        sx={{
+                            borderRadius: 999,
+                            textTransform: "none",
+                            fontWeight: 800,
+                            px: 2.25,
+                        }}
+                    >
+                        {approveMarketplaceScenes.isPending ? "Scheduling..." : "Approve and generate"}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }
