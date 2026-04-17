@@ -1,6 +1,7 @@
 import { requestJson } from "@/api/httpClient";
 
 export type StoryboardScene = {
+    scene_id?: number | null;
     scene_index: number;
     title: string;
     objective: string;
