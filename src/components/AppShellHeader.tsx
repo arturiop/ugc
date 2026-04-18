@@ -4,6 +4,7 @@ import SharedAppHeader from "./SharedAppHeader";
 
 export default function AppShellHeader() {
     const location = useLocation();
+    return null
     const isSharedMode = location.pathname.startsWith("/shared/");
 
     return isSharedMode ? <SharedAppHeader /> : <AppHeader />;

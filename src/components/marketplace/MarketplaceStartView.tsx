@@ -56,7 +56,7 @@ const HERO_OVERLAYS = [
     "linear-gradient(90deg, rgba(11, 13, 18, 0.8) 0%, rgba(11, 13, 18, 0.5) 24%, rgba(11, 13, 18, 0.18) 54%, rgba(11, 13, 18, 0.1) 100%), linear-gradient(180deg, rgba(255, 106, 26, 0.08) 0%, rgba(11, 13, 18, 0.22) 38%, rgba(11, 13, 18, 0.8) 100%)",
 ];
 
-const HERO_IMAGE_PLACEHOLDER = "/assets/bg_img.png";
+const HERO_IMAGES = ["/assets/m_bg_img_1.png", "/assets/m_bg_img_2.png", "/assets/m_bg_img_3.png"];
 
 type MarketplaceStartViewProps = {
     urlInput: string;
@@ -133,8 +133,8 @@ export default function MarketplaceStartView({
 
     useEffect(() => {
         const intervalId = window.setInterval(() => {
-            setBackgroundIdx((current) => (current + 1) % HERO_OVERLAYS.length);
-        }, 7000);
+            setBackgroundIdx((current) => (current + 1) % HERO_IMAGES.length);
+        }, 4000);
         return () => window.clearInterval(intervalId);
     }, []);
 
@@ -165,13 +165,39 @@ export default function MarketplaceStartView({
                 sx={{
                     position: "absolute",
                     inset: 0,
-                    backgroundImage: `url("${HERO_IMAGE_PLACEHOLDER}")`,
-                    backgroundPosition: "center",
-                    backgroundRepeat: "no-repeat",
-                    backgroundSize: "cover",
-                    transform: "scale(1.02)",
+                    overflow: "hidden",
                 }}
-            />
+            >
+                {HERO_IMAGES.map((image, index) => (
+                    <MotionBox
+                        key={image}
+                        aria-hidden
+                        initial={{ opacity: index === 0 ? 1 : 0, scale: 1, x: 0, y: 0 }}
+                        animate={{
+                            opacity: backgroundIdx === index ? 1 : 0,
+                            scale: [1, 1.08, 1],
+                            x: [0, -20, 0],
+                            y: [0, -12, 0],
+                        }}
+                        transition={{
+                            opacity: { duration: 1.2, ease: [0.22, 1, 0.36, 1] },
+                            scale: { duration: 16, ease: "easeInOut", repeat: Infinity, repeatType: "loop", delay: index * 0.6 },
+                            x: { duration: 16, ease: "easeInOut", repeat: Infinity, repeatType: "loop", delay: index * 0.6 },
+                            y: { duration: 16, ease: "easeInOut", repeat: Infinity, repeatType: "loop", delay: index * 0.6 },
+                        }}
+                        sx={{
+                            position: "absolute",
+                            inset: -40,
+                            backgroundImage: `url("${image}")`,
+                            backgroundPosition: "center",
+                            backgroundRepeat: "no-repeat",
+                            backgroundSize: "cover",
+                            willChange: "transform, opacity",
+                            transformOrigin: "center",
+                        }}
+                    />
+                ))}
+            </Box>
 
             <Box
                 sx={{
@@ -187,7 +213,7 @@ export default function MarketplaceStartView({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }}
+                    transition={{ duration: 2.8, ease: [0.22, 1, 0.36, 1] }}
                     sx={{
                         position: "absolute",
                         inset: 0,
