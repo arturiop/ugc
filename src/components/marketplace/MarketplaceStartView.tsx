@@ -51,13 +51,12 @@ const TRUSTED_BY = [
 const VIBES = ["Energetic", "Minimal", "Lifestyle", "Premium", "Playful", "Editorial"];
 
 const HERO_OVERLAYS = [
-    "linear-gradient(90deg, rgba(8, 6, 5, 0.72) 0%, rgba(8, 6, 5, 0.46) 24%, rgba(8, 6, 5, 0.16) 52%, rgba(8, 6, 5, 0.08) 100%), linear-gradient(180deg, rgba(8, 6, 5, 0.1) 0%, rgba(8, 6, 5, 0.18) 42%, rgba(8, 6, 5, 0.72) 100%)",
-    "linear-gradient(90deg, rgba(8, 6, 5, 0.68) 0%, rgba(8, 6, 5, 0.42) 26%, rgba(8, 6, 5, 0.14) 54%, rgba(8, 6, 5, 0.08) 100%), linear-gradient(180deg, rgba(8, 6, 5, 0.08) 0%, rgba(8, 6, 5, 0.16) 40%, rgba(8, 6, 5, 0.7) 100%)",
-    "linear-gradient(90deg, rgba(8, 6, 5, 0.74) 0%, rgba(8, 6, 5, 0.48) 25%, rgba(8, 6, 5, 0.18) 54%, rgba(8, 6, 5, 0.08) 100%), linear-gradient(180deg, rgba(8, 6, 5, 0.12) 0%, rgba(8, 6, 5, 0.18) 40%, rgba(8, 6, 5, 0.74) 100%)",
+    "linear-gradient(90deg, rgba(11, 13, 18, 0.78) 0%, rgba(11, 13, 18, 0.54) 26%, rgba(11, 13, 18, 0.2) 56%, rgba(11, 13, 18, 0.1) 100%), linear-gradient(180deg, rgba(11, 13, 18, 0.18) 0%, rgba(11, 13, 18, 0.28) 42%, rgba(11, 13, 18, 0.78) 100%)",
+    "linear-gradient(90deg, rgba(11, 13, 18, 0.72) 0%, rgba(11, 13, 18, 0.48) 28%, rgba(11, 13, 18, 0.18) 54%, rgba(11, 13, 18, 0.1) 100%), linear-gradient(180deg, rgba(91, 97, 255, 0.12) 0%, rgba(11, 13, 18, 0.24) 42%, rgba(11, 13, 18, 0.76) 100%)",
+    "linear-gradient(90deg, rgba(11, 13, 18, 0.8) 0%, rgba(11, 13, 18, 0.5) 24%, rgba(11, 13, 18, 0.18) 54%, rgba(11, 13, 18, 0.1) 100%), linear-gradient(180deg, rgba(255, 106, 26, 0.08) 0%, rgba(11, 13, 18, 0.22) 38%, rgba(11, 13, 18, 0.8) 100%)",
 ];
 
-const HERO_IMAGE_PLACEHOLDER =
-    "radial-gradient(circle at 52% 24%, rgba(255, 214, 160, 0.2) 0%, rgba(255, 214, 160, 0.06) 16%, transparent 30%), radial-gradient(circle at 70% 38%, rgba(255, 241, 214, 0.12) 0%, transparent 18%), linear-gradient(120deg, #3B170E 0%, #7A2D12 26%, #A14017 44%, #4B160C 72%, #140909 100%)";
+const HERO_IMAGE_PLACEHOLDER = "/assets/bg_img.png";
 
 type MarketplaceStartViewProps = {
     urlInput: string;
@@ -76,6 +75,7 @@ type MarketplaceStartViewProps = {
     onVibeSelect: (value: string) => void;
     onManualImagesChange: (event: ChangeEvent<HTMLInputElement>) => void;
     onCreateProjectFromBrief: () => void;
+    onReset: () => void;
 };
 
 export default function MarketplaceStartView({
@@ -95,8 +95,17 @@ export default function MarketplaceStartView({
     onVibeSelect,
     onManualImagesChange,
     onCreateProjectFromBrief,
+    onReset,
 }: MarketplaceStartViewProps) {
     const theme = useTheme();
+    const heroText = theme.palette.common.white;
+    const heroMutedText = alpha(heroText, 0.76);
+    const heroSoftText = alpha(heroText, 0.64);
+    const panelBg = alpha(theme.palette.background.paper, 0.92);
+    const panelBorder = alpha(theme.palette.divider, 0.48);
+    const panelText = theme.palette.text.primary;
+    const panelMutedText = alpha(theme.palette.text.primary, 0.62);
+    const panelSubtleBg = alpha(theme.palette.text.primary, 0.04);
     const uploadInputRef = useRef<HTMLInputElement | null>(null);
     const [placeholderIdx, setPlaceholderIdx] = useState(0);
     const [backgroundIdx, setBackgroundIdx] = useState(0);
@@ -147,8 +156,8 @@ export default function MarketplaceStartView({
                 width: "100%",
                 minHeight: "100%",
                 overflow: "auto",
-                bgcolor: "#090706",
-                color: "#F8F3EC",
+                bgcolor: "background.default",
+                color: heroText,
                 position: "relative",
             }}
         >
@@ -156,8 +165,19 @@ export default function MarketplaceStartView({
                 sx={{
                     position: "absolute",
                     inset: 0,
-                    background: HERO_IMAGE_PLACEHOLDER,
+                    backgroundImage: `url("${HERO_IMAGE_PLACEHOLDER}")`,
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                    backgroundSize: "cover",
                     transform: "scale(1.02)",
+                }}
+            />
+
+            <Box
+                sx={{
+                    position: "absolute",
+                    inset: 0,
+                    background: `radial-gradient(circle at 16% 20%, ${alpha(theme.palette.secondary.main, 0.24)} 0%, transparent 30%), radial-gradient(circle at 82% 18%, ${alpha(theme.palette.primary.main, 0.2)} 0%, transparent 24%), linear-gradient(180deg, rgba(11, 13, 18, 0.18) 0%, rgba(11, 13, 18, 0.24) 100%)`,
                 }}
             />
 
@@ -210,8 +230,8 @@ export default function MarketplaceStartView({
                                 height: 28,
                                 borderRadius: 999,
                                 border: "1px solid",
-                                borderColor: alpha("#FFFFFF", 0.18),
-                                bgcolor: alpha("#FFFFFF", 0.08),
+                                borderColor: alpha(theme.palette.common.white, 0.18),
+                                bgcolor: alpha(theme.palette.common.white, 0.08),
                                 display: "grid",
                                 placeItems: "center",
                                 backdropFilter: "blur(10px)",
@@ -227,7 +247,7 @@ export default function MarketplaceStartView({
                                 fontSize: { xs: "1.1rem", md: "1.24rem" },
                                 letterSpacing: "-0.04em",
                                 fontWeight: 500,
-                                color: "#F8F3EC",
+                                color: heroText,
                             }}
                         >
                             Watchable.
@@ -235,7 +255,7 @@ export default function MarketplaceStartView({
                     </Stack>
 
                     <Stack direction="row" spacing={1.25} alignItems="center">
-                        <Typography sx={{ color: alpha("#F8F3EC", 0.76), fontSize: "0.85rem", display: { xs: "none", md: "block" } }}>
+                        <Typography sx={{ color: heroMutedText, fontSize: "0.85rem", display: { xs: "none", md: "block" } }}>
                             Marketplace creative
                         </Typography>
                         <Chip
@@ -243,11 +263,11 @@ export default function MarketplaceStartView({
                             sx={{
                                 height: 34,
                                 borderRadius: 999,
-                                color: "#F8F3EC",
+                                color: heroText,
                                 fontWeight: 700,
-                                bgcolor: alpha("#FFFFFF", 0.1),
+                                bgcolor: alpha(theme.palette.common.white, 0.1),
                                 border: "1px solid",
-                                borderColor: alpha("#FFFFFF", 0.12),
+                                borderColor: alpha(theme.palette.common.white, 0.12),
                                 backdropFilter: "blur(12px)",
                             }}
                         />
@@ -258,10 +278,10 @@ export default function MarketplaceStartView({
                     <Stack spacing={{ xs: 5, md: 6 }} sx={{ width: "100%", maxWidth: 920, pb: { xs: 4, md: 5 } }}>
                         <Stack spacing={3} sx={{ maxWidth: 720 }}>
                             <Stack direction="row" spacing={1.5} alignItems="center">
-                                <Box sx={{ width: 34, height: 1, bgcolor: alpha("#F8F3EC", 0.42) }} />
+                                <Box sx={{ width: 34, height: 1, bgcolor: alpha(heroText, 0.42) }} />
                                 <Typography
                                     sx={{
-                                        color: alpha("#F8F3EC", 0.74),
+                                        color: heroMutedText,
                                         fontSize: "0.76rem",
                                         letterSpacing: "0.24em",
                                         textTransform: "uppercase",
@@ -286,13 +306,13 @@ export default function MarketplaceStartView({
                                 <br />
                                 A thousand
                                 <br />
-                                <Box component="span" sx={{ color: "#FFE45C", fontStyle: "italic" }}>creatives</Box>.
+                                <Box component="span" sx={{ color: "primary.main", fontStyle: "italic" }}>creatives</Box>.
                             </Typography>
 
                             <Typography
                                 sx={{
                                     maxWidth: 560,
-                                    color: alpha("#F8F3EC", 0.84),
+                                    color: alpha(heroText, 0.84),
                                     fontSize: { xs: "1.02rem", md: "1.1rem" },
                                     lineHeight: 1.72,
                                 }}
@@ -309,16 +329,17 @@ export default function MarketplaceStartView({
                                 elevation={0}
                                 sx={{
                                     borderRadius: { xs: 3.5, md: 4 },
-                                    bgcolor: alpha("#FFFFFF", 0.96),
+                                    bgcolor: panelBg,
                                     border: "1px solid",
-                                    borderColor: alpha("#FFFFFF", 0.4),
+                                    borderColor: panelBorder,
                                     boxShadow: "0 24px 80px rgba(0,0,0,0.34)",
                                     overflow: "hidden",
+                                    backdropFilter: "blur(18px)",
                                 }}
                             >
                                 <Stack spacing={0}>
                                     <Stack direction="row" spacing={1.5} alignItems="center" sx={{ px: { xs: 2, md: 3 }, py: 1.5 }}>
-                                        <Box sx={{ color: alpha("#11161D", 0.52), display: "grid", placeItems: "center" }}>
+                                        <Box sx={{ color: panelMutedText, display: "grid", placeItems: "center" }}>
                                             {inputMode === "manual" ? <ModeEditOutlineRoundedIcon sx={{ fontSize: 22 }} /> : <LinkRoundedIcon sx={{ fontSize: 22 }} />}
                                         </Box>
 
@@ -334,7 +355,7 @@ export default function MarketplaceStartView({
                                                 sx={{
                                                     "& .MuiInputBase-root": {
                                                         fontSize: { xs: "1rem", md: "1.1rem" },
-                                                        color: "#11161D",
+                                                        color: panelText,
                                                         fontWeight: 500,
                                                     },
                                                     "& .MuiInputBase-input": {
@@ -354,7 +375,7 @@ export default function MarketplaceStartView({
                                                         display: "flex",
                                                         alignItems: "center",
                                                         pointerEvents: "none",
-                                                        color: alpha("#11161D", 0.54),
+                                                        color: panelMutedText,
                                                         whiteSpace: "nowrap",
                                                         overflow: "hidden",
                                                         textOverflow: "ellipsis",
@@ -384,10 +405,10 @@ export default function MarketplaceStartView({
                                             <IconButton
                                                 type="button"
                                                 onClick={() => {
-                                                    onUrlInputChange("");
+                                                    onReset();
                                                     setManualEntryOpen(false);
                                                 }}
-                                                sx={{ color: alpha("#11161D", 0.52) }}
+                                                sx={{ color: panelMutedText }}
                                             >
                                                 <CloseRoundedIcon fontSize="small" />
                                             </IconButton>
@@ -405,10 +426,10 @@ export default function MarketplaceStartView({
                                                     px: 2.5,
                                                     textTransform: "none",
                                                     fontWeight: 800,
-                                                    color: "#11161D",
-                                                    bgcolor: "#FFE45C",
+                                                    color: theme.palette.primary.contrastText,
+                                                    bgcolor: "primary.main",
                                                     boxShadow: "none",
-                                                    "&:hover": { bgcolor: "#FFDF3D", boxShadow: "none" },
+                                                    "&:hover": { bgcolor: "primary.dark", boxShadow: "none" },
                                                 }}
                                             >
                                                 {isSubmitting ? "Reading product..." : "Extract"}
@@ -423,7 +444,7 @@ export default function MarketplaceStartView({
                                                 animate={{ opacity: 1, height: "auto" }}
                                                 exit={{ opacity: 0, height: 0 }}
                                                 transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-                                                sx={{ overflow: "hidden", borderTop: "1px solid", borderColor: alpha("#11161D", 0.08) }}
+                                                sx={{ overflow: "hidden", borderTop: "1px solid", borderColor: alpha(theme.palette.divider, 0.9) }}
                                             >
                                                 <Stack spacing={3} sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 2.5 } }}>
                                                     {error ? (
@@ -446,12 +467,12 @@ export default function MarketplaceStartView({
                                                                 label="Extracted from Amazon"
                                                                 sx={{
                                                                     borderRadius: 999,
-                                                                    bgcolor: alpha("#FFE45C", 0.32),
-                                                                    color: "#11161D",
+                                                                    bgcolor: alpha(theme.palette.primary.main, 0.14),
+                                                                    color: theme.palette.primary.dark,
                                                                     fontWeight: 800,
                                                                 }}
                                                             />
-                                                            <Typography sx={{ color: alpha("#11161D", 0.64), fontSize: "0.92rem" }}>
+                                                            <Typography sx={{ color: panelMutedText, fontSize: "0.92rem" }}>
                                                                 Review the brief before launching generation.
                                                             </Typography>
                                                         </Stack>
@@ -466,13 +487,6 @@ export default function MarketplaceStartView({
                                                         }}
                                                     >
                                                         <Stack spacing={2}>
-                                                            <TextField
-                                                                fullWidth
-                                                                label="Product title"
-                                                                value={manualDraft.title}
-                                                                onChange={onManualFieldChange("title")}
-                                                                placeholder="Hydrating magnesium body spray"
-                                                            />
                                                             <TextField
                                                                 fullWidth
                                                                 multiline
@@ -501,8 +515,8 @@ export default function MarketplaceStartView({
                                                                             sx={{
                                                                                 borderRadius: 999,
                                                                                 fontWeight: 700,
-                                                                                bgcolor: active ? "#11161D" : alpha("#11161D", 0.06),
-                                                                                color: active ? "#F8FAFC" : "text.secondary",
+                                                                                bgcolor: active ? "secondary.main" : panelSubtleBg,
+                                                                                color: active ? "secondary.contrastText" : "text.secondary",
                                                                             }}
                                                                         />
                                                                     );
@@ -518,8 +532,8 @@ export default function MarketplaceStartView({
                                                                 alignItems={{ xs: "flex-start", sm: "center" }}
                                                             >
                                                                 <Box>
-                                                                    <Typography sx={{ fontWeight: 700, fontSize: "1rem", color: "#11161D" }}>Product image</Typography>
-                                                                    <Typography sx={{ color: alpha("#11161D", 0.62), fontSize: "0.9rem", mt: 0.5 }}>
+                                                                    <Typography sx={{ fontWeight: 700, fontSize: "1rem", color: panelText }}>Product image</Typography>
+                                                                    <Typography sx={{ color: panelMutedText, fontSize: "0.9rem", mt: 0.5 }}>
                                                                         Upload one or keep the extracted image.
                                                                     </Typography>
                                                                 </Box>
@@ -563,7 +577,7 @@ export default function MarketplaceStartView({
                                                                     sx={{
                                                                         borderRadius: 3,
                                                                         borderStyle: "dashed",
-                                                                        bgcolor: alpha("#11161D", 0.03),
+                                                                        bgcolor: panelSubtleBg,
                                                                         minHeight: 220,
                                                                         display: "grid",
                                                                         placeItems: "center",
@@ -572,8 +586,8 @@ export default function MarketplaceStartView({
                                                                     }}
                                                                 >
                                                                     <Stack spacing={1} alignItems="center">
-                                                                        <UploadRoundedIcon sx={{ color: alpha("#11161D", 0.48) }} />
-                                                                        <Typography sx={{ color: alpha("#11161D", 0.62) }}>
+                                                                        <UploadRoundedIcon sx={{ color: alpha(panelText, 0.48) }} />
+                                                                        <Typography sx={{ color: panelMutedText }}>
                                                                             Upload a product image to continue.
                                                                         </Typography>
                                                                     </Stack>
@@ -588,7 +602,7 @@ export default function MarketplaceStartView({
                                                         alignItems={{ xs: "stretch", md: "center" }}
                                                         justifyContent="space-between"
                                                     >
-                                                        <Typography sx={{ color: alpha("#11161D", 0.62), maxWidth: 560 }}>
+                                                        <Typography sx={{ color: panelMutedText, maxWidth: 560 }}>
                                                             {canCreateProjectFromCurrentData
                                                                 ? "Your brief is ready. Creating the project will move you into the generation workspace."
                                                                 : "Add title, description, and at least one image before generation."}
@@ -605,11 +619,11 @@ export default function MarketplaceStartView({
                                                                 borderRadius: 999,
                                                                 textTransform: "none",
                                                                 fontWeight: 800,
-                                                                color: "#F8FAFC",
-                                                                bgcolor: "#11161D",
+                                                                color: theme.palette.secondary.contrastText,
+                                                                bgcolor: "secondary.main",
                                                                 px: 2.75,
                                                                 boxShadow: "none",
-                                                                "&:hover": { bgcolor: "#1C2430", boxShadow: "none" },
+                                                                "&:hover": { bgcolor: "secondary.dark", boxShadow: "none" },
                                                             }}
                                                         >
                                                             {isCreatingProject ? "Creating..." : "Generate scenes"}
@@ -629,7 +643,7 @@ export default function MarketplaceStartView({
                                     alignItems={{ xs: "flex-start", sm: "center" }}
                                     flexWrap="wrap"
                                     useFlexGap
-                                    sx={{ color: alpha("#F8F3EC", 0.7), px: 0.5 }}
+                                    sx={{ color: heroMutedText, px: 0.5 }}
                                 >
                                     <Button
                                         type="button"
@@ -640,16 +654,16 @@ export default function MarketplaceStartView({
                                             minWidth: 0,
                                             textTransform: "none",
                                             fontWeight: 700,
-                                            color: "#F8F3EC",
+                                            color: heroText,
                                             textDecoration: "underline",
-                                            textDecorationColor: alpha("#F8F3EC", 0.26),
+                                            textDecorationColor: alpha(heroText, 0.26),
                                             textUnderlineOffset: "4px",
-                                            "&:hover": { bgcolor: "transparent", color: "#FFE45C", textDecorationColor: "#FFE45C" },
+                                            "&:hover": { bgcolor: "transparent", color: "primary.main", textDecorationColor: theme.palette.primary.main },
                                         }}
                                     >
                                         Try a sample link
                                     </Button>
-                                    <Typography sx={{ fontSize: "0.92rem", color: alpha("#F8F3EC", 0.62) }}>
+                                    <Typography sx={{ fontSize: "0.92rem", color: heroSoftText }}>
                                         No credit card. Free to try.
                                     </Typography>
                                     <Stack direction="row" spacing={1} alignItems="center">
@@ -658,11 +672,11 @@ export default function MarketplaceStartView({
                                                 width: 8,
                                                 height: 8,
                                                 borderRadius: 999,
-                                                bgcolor: "#FFE45C",
-                                                boxShadow: "0 0 0 4px rgba(255,228,92,0.14)",
+                                                bgcolor: "primary.main",
+                                                boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, 0.18)}`,
                                             }}
                                         />
-                                        <Typography sx={{ fontSize: "0.92rem", color: alpha("#F8F3EC", 0.72) }}>
+                                        <Typography sx={{ fontSize: "0.92rem", color: heroMutedText }}>
                                             12,847 creatives generated this week
                                         </Typography>
                                     </Stack>
@@ -680,8 +694,8 @@ export default function MarketplaceStartView({
                         bottom: 0,
                         overflow: "hidden",
                         borderTop: "1px solid",
-                        borderColor: alpha("#FFFFFF", 0.12),
-                        bgcolor: alpha("#000000", 0.34),
+                        borderColor: alpha(theme.palette.common.white, 0.12),
+                        bgcolor: alpha(theme.palette.background.default, 0.46),
                         backdropFilter: "blur(10px)",
                         py: 1.75,
                     }}
@@ -689,7 +703,7 @@ export default function MarketplaceStartView({
                     <Stack direction="row" spacing={2} alignItems="center" sx={{ px: { xs: 3, md: 5 } }}>
                         <Typography
                             sx={{
-                                color: alpha("#F8F3EC", 0.52),
+                                color: alpha(heroText, 0.52),
                                 fontSize: "0.68rem",
                                 letterSpacing: "0.22em",
                                 textTransform: "uppercase",
@@ -709,7 +723,7 @@ export default function MarketplaceStartView({
                                     <Typography
                                         key={`${brand}-${index}`}
                                         sx={{
-                                            color: alpha("#F8F3EC", 0.64),
+                                            color: heroSoftText,
                                             fontSize: { xs: "0.95rem", md: "1rem" },
                                             fontWeight: 500,
                                             letterSpacing: "-0.03em",

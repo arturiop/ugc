@@ -154,6 +154,39 @@ export default function MarketplacePage() {
         }
     };
 
+    const handleStartViewInputChange = (value: string) => {
+        const trimmed = value.trim();
+        setUrlInput(value);
+        setError("");
+
+        if (!trimmed) {
+            if (!extractedListing) {
+                setManualDraft((current) => ({
+                    ...current,
+                    title: "",
+                }));
+            }
+            return;
+        }
+
+        if (isAmazonUrl(normalizeAmazonUrl(value))) {
+            return;
+        }
+
+        setExtractedListing(null);
+        setManualDraft((current) => ({
+            ...current,
+            title: value,
+        }));
+    };
+
+    const handleResetStartView = () => {
+        setUrlInput("");
+        setError("");
+        setExtractedListing(null);
+        setManualDraft(createEmptyManualDraft());
+    };
+
     const handleManualFieldChange =
         (field: keyof Omit<ManualProductDraft, "images">) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
             setManualDraft((current) => ({ ...current, [field]: event.target.value }));
@@ -254,7 +287,7 @@ export default function MarketplacePage() {
         return (
             <MarketplaceStartView
                 urlInput={urlInput}
-                onUrlInputChange={setUrlInput}
+                onUrlInputChange={handleStartViewInputChange}
                 onExtractSubmit={handleSubmit}
                 error={error}
                 isSubmitting={isSubmitting}
@@ -269,6 +302,7 @@ export default function MarketplacePage() {
                 onVibeSelect={handleVibeSelect}
                 onManualImagesChange={handleManualImagesChange}
                 onCreateProjectFromBrief={handleCreateProjectFromBrief}
+                onReset={handleResetStartView}
             />
         );
     }
