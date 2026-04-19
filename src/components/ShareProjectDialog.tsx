@@ -49,12 +49,9 @@ const ShareProjectDialog = ({ open, onClose, projectId }: ShareProjectDialogProp
             const share = await createShareToken(projectId);
             const isMarketplaceShare = location.pathname.startsWith("/marketplace");
             const link = new URL(
-                isMarketplaceShare ? "/shared/marketplace" : `/shared/projects/${projectId}`,
+                isMarketplaceShare ? `/shared/marketplace/${projectId}` : `/shared/projects/${projectId}`,
                 window.location.origin
             );
-            if (isMarketplaceShare) {
-                link.searchParams.set("projectId", projectId);
-            }
             link.searchParams.set("s", share.share_key);
             setShareLink(link.toString());
         } catch (err) {

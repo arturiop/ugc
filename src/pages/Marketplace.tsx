@@ -1,23 +1,26 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useApproveMarketplaceScenes, useCreateAndSubmitMarketplaceProject, useExtractMarketplaceListing } from "@/api/projects/hooks";
 import { useProjectStoryboard } from "@/api/storyboard/hooks";
 import MarketplaceStartView from "@/components/marketplace/MarketplaceStartView";
 import MarketplaceWorkflowView from "@/components/marketplace/MarketplaceWorkflowView";
 import { EMPTY_SCENE_SELECTION, SCENE_SLOTS, type ExtractedListingState, type ManualProductDraft } from "@/components/marketplace/types";
-import { createEmptyManualDraft, isAmazonUrl, normalizeAmazonUrl, releaseManualImages } from "@/components/marketplace/utils";
+import { createEmptyManualDraft, isAmazonUrl, normalizeAmazonUrl } from "@/components/marketplace/utils";
 
 export default function MarketplacePage() {
-    const [searchParams, setSearchParams] = useSearchParams();
-    const projectId = searchParams.get("projectId");
+    const navigate = useNavigate();
+    const { projectId: routeProjectId } = useParams();
+    const [searchParams] = useSearchParams();
+    const queryProjectId = searchParams.get("projectId");
+    const projectId = routeProjectId ?? queryProjectId;
     const [urlInput, setUrlInput] = useState("");
     const [error, setError] = useState("");
     const [manualDraft, setManualDraft] = useState<ManualProductDraft>(() => createEmptyManualDraft());
     const [savedManualDraft, setSavedManualDraft] = useState<ManualProductDraft | null>(null);
     const [extractedListing, setExtractedListing] = useState<ExtractedListingState>(null);
     const [isCreatingProject, setIsCreatingProject] = useState(false);
-    const [scenePickerOpen, setScenePickerOpen] = useState(false);
     const [pendingSceneSelection, setPendingSceneSelection] = useState<number[]>([]);
+    const [hasHydratedPendingSelection, setHasHydratedPendingSelection] = useState(false);
 
     const createAndSubmitMarketplaceProject = useCreateAndSubmitMarketplaceProject();
     const extractMarketplaceListing = useExtractMarketplaceListing();
@@ -33,6 +36,7 @@ export default function MarketplacePage() {
     });
     const storyboard = storyboardQuery.data?.storyboard ?? null;
     const marketplace = storyboardQuery.data?.marketplace ?? null;
+    const storyboardFetched = storyboardQuery.isFetched;
     const pipelineStatus = marketplace?.pipeline_status;
     const pipelineStep = marketplace?.pipeline_step;
     const finalVideoStatus = marketplace?.final_video_status ?? "not_started";
@@ -78,9 +82,21 @@ export default function MarketplacePage() {
                               ? "Preview ready"
                               : "Idle";
     useEffect(() => {
-        if (!scenePickerOpen) return;
+        if (!routeProjectId && queryProjectId) {
+            navigate(`/marketplace/${encodeURIComponent(queryProjectId)}`, { replace: true });
+        }
+    }, [navigate, queryProjectId, routeProjectId]);
+
+    useEffect(() => {
+        setHasHydratedPendingSelection(false);
+        setPendingSceneSelection([]);
+    }, [projectId]);
+
+    useEffect(() => {
+        if (!storyboardFetched || hasHydratedPendingSelection) return;
         setPendingSceneSelection(selectedSceneIndices);
-    }, [scenePickerOpen, selectedSceneIndices]);
+        setHasHydratedPendingSelection(true);
+    }, [hasHydratedPendingSelection, selectedSceneIndices, storyboardFetched]);
 
     useEffect(() => {
         if (!isLocked || !marketplace) return;
@@ -143,7 +159,7 @@ export default function MarketplacePage() {
                 productUrl: normalized,
             });
             setExtractedListing(listing);
-            setUrlInput(listing.product_url);
+            setUrlInput(listing.product_title);
             setManualDraft((current) => ({
                 ...current,
                 title: listing.product_title,
@@ -229,7 +245,11 @@ export default function MarketplacePage() {
                     product_description: manualDescription,
                     style: manualVibe || null,
                     files: manualDraft.images.map((image) => image.file),
-                    listing_metadata: {},
+                    listing_metadata: extractedListing
+                        ? {
+                              resolved_url: extractedListing.product_url,
+                          }
+                        : {},
                 });
                 setSavedManualDraft({
                     title: manualTitle,
@@ -245,6 +265,7 @@ export default function MarketplacePage() {
                     style: manualVibe || null,
                     image_urls: [extractedListing.product_image_url],
                     listing_metadata: {
+                        resolved_url: extractedListing.product_url,
                         image_candidates: [extractedListing.product_image_url],
                     },
                 });
@@ -252,9 +273,7 @@ export default function MarketplacePage() {
                 throw new Error("No marketplace input was provided.");
             }
 
-            const nextParams = new URLSearchParams(searchParams);
-            nextParams.set("projectId", result.project_short_id);
-            setSearchParams(nextParams, { replace: true });
+            navigate(`/marketplace/${encodeURIComponent(result.project_short_id)}`, { replace: true });
         } catch (creationError) {
             setError(creationError instanceof Error ? creationError.message : "Failed to create marketplace project.");
         } finally {
@@ -277,7 +296,6 @@ export default function MarketplacePage() {
         setError("");
         try {
             await approveMarketplaceScenes.mutateAsync({ sceneIndices: pendingSceneSelection });
-            setScenePickerOpen(false);
         } catch (approvalError) {
             setError(approvalError instanceof Error ? approvalError.message : "Failed to approve marketplace scenes.");
         }
@@ -329,14 +347,16 @@ export default function MarketplacePage() {
             selectedSceneIndices={selectedSceneIndices}
             pendingSceneSelection={pendingSceneSelection}
             estimatedVideoLengthSeconds={estimatedVideoLengthSeconds}
-            scenePickerOpen={scenePickerOpen}
-            onOpenScenePicker={() => {
-                setPendingSceneSelection(selectedSceneIndices);
-                setScenePickerOpen(true);
-            }}
-            onCloseScenePicker={() => setScenePickerOpen(false)}
             onTogglePendingScene={togglePendingScene}
             onApproveScenes={handleApproveScenes}
+            onSelectAllScenes={() =>
+                setPendingSceneSelection(
+                    (storyboard?.scenes ?? [])
+                        .filter((scene) => Boolean(scene.generated_image_url))
+                        .map((scene) => scene.scene_index)
+                )
+            }
+            onClearSceneSelection={() => setPendingSceneSelection([])}
             sceneSlots={SCENE_SLOTS}
         />
     );

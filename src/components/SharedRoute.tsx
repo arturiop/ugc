@@ -16,14 +16,14 @@ export default function SharedRoute() {
     }
 
     if (sharedProjectId && routeProjectId && sharedProjectId !== routeProjectId) {
-        if (location.pathname === "/shared/marketplace") {
-            return <Navigate to={`/shared/marketplace?projectId=${encodeURIComponent(sharedProjectId)}`} replace />;
+        if (location.pathname.startsWith("/shared/marketplace")) {
+            return <Navigate to={`/shared/marketplace/${encodeURIComponent(sharedProjectId)}`} replace />;
         }
         return <Navigate to={`/shared/projects/${sharedProjectId}`} replace />;
     }
 
     if (location.pathname === "/shared/marketplace" && !marketplaceProjectId && sharedProjectId) {
-        return <Navigate to={`/shared/marketplace?projectId=${encodeURIComponent(sharedProjectId)}`} replace />;
+        return <Navigate to={`/shared/marketplace/${encodeURIComponent(sharedProjectId)}`} replace />;
     }
 
     return <Outlet />;

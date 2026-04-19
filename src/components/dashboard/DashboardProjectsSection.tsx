@@ -177,7 +177,7 @@ export function DashboardProjectsSection() {
 
     const openProject = (project: ProjectSummary) => {
         if (project.project_type === ProjectType.MarketplaceCreatives) {
-            navigate(`/marketplace?projectId=${encodeURIComponent(project.id)}`);
+            navigate(`/marketplace/${encodeURIComponent(project.id)}`);
             return;
         }
         navigate(`/projects/${project.id}`);
